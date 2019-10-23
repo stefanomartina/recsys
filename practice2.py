@@ -4,7 +4,6 @@ import scipy.sparse as sps
 import numpy as np
 import matplotlib.pyplot as pyplot
 
-
 class RandomRecommender(object):
     def fit(self, URM_train):
         self.numItems = URM_train.shape[0]
@@ -12,7 +11,6 @@ class RandomRecommender(object):
     def recommend(self, user_id, at = 5):
         recommended_items = np.random.choice(self.numItems, at)
         return recommended_items
-
 
 def rowSplit (rowString):
     split = rowString.split("::")
@@ -26,7 +24,6 @@ def rowSplit (rowString):
     result = tuple(split)
     return result
 
-
 def precision(recommended_items, relevant_items):
     is_relevant = np.in1d(recommended_items, relevant_items, assume_unique=True)
 
@@ -34,14 +31,12 @@ def precision(recommended_items, relevant_items):
 
     return precision_score
 
-
 def recall(recommended_items, relevant_items):
     is_relevant = np.in1d(recommended_items, relevant_items, assume_unique=True)
 
     recall_score = np.sum(is_relevant, dtype=np.float32) / relevant_items.shape[0]
 
     return recall_score
-
 
 def MAP(recommended_items, relevant_items):
     is_relevant = np.in1d(recommended_items, relevant_items, assume_unique=True)
@@ -52,7 +47,6 @@ def MAP(recommended_items, relevant_items):
     map_score = np.sum(p_at_k) / np.min([relevant_items.shape[0], is_relevant.shape[0]])
 
     return map_score
-
 
 def evaluate_algorithm(URM_test, recommender_object, at=5):
     cumulative_precision = 0.0
@@ -80,17 +74,32 @@ def evaluate_algorithm(URM_test, recommender_object, at=5):
     print("Recommender performance is: Precision = {:.4f}, Recall = {:.4f}, MAP = {:.4f}".format(
         cumulative_precision, cumulative_recall, cumulative_MAP))
 
+
+class TopPopRecommender(object):
+    def fit(self, URM_train):
+        self.URM_train = URM_train
+        itemPopularity = (URM_train>0).sum(axis=0)
+        itemPopularity = np.array(itemPopularity).squeeze()
+        self.popularItems = np.argsort(itemPopularity)
+        self.popularItems = np.flip(self.popularItems, axis = 0)
+    def recommend(self, user_id, at=5, remove_seen=True):
+        if remove_seen:
+            unseen_items_mask = np.in1d(self.popularItems, self.URM_train[user_id].indices,assume_unique=True, invert = True)
+            unseen_items = self.popularItems[unseen_items_mask]
+            recommended_items = unseen_items[0:at]
+        else:
+            recommended_items = self.popularItems[0:at]
+        return recommended_items
+
+
+
 if __name__ == '__main__':
     #/Users/Stefano/PycharmProjects/recsys/data/Movielens_10M
     dataFile = zipfile.ZipFile("/Users/Stefano/PycharmProjects/recsys/data/Movielens_10M/movielens_10m.zip")
     URM_path = dataFile.extract("ml-10M100K/ratings.dat", path= "/Users/Stefano/PycharmProjects/recsys/data/Movielens_10M")
 
     URM_file = open(URM_path, 'r')
-
-    print(type(URM_file))
-
-    #for _ in range(10):
-    #     print(URM_file.readline())
+    #print(type(URM_file))
 
     #SEEK -> Sets the file’s current position
     URM_file.seek(0)
@@ -98,7 +107,7 @@ if __name__ == '__main__':
 
     for _ in URM_file:
         numberInteractions+=1
-    print("The number of interactions is {}: ".format(numberInteractions))
+    #print("The number of interactions is {}: ".format(numberInteractions))
 
     URM_file.seek(0)
     URM_tuples = []
@@ -117,12 +126,10 @@ if __name__ == '__main__':
     ratingList = list(ratingList)
     timestampList = list(timestampList)
 
-    print(userList[0:10])
-    print(itemList[0:10])
-    print(ratingList[0:10])
-    print(timestampList[0:10])
-
-
+    #print(userList[0:10])
+    #print(itemList[0:10])
+    #print(ratingList[0:10])
+    #print(timestampList[0:10])
 
     userList_unique = list(set(userList))
     itemList_unique = list(set(itemList))
@@ -133,7 +140,6 @@ if __name__ == '__main__':
     print("Max ID items\t {}, Max Id users\t {}\n".format(max(itemList_unique), max(userList_unique)))
     print("Average interactions per user {:.2f}".format(numberInteractions / numUsers))
     print("Average interactions per item {:.2f}\n".format(numberInteractions / numItems))
-
     print("Sparsity {:.2f} %".format((1 - float(numberInteractions) / (numItems * numUsers)) * 100))
 
 
@@ -143,16 +149,14 @@ if __name__ == '__main__':
     pyplot.plot(timestamp_sorted, 'ro')
     pyplot.ylabel('Timestamp')
     pyplot.xlabel('Item Index')
-
     pyplot.show()
-
-
 
     URM_all = sps.coo_matrix((ratingList, (userList, itemList)))
 
     URM_all.tocsr()
 
-    # ???????????? URM_all>0 ????????????????
+    #(URM_all > 0 ) returns a boolean matrix with the same dimensions of the URM_all
+    #by summing all the elements, assuming that true is one, we obtain the popularity of
     itemPopularity = (URM_all>0).sum(axis=0)
 
     itemPopularity = np.array(itemPopularity).squeeze()
@@ -161,31 +165,22 @@ if __name__ == '__main__':
     pyplot.plot(itemPopularity, 'ro')
     pyplot.ylabel('Num interactions')
     pyplot.xlabel('Item Index')
-
     pyplot.show()
 
     tenPercent = int(numItems / 10)
 
     print("Average per-item interactions over the whole dataset {:.2f}".format(itemPopularity.mean()))
-
     print("Average per-item interactions for the top 10% popular items {:.2f}".format(itemPopularity[-tenPercent].mean()))
-
     print("Average per-item interactions for the least 10% popular items {:.2f}".format(itemPopularity[:tenPercent].mean()))
-
     print("Average per-item interactions for the median 10% popular items {:.2f}".format(itemPopularity[int(numItems * 0.45):int(numItems * 0.55)].mean()))
-
     print("Number of items with zero interactions {}".format(np.sum(itemPopularity == 0)))
 
     itemPopularityNonzero = itemPopularity[itemPopularity > 0]
-
     tenPercent = int(len(itemPopularityNonzero) / 10)
 
     print("Average per-item interactions over the whole dataset {:.2f}".format(itemPopularityNonzero.mean()))
-
     print("Average per-item interactions for the top 10% popular items {:.2f}".format(itemPopularityNonzero[-tenPercent].mean()))
-
     print("Average per-item interactions for the least 10% popular items {:.2f}".format(itemPopularityNonzero[:tenPercent].mean()))
-
     print("Average per-item interactions for the median 10% popular items {:.2f}".format(itemPopularityNonzero[int(numItems * 0.45):int(numItems * 0.55)].mean()))
 
     pyplot.plot(itemPopularityNonzero, 'ro')
@@ -222,19 +217,53 @@ if __name__ == '__main__':
 
     user_id = userList_unique[1]
 
-    randomRecommend = RandomRecommender()
-    randomRecommend.fit(URM_train)
+    #Random recommender
+    #randomRecommend = RandomRecommender()
+    #randomRecommend.fit(URM_train)
 
-    recommended_item = randomRecommend.recommend(user_id, at=5)
-    print(recommended_item)
+    #recommended_item = randomRecommend.recommend(user_id, at=5)
+    #print(recommended_item)
 
-    relevant_items = URM_test[user_id].indices
-    print(relevant_items)
+    #relevant_items = URM_test[user_id].indices
+    #print(relevant_items)
 
-    is_relevant = np.in1d(recommended_item, relevant_items, assume_unique=True)
-    print(is_relevant)
+    #is_relevant = np.in1d(recommended_item, relevant_items, assume_unique=True)
+    #print(is_relevant)
 
-    evaluate_algorithm(URM_test, randomRecommend)
+    #evaluate_algorithm(URM_test, randomRecommend)
+    #End of Random recommender
 
+
+
+    #TopPop Recommender
+    #topPopRecommender_removeSeen = TopPopRecommender()
+    #topPopRecommender_removeSeen.fit(URM_train)
+
+    #for user_id in userList_unique[0:10]:
+    #    print(topPopRecommender_removeSeen.recommend(user_id, at=5))
+
+    #evaluate_algorithm(URM_test, topPopRecommender_removeSeen)
+
+
+    # End of TopPop Recommender
+
+    #Global effects recommender
+    globalAverage = np.mean(URM_train.data)
+    print(globalAverage)
+
+    #Unbias the data
+    URM_train_unbiased = URM_train.copy()
+    URM_train_unbiased.data -= globalAverage
+
+
+    item_mean_rating = URM_train_unbiased.mean(axis=0)
+
+    item_mean_rating = np.array(item_mean_rating).squeeze()
+    item_mean_rating = np.sort(item_mean_rating[item_mean_rating!=0])
+
+    pyplot.plot(item_mean_rating, 'ro')
+    pyplot.ylabel("Item bias")
+    pyplot.xlabel("Item Index")
+    pyplot.show()
 
 
