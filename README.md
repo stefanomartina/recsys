@@ -14,5 +14,5 @@ This course aims at providing students with the ability to develop state-of-the-
 ## Group
 | First name | Last Name | Email address   |
 | ---------- | --------- | --------------- |
-| Stefano | Martina | stefano.martina@mail.polimi.it |
 | Simone | Lanzillotta  | simone.lanzillotta@mail.polimi.it |
+| Stefano | Martina | stefano.martina@mail.polimi.it |
