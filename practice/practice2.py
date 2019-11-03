@@ -1,8 +1,8 @@
-from urllib.request import urlretrieve
 import zipfile
 import scipy.sparse as sps
 import numpy as np
 import matplotlib.pyplot as pyplot
+
 
 class RandomRecommender(object):
     def fit(self, URM_train):
@@ -11,6 +11,7 @@ class RandomRecommender(object):
     def recommend(self, user_id, at = 5):
         recommended_items = np.random.choice(self.numItems, at)
         return recommended_items
+
 
 def rowSplit (rowString):
     split = rowString.split("::")
@@ -23,6 +24,7 @@ def rowSplit (rowString):
 
     result = tuple(split)
     return result
+
 
 def precision(recommended_items, relevant_items):
     is_relevant = np.in1d(recommended_items, relevant_items, assume_unique=True)

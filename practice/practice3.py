@@ -1,5 +1,4 @@
-import buildMatrix as bm
-import stats as st
+from utils import buildMatrix as bm, stats as st
 import numpy as np
 import scipy.sparse as sps
 from sklearn import preprocessing

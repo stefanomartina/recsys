@@ -1,11 +1,12 @@
 import csv
 import numpy as np
 
+""" Script to extract and format a file in CSV format"""
 
 # PARAMS:
 #   - file_path: path of the file
 # RETURNED VALUE
-#   - row : a row containing the entire dataset
+#   - row : a row containing the entire dataset as a tuple
 def open_csv(file_path):
     row = []
     with open(file_path) as csv_file:
@@ -17,7 +18,6 @@ def open_csv(file_path):
 
 
 # PARAMS:
-#   - waw: what to write
 #   - file_path: path of the file
 def write_csv(file_path, fields, rows):
     with open(file_path, 'w') as csv_file:
@@ -26,10 +26,15 @@ def write_csv(file_path, fields, rows):
         csv_write.writerows(rows)
 
 
+# PARAMS:
+#   - row : tuple to be converted into a matrix
 def row_to_matrix(row):
     return np.matrix(row)
 
 
+# PARAMS:
+#   - matrix : this is a smart rapresentation of dataset, from which will be extracted all
+#              users' list, items' list and so on.
 def tuples_from_matrix(matrix):
     row = []
     n_of_columns = np.size(matrix, 1)
@@ -40,15 +45,3 @@ def tuples_from_matrix(matrix):
         row.insert(i, matrix[:, i])
 
     return row
-
-
-if __name__ == '__main__':
-    local_path = "/Users/Stefano/Downloads/recommender-system-2018-challenge-polimi/"
-    relative_path = "train.csv"
-    complete_path = local_path + relative_path
-
-    row = open_csv(local_path + relative_path)
-    print(row)
-
-    matrix = row_to_matrix(row)
-    first, second = tuples_from_matrix(matrix)
