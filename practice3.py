@@ -1,5 +1,4 @@
-import buildMatrix as bm
-import stats as st
+from utils import buildMatrix as bm, stats as st
 import numpy as np
 import scipy.sparse as sps
 from sklearn import preprocessing
@@ -73,7 +72,6 @@ if __name__ == '__main__':
 
     ICM_all = sps.coo_matrix((ones, (itemList_icm, tagList_icm)), shape=ICM_shape)
     ICM_all = ICM_all.tocsr()
-
 
     st.list_ID_stats(userList_icm, "User_icm")
     st.list_ID_stats(itemList_urm, "Item_icm")

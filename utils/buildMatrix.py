@@ -36,6 +36,3 @@ def build(path, wte, dest_path, URM):
     timestampList = list(timestampList)
 
     return [userList, itemList,ratingList, timestampList]
-
-
-
