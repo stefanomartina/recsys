@@ -1,6 +1,7 @@
 import csv
 import numpy as np
 
+
 """ Script to extract and format a file in CSV format"""
 
 # PARAMS:
@@ -9,6 +10,8 @@ import numpy as np
 #   - row : a row containing the entire dataset as a tuple
 def open_csv(file_path):
     row = []
+    print(file_path)
+
     with open(file_path) as csv_file:
         csv_read = csv.reader(csv_file, delimiter=',')
         # csv_read = csv.reader(csv_file)   ---> Delimiter not needed??
@@ -21,9 +24,10 @@ def open_csv(file_path):
 #   - file_path: path of the file
 def write_csv(file_path, fields, rows):
     with open(file_path, 'w') as csv_file:
-        csv_write = csv.writer(csv_file)
-        csv_write.writerow(fields)
-        csv_write.writerows(rows)
+        csv_write_head = csv.writer(csv_file, delimiter=',')
+        csv_write_head.writerow(fields)
+        csv_write_content = csv.writer(csv_file, delimiter=' ')
+        csv_write_content.writerows(rows)
 
 
 # PARAMS:
