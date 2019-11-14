@@ -1,4 +1,10 @@
+import numpy as np
+
 class RandomRecommender(object):
+
+    def __init__(self):
+        print(self)
+
     def fit(self, URM_train):
         self.numItems = URM_train.shape[0]
 

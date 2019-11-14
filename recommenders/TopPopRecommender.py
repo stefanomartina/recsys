@@ -1,3 +1,5 @@
+import numpy as np
+
 class TopPopRecommender(object):
     def fit(self, URM_train):
         self.URM_train = URM_train
