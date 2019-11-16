@@ -35,4 +35,4 @@ def build(path, wte, dest_path, URM):
     ratingList = list(ratingList)
     timestampList = list(timestampList)
 
-    return [userList, itemList,ratingList, timestampList]
+    return [userList, itemList, ratingList, timestampList]

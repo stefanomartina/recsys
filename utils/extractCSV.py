@@ -2,26 +2,28 @@ import csv
 import numpy as np
 
 
-""" Script to extract and format a file in CSV format"""
+""" 
+    Function to open a csv file 
+        PARAM:      file_path: path of the file
+        RETURNED:   row: a row containing the entire dataset as a tuple
+"""
 
-# PARAMS:
-#   - file_path: path of the file
-# RETURNED VALUE
-#   - row : a row containing the entire dataset as a tuple
 def open_csv(file_path):
     row = []
     print(file_path)
 
     with open(file_path) as csv_file:
         csv_read = csv.reader(csv_file, delimiter=',')
-        # csv_read = csv.reader(csv_file)   ---> Delimiter not needed??
         for element in csv_read:
             row.append(element)
     return row
 
 
-# PARAMS:
-#   - file_path: path of the file
+"""
+    Function to write a csv file 
+        PARAM:      file_path: path of the file
+"""
+
 def write_csv(file_path, fields, rows):
     with open(file_path, 'w') as csv_file:
         csv_write_head = csv.writer(csv_file, delimiter=',')
@@ -30,15 +32,20 @@ def write_csv(file_path, fields, rows):
         csv_write_content.writerows(rows)
 
 
-# PARAMS:
-#   - row : tuple to be converted into a matrix
+"""
+    Function to write a csv file 
+        PARAM:      row: tuple to be converted into a matrix
+"""
+
 def row_to_matrix(row):
     return np.matrix(row)
 
 
-# PARAMS:
-#   - matrix : this is a smart rapresentation of dataset, from which will be extracted all
-#              users' list, items' list and so on.
+"""
+    Function to extrac all meaningfull list from matrix 
+        PARAM:      matrix: a matrix from which estract tuples
+"""
+
 def tuples_from_matrix(matrix):
     row = []
     n_of_columns = np.size(matrix, 1)
