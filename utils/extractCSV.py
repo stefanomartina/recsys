@@ -4,15 +4,14 @@ import numpy as np
 
 """ 
     Function to open a csv file 
-        PARAM:      file_path: path of the file
-        RETURNED:   row: a row containing the entire dataset as a tuple
+        PARAM:    file_path - path of the file
+        RETURN:   row - a row containing the entire dataset as a tuple
 """
 
 def open_csv(file_path):
     row = []
-    print(file_path)
-
     with open(file_path) as csv_file:
+        next(csv_file)
         csv_read = csv.reader(csv_file, delimiter=',')
         for element in csv_read:
             row.append(element)
@@ -21,7 +20,7 @@ def open_csv(file_path):
 
 """
     Function to write a csv file 
-        PARAM:      file_path: path of the file
+        PARAM:    file_path - path of the file
 """
 
 def write_csv(file_path, fields, rows):
@@ -34,7 +33,7 @@ def write_csv(file_path, fields, rows):
 
 """
     Function to write a csv file 
-        PARAM:      row: tuple to be converted into a matrix
+        PARAM:    row -  tuple to be converted into a matrix
 """
 
 def row_to_matrix(row):
@@ -43,7 +42,7 @@ def row_to_matrix(row):
 
 """
     Function to extrac all meaningfull list from matrix 
-        PARAM:      matrix: a matrix from which estract tuples
+        PARAM:    matrix - a matrix from which estract tuples
 """
 
 def tuples_from_matrix(matrix):

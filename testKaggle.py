@@ -1,60 +1,44 @@
-from utils import buildMatrix as bm
 from utils import extractCSV as exc
+from utils import extractLIST as exl
+from utils import splitDataset as spl
+from recommenders import RandomRecommender as rr
 import os
 import numpy as np
 import scipy.sparse as sps
-from recommenders import RandomRecommender as rr
-from utils import extractCSV as e
-
-
-def rowSplit (rowString):
-    split = rowString.split(",")
-    split[3] = split[3].replace("\n", "")
-
-    split[0] = int(split[0])
-    split[1] = int(split[1])
-    split[2] = float(split[2])
-
-    result = tuple(split)
-    return result
-
-
-path_dataset = "/data/recommender-system-2019-challenge-polimi/data_train.csv"
 
 dirname = os.path.dirname(__file__)
+data_path = dirname + "/data/recommender-system-2019-challenge-polimi.zip"
+file_path = "data_train.csv"
+dest_path = dirname + "/data/"
 
-row = np.array(exc.open_csv(dirname + path_dataset))
+# path related to the file in which are indicated the users t be recommended
+userTBR_path = dirname + "/data/data_target_users_test.csv"
+
+# extract from dataset lists
+userList, itemList, ratings = exl.extractList(data_path, file_path, dest_path)
+
+# list of users to be recommended
+userList_unique = exc.open_csv(userTBR_path)
 
 saved_tuple = []
 
-# user_id = list(row[:, 0][1:])
-# item_id = list(row[:, 1][1:])
-
+# support to create the the result.csv file
 index = []
 comma = [","]
 appo = []
 
-# user_id_set = set(user_id)
-
-userList, itemList, ratings = zip(*row)
-userList_unique = set(userList)
-
-userList = list(userList[1:])
-itemList = list(itemList[1:])
-ratings = list(ratings[1:])
-
-print(str(len(userList)) +" "+ str(len(itemList)) +" "+ str(len(ratings)))
-
-# ones = list(np.ones(len(user_id)))
-
+# create the URM Matrix
 URM_all = sps.coo_matrix((ratings, (userList, itemList))).tocsr()
+
+
+""" Random Recommender """
 
 randomRecommend = rr.RandomRecommender()
 randomRecommend.fit(URM_all)
 
-
+# create the result.csv
 for i in userList_unique:
-    index = [str(i)+","]
+    index = [str(i) + ","]
     appo.clear()
 
     for i in randomRecommend.recommend(i, at=10):
@@ -62,6 +46,4 @@ for i in userList_unique:
 
     saved_tuple.append(index + appo)
 
-e.write_csv("results/test.csv", ["user_id", "item_list"], saved_tuple)
-
-
+exc.write_csv("test.csv", ["user_id", "item_list"], saved_tuple)

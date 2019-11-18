@@ -100,6 +100,7 @@ if __name__ == '__main__':
     dataFile = zipfile.ZipFile("/Users/Stefano/PycharmProjects/recsys/data/Movielens_10M/movielens_10m.zip")
     URM_path = dataFile.extract("ml-10M100K/ratings.dat", path= "/Users/Stefano/PycharmProjects/recsys/data/Movielens_10M")
 
+    print(type(URM_path))
     URM_file = open(URM_path, 'r')
     # print(type(URM_file))
 

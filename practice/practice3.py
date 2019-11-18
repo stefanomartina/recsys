@@ -1,4 +1,4 @@
-from utils import buildMatrix as bm, stats as st
+from utils import extractLIST as bm, stats as st
 import numpy as np
 import scipy.sparse as sps
 from sklearn import preprocessing
