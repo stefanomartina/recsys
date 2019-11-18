@@ -7,18 +7,11 @@ import scipy.sparse as sps
         - URM_tuple: list of tuples extracted from the dataset (e.g. userList, itemList, ratingList)     
 """
 
-def splitDataset(percentage, URM_tuples):
+def splitDataset(percentage, user_list, item_list, rating_list, URM_all):
 
-    # The zip() function returns a zip object, which is an iterator of tuples where the first item
-    # in each passed iterator is paired together, and then the second item in each passed iterator
-    # are paired together etc.
-    user_list, item_list, rating_list = zip(*URM_tuples)
     user_list = np.array(user_list)
     item_list = np.array(item_list)
     rating_list = np.array(rating_list)
-
-    # Create URM
-    URM_all = sps.coo_matrix((rating_list, (user_list, item_list))).tocsr()
 
     # Count the number of relevant interaction between user and item
     numInteractions = URM_all.nnz

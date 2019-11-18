@@ -2,9 +2,11 @@ from utils import extractCSV as exc
 from utils import extractLIST as exl
 from utils import splitDataset as spl
 from recommenders import RandomRecommender as rr
+from recommenders import TopPopRecommender as tp
+from recommenders import createRecommendation as createRec
 import os
-import numpy as np
 import scipy.sparse as sps
+
 
 dirname = os.path.dirname(__file__)
 data_path = dirname + "/data/recommender-system-2019-challenge-polimi.zip"
@@ -20,30 +22,16 @@ userList, itemList, ratings = exl.extractList(data_path, file_path, dest_path)
 # list of users to be recommended
 userList_unique = exc.open_csv(userTBR_path)
 
-saved_tuple = []
-
-# support to create the the result.csv file
-index = []
-comma = [","]
-appo = []
-
 # create the URM Matrix
 URM_all = sps.coo_matrix((ratings, (userList, itemList))).tocsr()
 
+# split URM in URM_train adn URM_test
+URM_test, URM_train = spl.splitDataset(0.80,userList,itemList,ratings,URM_all)
+
 
 """ Random Recommender """
+createRec.recommandations(rr.RandomRecommender(), userList_unique, URM_train)
 
-randomRecommend = rr.RandomRecommender()
-randomRecommend.fit(URM_all)
+""" TopPop Recommender """
+createRec.recommandations(tp.TopPopRecommender(), userList_unique, URM_train)
 
-# create the result.csv
-for i in userList_unique:
-    index = [str(i) + ","]
-    appo.clear()
-
-    for i in randomRecommend.recommend(i, at=10):
-        appo.append(i)
-
-    saved_tuple.append(index + appo)
-
-exc.write_csv("test.csv", ["user_id", "item_list"], saved_tuple)
