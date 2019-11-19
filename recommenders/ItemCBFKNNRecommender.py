@@ -1,6 +1,6 @@
 import numpy as np
 
-class ItemCBFKNNRecommender(object):
+class ItemCBFKNNRecommender():
     def __init__(self, URM, ICM):
         self.URM = URM
         self.ICM = ICM

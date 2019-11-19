@@ -1,6 +1,6 @@
 from utils import extractCSV as exc
 
-def recommandations(object, userList_unique, URM_train, at=10):
+def recommandations(userList_unique, URM_train, at=10):
     recommender = object
     recommender.fit(URM_train)
 

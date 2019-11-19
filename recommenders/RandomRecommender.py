@@ -1,9 +1,7 @@
 import numpy as np
 
-class RandomRecommender(object):
 
-    def __init__(self):
-        print(self)
+class RandomRecommender():
 
     def fit(self, URM_train):
         self.numItems = URM_train.shape[0]
