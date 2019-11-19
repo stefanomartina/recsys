@@ -1,4 +1,4 @@
-from utils import extractLIST as bm, stats as st
+from utils import extractLIST as bm, statistics as st
 import numpy as np
 import scipy.sparse as sps
 from sklearn import preprocessing
