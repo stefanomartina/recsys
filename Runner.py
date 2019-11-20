@@ -44,6 +44,12 @@ class Runner:
         result = tuple(split)
         return result
 
+    def get_ICM_file(self, file, relative_path="/data/recommender-system-2019-challenge-polimi.zip"):
+        dirname = os.path.dirname(__file__)
+        dataFile = zipfile.ZipFile(dirname + relative_path)
+        ICM_path = dataFile.extract(file, path=dirname + "/data")
+        return open(ICM_path, 'r')
+
     def get_URM_file(self, relative_path="/data/recommender-system-2019-challenge-polimi.zip", file="data_train.csv"):
         dirname = os.path.dirname(__file__)
         dataFile = zipfile.ZipFile(dirname + relative_path)
@@ -54,7 +60,6 @@ class Runner:
         dirname = os.path.dirname(__file__)
         self.userlist_unique = extractCSV.open_csv(dirname+relative_path)
 
-
     def get_URM_tuples(self, URM_file):
         URM_tuples = []
         URM_file.seek(0)
@@ -63,6 +68,15 @@ class Runner:
             if line != "row,col,data\n":
                 URM_tuples.append(self.rowSplit(line))
         return URM_tuples
+
+    def get_ICM_tuples(self, ICM_file):
+        ICM_tuples = []
+        ICM_file.seek(0)
+
+        for line in ICM_file:
+            if line != "row,col,data\n":
+                ICM_tuples.append(self.rowSplit(line))
+        return ICM_tuples
 
     def split_dataset(self):
         URM_shape = np.shape(self.URM_all)
@@ -127,6 +141,19 @@ class Runner:
         self.ratinglist = list(ratingslist)
 
         self.URM_all = sps.coo_matrix((self.ratinglist, (self.userlist, self.itemlist))).tocsr()
+
+    def get_ICM_all(self):
+        ICM_file = self.get_ICM_file()
+        ICM_tuples = self.get_URM_tuples(ICM_file)
+
+        userlist, attributelist, presencelist = zip(*ICM_tuples)
+        # self.userlist_unique = sorted(set(userlist))
+
+        self.userlist = list(userlist)
+        self.attributelist = list(attributelist)
+        self.presencelist = list(presencelist)
+
+        self.URM_all = sps.coo_matrix((self.presencelist, (self.userlist, self.attributelist))).tocsr()
 
     def fit_recommender(self):
         print("Fitting model...")
