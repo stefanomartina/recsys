@@ -1,4 +1,6 @@
 import numpy as np
+from utils.Compute_Similarity_Python import Compute_Similarity_Python
+
 
 class ItemCBFKNNRecommender():
     def __init__(self, URM, ICM):
@@ -12,7 +14,7 @@ class ItemCBFKNNRecommender():
 
     def recommend(self, user_id, at=None, exclude_seen=True):
         user_profile = self.URM[user_id]
-        scores = user_profile.dot(self.W_sparse).toArray().revel()
+        scores = user_profile.dot(self.W_sparse).toarray().ravel()
 
         if exclude_seen:
             scores = self.filter_seen(user_id, scores)
