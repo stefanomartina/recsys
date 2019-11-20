@@ -10,15 +10,27 @@ import os
 import zipfile
 import scipy.sparse as sps
 from utils import extractCSV
+import numpy as np
+
 
 
 class Runner:
     def __init__(self, recommender, name, evaluate=True):
+        print("Evaluate: " + str(evaluate))
         self.recommender = recommender
         self.evaluate = evaluate
         self.userlist_unique = None
-        self.URM_all = None
         self.name = name
+
+        self.URM_all = None
+
+        self.validation_mask = None
+        self.train_mask = None
+
+        self.userlist = None
+        self.itemlist = None
+        self.ratinglist = None
+
         # NOT YET IMPLEMENTED
         self.URM_train = None
         self.URM_validation = None
@@ -49,25 +61,43 @@ class Runner:
                 URM_tuples.append(self.rowSplit(line))
         return URM_tuples
 
+    def split_dataset(self):
+        URM_shape = np.shape(self.URM_all)
+        print("URM_SHAPE: " + str(URM_shape))
+
+        tuple = [False] * URM_shape[0] + [True]
+
+        self.train_mask = []
+        print("Splitting dataset in train and validation...")
+        for i in range(URM_shape[1]):
+            np.random.shuffle(tuple)
+            self.train_mask.append(tuple)
+
+        self.validation_mask = np.logical_not(self.train_mask)
+
+        self.URM_train = sps.coo_matrix((self.ratinglist[self.train_mask], (self.userlist[self.train_mask], self.itemlist[self.train_mask]))).tocsr()
+        self.URM_validation = sps.coo_matrix((self.ratinglist[self.validation_mask], (self.userlist[self.validation_mask], self.itemlist[self.validation_mask]))).tocsr()
+        print("Split completed")
 
     def get_URM_all(self):
         URM_file = self.get_URM_file()
         URM_tuples = self.get_URM_tuples(URM_file)
 
-        userlist, itemlist, ratings = zip(*URM_tuples)
+        userlist, itemlist, ratingslist = zip(*URM_tuples)
         self.userlist_unique = sorted(set(userlist))
 
-        userList = list(userlist)
-        itemList = list(itemlist)
-        ratings = list(ratings)
+        self.userlist = list(userlist)
+        self.itemlist = list(itemlist)
+        self.ratinglist = list(ratingslist)
 
-        self.URM_all = sps.coo_matrix((ratings, (userList, itemList))).tocsr()
+        self.URM_all = sps.coo_matrix((self.ratinglist, (self.userlist, self.itemlist))).tocsr()
 
     def fit_recommender(self):
         print("fitting model")
         if not self.evaluate:
             self.recommender.fit(self.URM_all)
         else:
+            self.split_dataset()
             self.recommender.fit(self.URM_train)
         print("Model fitted")
 
@@ -90,25 +120,25 @@ class Runner:
     def run(self):
         self.get_URM_all()
         self.fit_recommender()
-
-        #i have to call also the hold out function
         self.run_recommendations()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('recommender', choices=['random', 'topk', 'ItemCBF'], help="recomender?")
-    parser.add_argument('--eval', help="would you evaluate?")
+    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF'])
+    parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
 
     recommender = None
+
+
 
     if args.recommender == 'random':
         print("random selected")
         recommender = RandomRecommender.RandomRecommender()
 
-    if args.recommender == 'topk':
-        print("topk selected")
+    if args.recommender == 'top-pop':
+        print("top-pop selected")
         recommender = TopPopRecommender.TopPopRecommender()
 
     if args.recommender == 'ItemCBF':
@@ -116,5 +146,5 @@ if __name__ == '__main__':
         # Dobbiamo passare al costruttore URM e ICM
         # DOMANI!!
         recommender = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
-
-    Runner(recommender, args.recommender, evaluate=False).run()
+    print(args)
+    Runner(recommender, args.recommender, evaluate=args.eval).run()
