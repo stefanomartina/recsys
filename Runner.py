@@ -2,10 +2,7 @@ import argparse
 from recommenders import RandomRecommender
 from recommenders import TopPopRecommender
 from recommenders import ItemCBFKNNRecommender
-from utils import evaluation
-from utils import splitDataset
-from utils import extractCSV
-from utils import extractLIST
+from utils import evaluation as eval
 import os
 import zipfile
 import scipy.sparse as sps
@@ -61,7 +58,7 @@ class Runner:
                 URM_tuples.append(self.rowSplit(line))
         return URM_tuples
 
-    def split_dataset(self):
+    '''def split_dataset(self):
         URM_shape = np.shape(self.URM_all)
         print("URM_SHAPE: " + str(URM_shape))
 
@@ -71,13 +68,42 @@ class Runner:
         print("Splitting dataset in train and validation...")
         for i in range(URM_shape[1]):
             np.random.shuffle(tuple)
-            self.train_mask.append(tuple)
+            self.train_mask += tuple
+
+        self.train_mask = np.array(self.train_mask)
 
         self.validation_mask = np.logical_not(self.train_mask)
 
         self.URM_train = sps.coo_matrix((self.ratinglist[self.train_mask], (self.userlist[self.train_mask], self.itemlist[self.train_mask]))).tocsr()
         self.URM_validation = sps.coo_matrix((self.ratinglist[self.validation_mask], (self.userlist[self.validation_mask], self.itemlist[self.validation_mask]))).tocsr()
         print("Split completed")
+        '''
+
+    def split_dataset(self):
+        print('Using LeaveOneOut')
+        urm = self.URM_all.tocsr()
+        users_len = len(urm.indptr) - 1
+        items_len = max(urm.indices) + 1
+        urm_train = urm.copy()
+        urm_test = np.zeros((users_len, items_len))
+        for user_id in range(users_len):
+            start_pos = urm_train.indptr[user_id]
+            end_pos = urm_train.indptr[user_id + 1]
+            user_profile = urm_train.indices[start_pos:end_pos]
+            if user_profile.size > 0:
+                item_id = np.random.choice(user_profile, 1)
+                urm_train[user_id, item_id] = 0
+                urm_test[user_id, item_id] = 1
+        urm_test = sps.csr_matrix(urm_test, dtype=int, shape=urm.shape)
+        print('URM_TRAIN')
+        print('shape =', urm_train.shape)
+        print('nnz   =', urm_train.nnz)
+        print('URM_TEST')
+        print('shape =', urm_test.shape)
+        print('nnz   =', urm_test.nnz)
+
+        self.URM_train = urm_train
+        self.URM_validation = urm_test
 
     def get_URM_all(self):
         URM_file = self.get_URM_file()
@@ -116,11 +142,13 @@ class Runner:
         print("Printing csv...")
         extractCSV.write_csv(saved_tuple, self.name)
         print("Ended - BYE BYE")
-
+        return saved_tuple
     def run(self):
         self.get_URM_all()
         self.fit_recommender()
         self.run_recommendations()
+        if self.evaluate:
+            eval.evaluate_algorithm(self.URM_train, self.recommender, self.userlist_unique, at=10)
 
 
 if __name__ == '__main__':
@@ -130,8 +158,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     recommender = None
-
-
 
     if args.recommender == 'random':
         print("random selected")
