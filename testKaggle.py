@@ -70,6 +70,7 @@ for i in userList_unique:
     saved_tuple.append(index + appo)
 
 exc.write_csv(saved_tuple, "ItemCBFKNN")
+print("created")
 
 
 
