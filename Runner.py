@@ -155,7 +155,7 @@ class Runner:
             index = [str(user) + ","]
             recommendations.clear()
 
-            for recommendation in self.recommender.recommend(int(user[0])):
+            for recommendation in self.recommender.recommend(user):
                 recommendations.append(recommendation)
             saved_tuple.append(index + recommendations)
         print("Recommendations computed")

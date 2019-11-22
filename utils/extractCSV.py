@@ -17,7 +17,7 @@ def open_csv(file_path):
         next(csv_file)
         csv_read = csv.reader(csv_file, delimiter=',')
         for element in csv_read:
-            row.append(element)
+            row.append(int(element[0]))
     return row
 
 

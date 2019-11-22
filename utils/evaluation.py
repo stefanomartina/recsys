@@ -49,10 +49,10 @@ def evaluate_algorithm(URM_test, recommender_object, userList_unique, at=5):
 
     for user_id in userList_unique:
 
-        relevant_items = URM_test[int(user_id[0])].indices
+        relevant_items = URM_test[user_id].indices
 
         if len(relevant_items) > 0:
-            recommended_items = recommender_object.recommend(int(user_id[0]), at=at)
+            recommended_items = recommender_object.recommend((user_id), at=at)
             num_eval += 1
 
             cumulative_precision += precision(recommended_items, relevant_items)
