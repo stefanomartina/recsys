@@ -20,83 +20,60 @@ class Runner:
         self.userlist_unique = None
         self.name = name
 
-        self.URM_all = None
-
         self.validation_mask = None
         self.train_mask = None
 
-        self.userlist = None
-        self.itemlist = None
-        self.ratinglist = None
+        # URM ----------------
+        self.userlist_urm = None
+        self.itemlist_urm = None
+        self.ratinglist_urm = None
 
-        # NOT YET IMPLEMENTED
+        self.URM_all = None
         self.URM_train = None
         self.URM_test = None
 
+        # ICM ----------------
+        self.userlist_icm = None
+        self.attributelist_icm = None
+        self.presencelist_icm = None
+
+        self.ICM = None
+
     def rowSplit(self, rowString, token=","):
-        split = rowString.split(token)
-        split[2] = split[2].replace("\n", "")
+            split = rowString.split(token)
+            split[2] = split[2].replace("\n", "")
 
-        split[0] = int(split[0])
-        split[1] = int(split[1])
-        split[2] = float(split[2])
+            split[0] = int(split[0])
+            split[1] = int(split[1])
+            split[2] = float(split[2])
 
-        result = tuple(split)
-        return result
+            result = tuple(split)
+            return result
 
-    def get_ICM_file(self, file, relative_path="/data/recommender-system-2019-challenge-polimi.zip"):
+    def get_file(self, file, relative_path="/data/recommender-system-2019-challenge-polimi.zip"):
         dirname = os.path.dirname(__file__)
         dataFile = zipfile.ZipFile(dirname + relative_path)
-        ICM_path = dataFile.extract(file, path=dirname + "/data")
-        return open(ICM_path, 'r')
+        path = dataFile.extract(file, path=dirname + "/data")
+        return open(path, 'r')
 
-    def get_URM_file(self, relative_path="/data/recommender-system-2019-challenge-polimi.zip", file="data_train.csv"):
+    '''def get_URM_file(self, relative_path="/data/recommender-system-2019-challenge-polimi.zip", file="data_train.csv"):
         dirname = os.path.dirname(__file__)
         dataFile = zipfile.ZipFile(dirname + relative_path)
         URM_path = dataFile.extract(file, path=dirname + "/data")
-        return open(URM_path, 'r')
+        return open(URM_path, 'r')'''
 
     def get_target_users(self, relative_path="/data/data_target_users_test.csv"):
         dirname = os.path.dirname(__file__)
         self.userlist_unique = extractCSV.open_csv(dirname+relative_path)
 
-    def get_URM_tuples(self, URM_file):
-        URM_tuples = []
-        URM_file.seek(0)
+    def get_tuples(self, file):
+        tuples = []
+        file.seek(0)
 
-        for line in URM_file:
+        for line in file:
             if line != "row,col,data\n":
-                URM_tuples.append(self.rowSplit(line))
-        return URM_tuples
-
-    def get_ICM_tuples(self, ICM_file):
-        ICM_tuples = []
-        ICM_file.seek(0)
-
-        for line in ICM_file:
-            if line != "row,col,data\n":
-                ICM_tuples.append(self.rowSplit(line))
-        return ICM_tuples
-
-    def split_dataset(self):
-        URM_shape = np.shape(self.URM_all)
-        print("URM_SHAPE: " + str(URM_shape))
-
-        tuple = [False] * URM_shape[0] + [True]
-
-        self.train_mask = []
-        print("Splitting dataset in train and validation...")
-        for i in range(URM_shape[1]):
-            np.random.shuffle(tuple)
-            self.train_mask += tuple
-
-        self.train_mask = np.array(self.train_mask)
-
-        self.validation_mask = np.logical_not(self.train_mask)
-
-        self.URM_train = sps.coo_matrix((self.ratinglist[self.train_mask], (self.userlist[self.train_mask], self.itemlist[self.train_mask]))).tocsr()
-        self.URM_validation = sps.coo_matrix((self.ratinglist[self.validation_mask], (self.userlist[self.validation_mask], self.itemlist[self.validation_mask]))).tocsr()
-        print("Split completed")
+                tuples.append(self.rowSplit(line))
+        return tuples
 
     def split_dataset_loo(self):
         print('Using LeaveOneOut')
@@ -130,38 +107,44 @@ class Runner:
         self.URM_test = urm_test
 
     def get_URM_all(self):
-        URM_file = self.get_URM_file()
-        URM_tuples = self.get_URM_tuples(URM_file)
+        URM_file_name = "data_train.csv"
+        URM_file = self.get_file(URM_file_name)
+        URM_tuples = self.get_tuples(URM_file)
 
         userlist, itemlist, ratingslist = zip(*URM_tuples)
-        # self.userlist_unique = sorted(set(userlist))
 
-        self.userlist = list(userlist)
-        self.itemlist = list(itemlist)
-        self.ratinglist = list(ratingslist)
+        self.userlist_urm = list(userlist)
+        self.itemlist_urm = list(itemlist)
+        self.ratinglist_urm = list(ratingslist)
 
-        self.URM_all = sps.coo_matrix((self.ratinglist, (self.userlist, self.itemlist))).tocsr()
+        self.URM_all = sps.coo_matrix((self.ratinglist_urm, (self.userlist_urm, self.itemlist_urm))).tocsr()
 
     def get_ICM_all(self):
-        ICM_file = self.get_ICM_file()
-        ICM_tuples = self.get_URM_tuples(ICM_file)
+        ICM_file_name = "data_ICM_sub_class.csv"
+        ICM_file = self.get_file(ICM_file_name)
+        ICM_tuples = self.get_tuples(ICM_file)
 
         userlist, attributelist, presencelist = zip(*ICM_tuples)
-        # self.userlist_unique = sorted(set(userlist))
 
-        self.userlist = list(userlist)
-        self.attributelist = list(attributelist)
-        self.presencelist = list(presencelist)
+        self.userlist_icm = list(userlist)
+        self.attributelist_icm = list(attributelist)
+        self.presencelist_icm = list(presencelist)
 
-        self.URM_all = sps.coo_matrix((self.presencelist, (self.userlist, self.attributelist))).tocsr()
+        self.ICM = sps.coo_matrix((self.presencelist_icm, (self.userlist_icm, self.attributelist_icm))).tocsr()
 
-    def fit_recommender(self):
+    def fit_recommender(self, requires_icm):
         print("Fitting model...")
         if not self.evaluate:
-            self.recommender.fit(self.URM_all)
+            if requires_icm:
+                self.recommender.fit(self.URM_all, self.ICM)
+            else:
+                self.recommender.fit(self.URM_all)
         else:
             self.split_dataset_loo()
-            self.recommender.fit(self.URM_train)
+            if requires_icm:
+                self.recommender.fit(self.URM_train, self.ICM)
+            else:
+                self.recommender.fit(self.URM_train)
         print("Model fitted")
 
     def run_recommendations(self):
@@ -181,10 +164,13 @@ class Runner:
         print("Ended - BYE BYE")
         return saved_tuple
 
-    def run(self):
+    def run(self, requires_icm=False):
         self.get_URM_all()
+        if requires_icm:
+            self.get_ICM_all()
+
         self.get_target_users()
-        self.fit_recommender()
+        self.fit_recommender(requires_icm)
         self.run_recommendations()
         if self.evaluate:
             evaluation.evaluate_algorithm(self.URM_test, self.recommender, self.userlist_unique, at=10)
@@ -195,7 +181,7 @@ if __name__ == '__main__':
     parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF'])
     parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
-
+    requires_icm = False
     recommender = None
 
     if args.recommender == 'random':
@@ -208,8 +194,8 @@ if __name__ == '__main__':
 
     if args.recommender == 'ItemCBF':
         print("ItemCBF selected")
-        # Dobbiamo passare al costruttore URM e ICM
-        # DOMANI!!
         recommender = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
+        requires_icm = True
     print(args)
-    Runner(recommender, args.recommender, evaluate=args.eval).run()
+
+    Runner(recommender, args.recommender, evaluate=args.eval).run(requires_icm)

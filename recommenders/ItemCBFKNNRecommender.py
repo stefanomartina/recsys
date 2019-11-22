@@ -3,11 +3,10 @@ from utils.Compute_Similarity_Python import Compute_Similarity_Python
 
 
 class ItemCBFKNNRecommender():
-    def __init__(self, URM, ICM):
+
+    def fit(self, URM, ICM, topK=50, shrink=100, normalize=True, similarity="cosine"):
         self.URM = URM
         self.ICM = ICM
-
-    def fit(self, topK=50, shrink=100, normalize=True, similarity="cosine"):
         similarity_object = Compute_Similarity_Python(self.ICM.T, shrink=shrink, topK=topK, normalize=normalize, similarity=similarity)
 
         self.W_sparse = similarity_object.compute_similarity()
