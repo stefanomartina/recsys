@@ -1,5 +1,6 @@
 import zipfile
 import scipy.sparse as sps
+import operator
 
 
 """
@@ -34,7 +35,7 @@ def rowSplit(rowString, token, n):
     RETURN: formatted list extracted from dataset       
 """
 
-def extractList(data_path, file_name, dest_path):
+def extractList(data_path, file_name, dest_path, sort = False):
     dataFile = zipfile.ZipFile(data_path)
     matrix_path = dataFile.extract(file_name, path=dest_path)
     matrix_file = open(matrix_path, 'r')
@@ -45,6 +46,9 @@ def extractList(data_path, file_name, dest_path):
 
     for line in matrix_file:
         if line != "row,col,data\n": matrix_tuples.append(rowSplit(line, token, 3))
+
+    if sort:
+        matrix_tuples.sort(key = operator.itemgetter(2))
 
     userList, itemList, ratingList = zip(*matrix_tuples)
 
