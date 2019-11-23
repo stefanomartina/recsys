@@ -5,6 +5,8 @@ from sklearn import preprocessing
 from recommenders import RandomRecommender
 from recommenders import TopPopRecommender
 from recommenders import ItemCBFKNNRecommender
+from recommenders import ItemCFKNNRecommender
+from recommenders import SlimBPR
 from utils import evaluation
 import os
 import zipfile
@@ -251,7 +253,7 @@ class Runner:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF'])
+    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'ItemCF', 'SlimBPR'])
     parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
     requires_icm = False
@@ -269,6 +271,14 @@ if __name__ == '__main__':
         print("ItemCBF selected")
         recommender = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
         requires_icm = True
+
+    if args.recommender == 'ItemCF':
+        print("ItemCF selected")
+        recommender = ItemCFKNNRecommender.ItemCFKNNRecommender()
+
+    if args.recommender == 'SlimBPR':
+        print("SlimBPR selected")
+        recommender = SlimBPR.SlimBPR_Recommender()
     print(args)
 
     Runner(recommender, args.recommender, evaluate=args.eval).run(requires_icm)
