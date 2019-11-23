@@ -93,36 +93,3 @@ def split_dataset_loo(URM_all ):
     urm_train.eliminate_zeros()
 
     return urm_test, urm_train
-
-
-
-URM_file_name = "data_train.csv"
-URM_file = get_file(URM_file_name)
-URM_tuples = get_tuples(URM_file)
-
-userlist, itemlist, ratingslist = zip(*URM_tuples)
-
-userlist_urm = list(userlist)
-itemlist_urm = list(itemlist)
-ratinglist_urm = list(ratingslist)
-
-URM_all = sps.coo_matrix((ratinglist_urm, (userlist_urm, itemlist_urm))).tocsr()
-recommender = ItemCFKNNRecommender()
-
-URM_test, URM_train = split_dataset_loo(URM_all)
-
-dirname = os.path.dirname(__file__)
-userlist_unique = extractCSV.open_csv(dirname+"/../data/data_target_users_test.csv")
-
-# evaluation.evaluate_algorithm(URM_test, recommender, userlist_unique, at=10)
-
-topKs = [1, 10, 25, 50, 75, 100]
-shrinks = [10, 25, 50, 100, 250]
-
-for topk in topKs:
-    for shrink in shrinks:
-        print("------------------------------")
-        print("CF -TOPK: " + str(topk) +" SHRINK: "+ str(shrink) + "---------")
-        recommender.fit(URM_train, topK=topk, shrink=shrink)
-        evaluation.evaluate_algorithm(URM_test, recommender, userlist_unique)
-    print("------------------------------")
