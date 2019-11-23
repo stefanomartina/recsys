@@ -1,6 +1,6 @@
 import argparse
 
-#from sklearn import preprocessing
+from sklearn import preprocessing
 
 from recommenders import RandomRecommender
 from recommenders import TopPopRecommender
@@ -190,7 +190,7 @@ class Runner:
         n_asset = len(set(self.assetlist_icm_asset))
         ICM_asset_shape = (n_asset, n_items_asset)
 
-        #leto = preprocessing.LabelEncoder()
+        leto = preprocessing.LabelEncoder()
         leto.fit(self.assetlist_icm_asset)
 
         self.assetlist_icm_asset = leto.transform(self.assetlist_icm_asset)
