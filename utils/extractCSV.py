@@ -27,9 +27,9 @@ def open_csv(file_path):
 """
 
 def write_csv(rows, name, fields=["user_id", "item_list"]):
-    timestr = time.strftime("%Y-%m-%d_%H:%M:%S")
+    timestr = time.strftime("%Y-%m-%d_%H.%M.%S")
     #dirname = os.path.dirname(__file__)
-    file_path = "results/test-" + name + "-" + timestr+".csv"
+    file_path = "results/" + name + "-" + timestr+".csv"
 
     with open(file_path, 'w') as csv_file:
         csv_write_head = csv.writer(csv_file, delimiter=',')
