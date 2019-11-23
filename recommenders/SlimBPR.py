@@ -60,7 +60,7 @@ class SlimBPR_Recommender(object):
 
                 start_time_batch = time.time()
 
-    def fit(self, URM, learning_rate=0.01, epochs=100):
+    def fit(self, URM, learning_rate=0.01, epochs=75):
         self.URM = URM
         self.learning_rate = learning_rate
         self.epochs = epochs
