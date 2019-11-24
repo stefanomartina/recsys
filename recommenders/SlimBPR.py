@@ -1,95 +1,114 @@
 import time
 import numpy as np
 from utils import similarityMatrixTopK as sim
-
+import sys
+from scipy.special import expit
 
 class SlimBPR_Recommender(object):
     """ SLIM_BPR recommender with cosine similarity and no shrinkage"""
 
-    def sampleTriplet(self):
-        user_id = np.random.choice(self.eligibleUsers)
+    def sampleUser(self):
+        while (True):
 
-        userSeenItems = self.URM_mask[user_id, :].indices
-        pos_item_id = np.random.choice(userSeenItems)
-        neg_item_id = 0
-        negItemSelected = False
+            user_id = np.random.randint(0, self.n_users)
+            numSeenItems = self.URM_train[user_id].nnz
 
-        while not negItemSelected:
+            if (numSeenItems > 0 and numSeenItems < self.n_items):
+                return user_id
+
+    def sampleItemPair(self, user_id):
+        userSeenItems = self.URM_train[user_id].indices
+
+        pos_item_id = userSeenItems[np.random.randint(0, len(userSeenItems))]
+
+        while (True):
+
             neg_item_id = np.random.randint(0, self.n_items)
 
-            if neg_item_id not in userSeenItems:
-                negItemSelected = True
+            if (neg_item_id not in userSeenItems):
+                return pos_item_id, neg_item_id
+
+    def sampleTriple(self):
+        user_id = self.sampleUser()
+        pos_item_id, neg_item_id = self.sampleItemPair(user_id)
 
         return user_id, pos_item_id, neg_item_id
 
+    def updateFactors(self, user_id, pos_item_id, neg_item_id):
+
+        # Calculate current predicted score
+        userSeenItems = self.URM_train[user_id].indices
+        prediction = 0
+
+        for userSeenItem in userSeenItems:
+            prediction += self.S[pos_item_id, userSeenItem] - self.S[neg_item_id, userSeenItem]
+
+        x_uij = prediction
+        logisticFunction = expit(-x_uij)
+
+        # Update similarities for all items except those sampled
+        for userSeenItem in userSeenItems:
+
+            # For positive item is PLUS logistic minus lambda*S
+            if (pos_item_id != userSeenItem):
+                update = logisticFunction - self.lambda_i * self.S[pos_item_id, userSeenItem]
+                self.S[pos_item_id, userSeenItem] += self.learning_rate * update
+
+            # For positive item is MINUS logistic minus lambda*S
+            if (neg_item_id != userSeenItem):
+                update = - logisticFunction - self.lambda_j * self.S[neg_item_id, userSeenItem]
+                self.S[neg_item_id, userSeenItem] += self.learning_rate * update
+
     def epochIteration(self):
-        learning_rate = 1e-3
 
-        numPositiveIteractions = int(self.URM_mask.nnz * 0.01)
+        # Get number of available interactions
+        numPositiveIteractions = self.URM_train.nnz
+        start_time = time.time()
 
-        start_time_epoch = time.time()
-        start_time_batch = time.time()
+        # Uniform user sampling without replacement
+        for numSample in range(numPositiveIteractions):
 
-        for num_sample in range(numPositiveIteractions):
-            user_id, positive_item_id, negative_item_id = self.sampleTriplet()
+            user_id, pos_item_id, neg_item_id = self.sampleTriple()
+            self.updateFactors(user_id, pos_item_id, neg_item_id)
 
-            userSeenItems = self.URM_mask[user_id, :].indices
+            if (numSample % 5000 == 0):
+                print("Processed {} ( {:.2f}% ) in {:.4f} seconds".format(numSample,
+                                                                          100.0 * float(
+                                                                              numSample) / numPositiveIteractions,
+                                                                          time.time() - start_time))
 
-            # Prediction
-            x_i = self.similarity_matrix[positive_item_id, userSeenItems].sum()
-            x_j = self.similarity_matrix[negative_item_id, userSeenItems].sum()
+                sys.stderr.flush()
 
-            # Gradient
-            x_ij = x_i - x_j
+                start_time = time.time()
 
-            gradient = 1 / (1 + np.exp(x_ij))
-
-            # Update
-            self.similarity_matrix[positive_item_id, userSeenItems] += learning_rate * gradient
-            self.similarity_matrix[positive_item_id, positive_item_id] = 0
-
-            self.similarity_matrix[negative_item_id, userSeenItems] -= learning_rate * gradient
-            self.similarity_matrix[negative_item_id, negative_item_id] = 0
-
-            if time.time() - start_time_batch >= 30 or num_sample == numPositiveIteractions - 1:
-                print("Processed {} ( {:.2f}% ) in {:.2f} seconds. Sample per second: {:.0f}".format(
-                    num_sample,
-                    100.0 * float(num_sample) / numPositiveIteractions,
-                    time.time() - start_time_batch,
-                    float(num_sample) / (time.time() - start_time_epoch)))
-
-                start_time_batch = time.time()
-
-    def fit(self, URM, learning_rate=0.01, epochs=75):
-        self.URM = URM
+    def fit(self, URM, epochs=15, lambda_i = 0.0025, lambda_j = 0.00025, learning_rate = 0.05):
+        self.URM_train = URM
+        self.n_users = URM.shape[0]
+        self.n_items = URM.shape[1]
+        self.lambda_i = lambda_i
+        self.lambda_j = lambda_j
         self.learning_rate = learning_rate
-        self.epochs = epochs
+        self.normalize = False
+        self.sparse_weights = False
+        self.S = np.random.random((self.n_items, self.n_items)).astype('float32')
+        self.S[np.arange(self.n_items), np.arange(self.n_items)] = 0
 
-        self.URM_mask = self.URM.copy()
-        #  self.URM_mask.data[self.URM_mask.data <= 3] = 0
-        self.URM_mask.eliminate_zeros()
+        start_time_train = time.time()
 
-        self.n_users = self.URM_mask.shape[0]
-        self.n_items = self.URM_mask.shape[1]
+        for currentEpoch in range(epochs):
+            start_time_epoch = time.time()
 
-        self.similarity_matrix = np.zeros((self.n_items, self.n_items))
-
-        # Extract users having at least one interaction to choose from
-        self.eligibleUsers = []
-
-        for user_id in range(self.n_users):
-
-            start_pos = self.URM_mask.indptr[user_id]
-            end_pos = self.URM_mask.indptr[user_id + 1]
-
-            if len(self.URM_mask.indices[start_pos:end_pos]) > 0:
-                self.eligibleUsers.append(user_id)
-
-        for numEpoch in range(self.epochs):
             self.epochIteration()
+            print("Epoch {} of {} complete in {:.2f} minutes".format(currentEpoch + 1, epochs,
+                                                                     float(time.time() - start_time_epoch) / 60))
 
-        self.similarity_matrix = self.similarity_matrix.T
-        self.similarity_matrix = sim.similarityMatrixTopK(self.similarity_matrix, k=100)
+        print("Train completed in {:.2f} minutes".format(float(time.time() - start_time_train) / 60))
+
+        # The similarity matrix is learnt row-wise
+        # To be used in the product URM*S must be transposed to be column-wise
+        self.W = self.S.T
+
+        del self.S
 
     def recommend(self, user_id, at=10, exclude_seen=True):
         # compute the scores using the dot product
