@@ -1,7 +1,8 @@
 import argparse
 
 # from sklearn import preprocessing
-
+import time
+import csv
 from recommenders import RandomRecommender
 from recommenders import TopPopRecommender
 from recommenders import ItemCBFKNNRecommender
@@ -65,6 +66,16 @@ class Runner:
         result = tuple(split)
 
         return result
+
+    def write_csv(self, rows, name, fields=["user_id", "item_list"]):
+        timestr = time.strftime("%Y-%m-%d_%H.%M.%S")
+        file_path = "results/" + name + "-" + timestr + ".csv"
+
+        with open(file_path, 'w') as csv_file:
+            csv_write_head = csv.writer(csv_file, delimiter=',')
+            csv_write_head.writerow(fields)
+            csv_write_content = csv.writer(csv_file, delimiter=' ')
+            csv_write_content.writerows(rows)
 
     def get_file(self, file):
         return open("data/" + file)
@@ -236,7 +247,7 @@ class Runner:
             saved_tuple.append(index + recommendations)
         print("Recommendations computed")
         print("Printing csv...")
-        extractCSV.write_csv(saved_tuple, self.name)
+        self.write_csv(saved_tuple, self.name)
         print("Ended")
         return saved_tuple
 
