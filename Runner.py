@@ -65,11 +65,14 @@ class Runner:
             result = tuple(split)
             return result
 
-    def get_file(self, file, relative_path="/data/recommender-system-2019-challenge-polimi.zip"):
+    '''def get_file(self, file, relative_path="/data/recommender-system-2019-challenge-polimi.zip"):
         dirname = os.path.dirname(__file__)
         dataFile = zipfile.ZipFile(dirname + relative_path)
         path = dataFile.extract(file, path=dirname + "/data")
-        return open(path, 'r')
+        return open(path, 'r')'''
+
+    def get_file(self, file, relative_path="/data/recommender-system-2019-challenge-polimi.zip"):
+        return open("data/"+file)
 
 
     def get_target_users(self, relative_path="/data/data_target_users_test.csv"):
