@@ -1,6 +1,6 @@
 import argparse
 
-from sklearn import preprocessing
+# from sklearn import preprocessing
 
 from recommenders import RandomRecommender
 from recommenders import TopPopRecommender
@@ -162,7 +162,7 @@ class Runner:
 
         self.ICM = sps.coo_matrix((self.presencelist_icm, (self.userlist_icm, self.attributelist_icm))).tocsr()
 
-    def get_ICM_merged(self):
+    '''def get_ICM_merged(self):
 
         # create ICM ----------------
         self.get_ICM_all()
@@ -206,7 +206,7 @@ class Runner:
         self.ICM_price.sort_indices()
 
         # Merging matrix
-        self.ICM_merged = sps.hstack([sps.hstack([self.ICM, self.ICM_price]), self.ICM_asset])
+        self.ICM_merged = sps.hstack([sps.hstack([self.ICM, self.ICM_price]), self.ICM_asset])'''
 
     def fit_recommender(self, requires_icm):
         print("Fitting model...")
