@@ -12,7 +12,6 @@ from utils import evaluation
 import os
 import zipfile
 import scipy.sparse as sps
-from utils import extractCSV
 import numpy as np
 import operator
 

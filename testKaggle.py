@@ -3,7 +3,6 @@ import zipfile
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
-from utils import extractCSV as exc
 from utils import extractLIST as exl
 from utils import splitDataset as spl
 import Runner as r
