@@ -22,7 +22,7 @@ class Runner:
         print("Evaluate: " + str(evaluate))
         self.recommender = recommender
         self.evaluate = evaluate
-        self.userlist_unique = None
+        self.userlist_unique = []
         self.name = name
 
         self.validation_mask = None
@@ -55,37 +55,35 @@ class Runner:
 
 
     def rowSplit(self, rowString, token=","):
-            split = rowString.split(token)
-            split[2] = split[2].replace("\n", "")
+        split = rowString.split(token)
+        split[2] = split[2].replace("\n", "")
 
-            split[0] = int(split[0])
-            split[1] = int(split[1])
-            split[2] = float(split[2])
+        split[0] = int(split[0])
+        split[1] = int(split[1])
+        split[2] = float(split[2])
 
-            result = tuple(split)
-            return result
+        result = tuple(split)
 
-    '''def get_file(self, file, relative_path="/data/recommender-system-2019-challenge-polimi.zip"):
-        dirname = os.path.dirname(__file__)
-        dataFile = zipfile.ZipFile(dirname + relative_path)
-        path = dataFile.extract(file, path=dirname + "/data")
-        return open(path, 'r')'''
+        return result
 
-    def get_file(self, file, relative_path="/data/recommender-system-2019-challenge-polimi.zip"):
-        return open("data/"+file)
+    def get_file(self, file):
+        return open("data/" + file)
 
+    def get_target_users(self):
+        file = self.get_file("data_target_users_test.csv")
+        self.get_tuples(file, target=True)
 
-    def get_target_users(self, relative_path="/data/data_target_users_test.csv"):
-        dirname = os.path.dirname(__file__)
-        self.userlist_unique = extractCSV.open_csv(dirname+relative_path)
-
-    def get_tuples(self, file, sort = False):
+    def get_tuples(self, file, target=False, sort=False):
         tuples = []
         file.seek(0)
-
+        next(file)
         for line in file:
-            if line != "row,col,data\n":
+            if not target:
                 tuples.append(self.rowSplit(line))
+            if target:
+
+                line = line.replace("\n","")
+                self.userlist_unique.append(int(line))
         if sort:
             tuples.sort(key=operator.itemgetter(2))
         return tuples
@@ -239,7 +237,7 @@ class Runner:
         print("Recommendations computed")
         print("Printing csv...")
         extractCSV.write_csv(saved_tuple, self.name)
-        print("Ended - BYE BYE")
+        print("Ended")
         return saved_tuple
 
     def run(self, requires_icm=False):
