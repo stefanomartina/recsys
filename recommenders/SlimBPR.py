@@ -81,7 +81,7 @@ class SlimBPR_Recommender(object):
 
                 start_time = time.time()
 
-    def fit(self, URM, epochs=15, lambda_i = 0.0025, lambda_j = 0.00025, learning_rate = 0.05):
+    def fit(self, URM, epochs=16, lambda_i = 0.0025, lambda_j = 0.00025, learning_rate = 0.05):
         self.URM_train = URM
         self.n_users = URM.shape[0]
         self.n_items = URM.shape[1]
