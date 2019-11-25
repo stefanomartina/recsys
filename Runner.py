@@ -1,20 +1,19 @@
-import argparse
-
-# from sklearn import preprocessing
-import time
-import csv
 from recommenders import RandomRecommender
 from recommenders import TopPopRecommender
 from recommenders import ItemCBFKNNRecommender
 from recommenders import ItemCFKNNRecommender
 from recommenders import SlimBPR
+from recommenders.MatrixFactorizationRecommenders import BaseMatrixFactorizationRecommender, PureSVDRecommender
+from recommenders.MatrixFactorizationRecommenders.Cython import MatrixFactorization_Cython
+from recommenders.MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython
 from utils import evaluation
-import os
-import zipfile
+from Base import Incremental_Training_Early_Stopping
 import scipy.sparse as sps
 import numpy as np
 import operator
-
+import time
+import csv
+import argparse
 
 
 class Runner:
@@ -53,7 +52,6 @@ class Runner:
         self.itemlist_icm_price = None
         self.pricelist_icm_price = None
 
-
     def rowSplit(self, rowString, token=","):
         split = rowString.split(token)
         split[2] = split[2].replace("\n", "")
@@ -91,8 +89,7 @@ class Runner:
             if not target:
                 tuples.append(self.rowSplit(line))
             if target:
-
-                line = line.replace("\n","")
+                line = line.replace("\n", "")
                 self.userlist_unique.append(int(line))
         if sort:
             tuples.sort(key=operator.itemgetter(2))
@@ -168,7 +165,6 @@ class Runner:
         self.userlist_icm = list(userlist)
         self.attributelist_icm = list(attributelist)
         self.presencelist_icm = list(presencelist)
-
 
         self.ICM = sps.coo_matrix((self.presencelist_icm, (self.userlist_icm, self.attributelist_icm))).tocsr()
 
@@ -262,9 +258,10 @@ class Runner:
         if self.evaluate:
             evaluation.evaluate_algorithm(self.URM_test, self.recommender, self.userlist_unique, at=10)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'ItemCF', 'SlimBPR'])
+    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'ItemCF', 'SlimBPR', 'PureSVD', 'MF_BPR_Cython'])
     parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
     requires_icm = False
@@ -290,6 +287,18 @@ if __name__ == '__main__':
     if args.recommender == 'SlimBPR':
         print("SlimBPR selected")
         recommender = SlimBPR.SlimBPR_Recommender()
+
+    if args.recommender == 'PureSVD':
+        print("PureSVD selected")
+        recommender = PureSVDRecommender.PureSVDRecommender()
+
+    if args.recommender == 'MF_BPR_Cython':
+        print("MF_BPR_Cython selected")
+        baseRecommender = BaseMatrixFactorizationRecommender.BaseMatrixFactorizationRecommender()
+        earlyStopping = Incremental_Training_Early_Stopping.Incremental_Training_Early_Stopping()
+        baseCythonRecommender = MatrixFactorization_Cython._MatrixFactorization_Cython()
+        recommender = MatrixFactorization_BPR_Cython()
+
     print(args)
 
     Runner(recommender, args.recommender, evaluate=args.eval).run(requires_icm)
