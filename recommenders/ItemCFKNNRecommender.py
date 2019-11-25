@@ -1,20 +1,30 @@
 from utils.Compute_Similarity_Python import Compute_Similarity_Python
 import numpy as np
+from recommenders import TopPopRecommender
 
 class ItemCFKNNRecommender(object):
-
-    def fit(self, URM, topK=10, shrink=50, normalize=True, similarity="tanimoto"):
+    # tversky
+    # tanimoto
+    def fit(self, URM, topK=10, shrink=50, normalize=True, similarity="tversky", threshold=0.3):
         self.URM = URM
         similarity_object = Compute_Similarity_Python(self.URM, shrink=shrink,
                                                       topK=topK, normalize=normalize,
                                                       similarity=similarity)
 
         self.W_sparse = similarity_object.compute_similarity()
+        self.TP = TopPopRecommender.TopPopRecommender()
+        self.TP.fit(self.URM)
+        self.threshold = threshold
 
     def recommend(self, user_id, at=10, exclude_seen=True):
         # compute the scores using the dot product
         user_profile = self.URM[user_id]
         scores = user_profile.dot(self.W_sparse).toarray().ravel()
+        summed_score = scores.sum(axis=0)
+
+        # "Hybrid version with TOP-POP"
+        if (summed_score <= self.threshold):
+            return self.TP.recommend(user_id)
 
         if exclude_seen:
             scores = self.filter_seen(user_id, scores)

@@ -6,7 +6,7 @@ class TopPopRecommender():
         itemPopularity = (URM_train>0).sum(axis=0)
         itemPopularity = np.array(itemPopularity).squeeze()
         self.popularItems = np.argsort(itemPopularity)
-        self.popularItems = np.flip(self.popularItems, axis = 0)
+        self.popularItems = np.flip(self.popularItems, axis=0)
 
     def recommend(self, user_id, at=10, remove_seen=True):
         if remove_seen:
