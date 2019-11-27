@@ -37,7 +37,6 @@ class ItemKNNCBFRecommender(BaseItemSimilarityMatrixRecommender):
         if feature_weighting not in self.FEATURE_WEIGHTING_VALUES:
             raise ValueError("Value for 'feature_weighting' not recognized. Acceptable values are {}, provided was '{}'".format(self.FEATURE_WEIGHTING_VALUES, feature_weighting))
 
-
         if feature_weighting == "BM25":
             self.ICM_train = self.ICM_train.astype(np.float32)
             self.ICM_train = okapi_BM_25(self.ICM_train)

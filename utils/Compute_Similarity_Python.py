@@ -1,15 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on 23/10/17
+""" Created on 23/10/17     @author: Maurizio Ferrari Dacrema """
 
-@author: Maurizio Ferrari Dacrema
-"""
-
+import sys
+import time
 import numpy as np
-import time, sys
 import scipy.sparse as sps
-
 
 
 def check_matrix(X, format='csc', dtype=np.float32):
@@ -30,12 +24,9 @@ def check_matrix(X, format='csc', dtype=np.float32):
     else:
         return X.astype(dtype)
 
-
-
 class Compute_Similarity_Python:
 
-
-    def __init__(self, dataMatrix, topK=100, shrink = 0, normalize = True,
+    def __init__(self, dataMatrix, topK=100, shrink = 50, normalize = True,
                  asymmetric_alpha = 0.5, tversky_alpha = 1.0, tversky_beta = 1.0,
                  similarity = "cosine", row_weights = None):
         """
@@ -60,8 +51,8 @@ class Compute_Similarity_Python:
         """
         """
         Asymmetric Cosine as described in: 
-        Aiolli, F. (2013, October). Efficient top-n recommendation for very large scale binary rated datasets. In Proceedings of the 7th ACM conference on Recommender systems (pp. 273-280). ACM.
-        
+        Aiolli, F. (2013, October). Efficient top-n recommendation for very large scale binary rated datasets. In 
+        Proceedings of the 7th ACM conference on Recommender systems (pp. 273-280). ACM.
         """
 
         super(Compute_Similarity_Python, self).__init__()
@@ -110,8 +101,6 @@ class Compute_Similarity_Python:
                              " Allowed values are: 'cosine', 'pearson', 'adjusted', 'asymmetric', 'jaccard', 'tanimoto',"
                              "dice, tversky."
                              " Passed value was '{}'".format(similarity))
-
-
 
         if self.TopK == 0:
             self.W_dense = np.zeros((self.n_columns, self.n_columns))
@@ -170,9 +159,6 @@ class Compute_Similarity_Python:
 
             start_row += blockSize
 
-
-
-
     def applyPearsonCorrelation(self):
         """
         Remove from every data point the average for the corresponding column
@@ -207,7 +193,6 @@ class Compute_Similarity_Python:
 
             start_col += blockSize
 
-
     def useOnlyBooleanInteractions(self):
 
         # Split in blocks to avoid duplicating the whole data structure
@@ -224,9 +209,6 @@ class Compute_Similarity_Python:
             self.dataMatrix.data[start_pos:end_pos] = np.ones(end_pos-start_pos)
 
             start_pos += blockSize
-
-
-
 
     def compute_similarity(self, start_col=None, end_col=None, block_size = 100):
         """
@@ -245,7 +227,6 @@ class Compute_Similarity_Python:
         start_time_print_batch = start_time
         processedItems = 0
 
-
         if self.adjusted_cosine:
             self.applyAdjustedCosine()
 
@@ -259,7 +240,6 @@ class Compute_Similarity_Python:
         # We explore the matrix column-wise
         self.dataMatrix = check_matrix(self.dataMatrix, 'csc')
 
-
         # Compute sum of squared values to be used in normalization
         sumOfSquared = np.array(self.dataMatrix.power(2).sum(axis=0)).ravel()
 
@@ -270,7 +250,6 @@ class Compute_Similarity_Python:
         if self.asymmetric_cosine:
             sumOfSquared_to_1_minus_alpha = sumOfSquared.power(2 * (1 - self.asymmetric_alpha))
             sumOfSquared_to_alpha = sumOfSquared.power(2 * self.asymmetric_alpha)
-
 
         self.dataMatrix = check_matrix(self.dataMatrix, 'csc')
 
@@ -284,10 +263,7 @@ class Compute_Similarity_Python:
             end_col_local = end_col
 
 
-
-
         start_col_block = start_col_local
-
         this_block_size = 0
 
         # Compute all similarities for each item using vectorization
@@ -298,7 +274,6 @@ class Compute_Similarity_Python:
 
             end_col_block = min(start_col_block + block_size, end_col_local)
             this_block_size = end_col_block-start_col_block
-
 
             if time.time() - start_time_print_batch >= 30 or end_col_block==end_col_local:
                 columnPerSec = processedItems / (time.time() - start_time)
@@ -392,12 +367,7 @@ class Compute_Similarity_Python:
                     rows.extend(top_k_idx[notZerosMask])
                     cols.extend(np.ones(numNotZeros) * columnIndex)
 
-
-
-
-
             start_col_block += block_size
-
         # End while on columns
 
 
@@ -405,10 +375,8 @@ class Compute_Similarity_Python:
             return self.W_dense
 
         else:
-
             W_sparse = sps.csr_matrix((values, (rows, cols)),
                                       shape=(self.n_columns, self.n_columns),
                                       dtype=np.float32)
-
 
             return W_sparse

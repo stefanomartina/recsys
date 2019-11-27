@@ -12,12 +12,10 @@ from Base.BaseSimilarityMatrixRecommender import BaseItemSimilarityMatrixRecomme
 
 
 class ItemKNNSimilarityHybridRecommender(BaseItemSimilarityMatrixRecommender):
-    """ ItemKNNSimilarityHybridRecommender
-    Hybrid of two similarities S = S1*alpha + S2*(1-alpha)
-
-    """
-
+    """ Hybrid of two similarities S = S1*alpha + S2*(1-alpha) """
     RECOMMENDER_NAME = "ItemKNNSimilarityHybridRecommender"
+
+
 
 
     def __init__(self, URM_train, Similarity_1, Similarity_2, verbose = True):
@@ -34,6 +32,11 @@ class ItemKNNSimilarityHybridRecommender(BaseItemSimilarityMatrixRecommender):
 
 
     def fit(self, topK=100, alpha = 0.5):
+
+
+
+
+
 
         self.topK = topK
         self.alpha = alpha

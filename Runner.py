@@ -1,11 +1,13 @@
+from sklearn import preprocessing
+
 from recommenders import RandomRecommender
 from recommenders import TopPopRecommender
 from recommenders import ItemCBFKNNRecommender
 from recommenders import ItemCFKNNRecommender
 from recommenders import SlimBPR
-from recommenders.MatrixFactorizationRecommenders import BaseMatrixFactorizationRecommender, PureSVDRecommender
-from recommenders.MatrixFactorizationRecommenders.Cython import MatrixFactorization_Cython
-from recommenders.MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython
+from MatrixFactorizationRecommenders import BaseMatrixFactorizationRecommender, PureSVDRecommender
+from MatrixFactorizationRecommenders.Cython import MatrixFactorization_Cython
+from MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython
 from utils import evaluation
 from Base import Incremental_Training_Early_Stopping
 import scipy.sparse as sps
@@ -15,8 +17,8 @@ import time
 import csv
 import argparse
 
-
 class Runner:
+
     def __init__(self, recommender, name, evaluate=True):
         print("Evaluate: " + str(evaluate))
         self.recommender = recommender
@@ -36,21 +38,21 @@ class Runner:
         self.URM_train = None
         self.URM_test = None
 
-        self.ICM = None
-
         # ICM ----------------
-        self.userlist_icm = None
+        self.ICM = None
+        self.itemlist_icm = None
         self.attributelist_icm = None
         self.presencelist_icm = None
 
-        self.ICM_merged = None
         # ICM_asset ----------
+        self.ICM_asset = None
         self.itemlist_icm_asset = None
-        self.assetlist_icm_asset = None
+        self.assetlist_icm = None
 
         # ICM_price ----------
+        self.ICM_price = None
         self.itemlist_icm_price = None
-        self.pricelist_icm_price = None
+        self.pricelist_icm = None
 
     def rowSplit(self, rowString, token=","):
         split = rowString.split(token)
@@ -103,17 +105,25 @@ class Runner:
         self.ratinglist_urm = list(ratingslist)
 
     def get_list_ICM(self, tuples, source):
+
+        if source == "sub_class":
+            itemlist, attributelist, presencelist = zip(*tuples)
+
+            self.itemlist_icm = list(itemlist)
+            self.attributelist_icm = list(attributelist)
+            self.presencelist_icm = list(presencelist)
+
         if source == "asset":
             itemlist, uselesslist, assetlist = zip(*tuples)
 
             self.itemlist_icm_asset = list(itemlist)
-            self.assetlist_icm_asset = list(assetlist)
+            self.assetlist_icm = list(assetlist)
 
         if source == "price":
             itemlist, uselesslist, pricelist = zip(*tuples)
 
             self.itemlist_icm_price = list(itemlist)
-            self.pricelist_icm_price = list(pricelist)
+            self.pricelist_icm = list(pricelist)
 
     def split_dataset_loo(self):
         print('Using LeaveOneOut')
@@ -146,7 +156,7 @@ class Runner:
         self.URM_train = urm_train
         self.URM_test = urm_test
 
-    def get_URM_all(self):
+    def get_URM(self):
         URM_file_name = "data_train.csv"
         URM_file = self.get_file(URM_file_name)
         URM_tuples = self.get_tuples(URM_file)
@@ -155,76 +165,65 @@ class Runner:
 
         self.URM_all = sps.coo_matrix((self.ratinglist_urm, (self.userlist_urm, self.itemlist_urm))).tocsr()
 
-    def get_ICM_all(self):
-        ICM_file_name = "data_ICM_sub_class.csv"
-        ICM_file = self.get_file(ICM_file_name)
-        ICM_tuples = self.get_tuples(ICM_file)
+    def get_ICM(self, ICM_sub_class = True, ICM_asset = False, ICM_price = False):
 
-        userlist, attributelist, presencelist = zip(*ICM_tuples)
+        # creation of ICM using only data_ICM_sub_class
+        if ICM_sub_class:
+            ICM_file_name = "data_ICM_sub_class.csv"
 
-        self.userlist_icm = list(userlist)
-        self.attributelist_icm = list(attributelist)
-        self.presencelist_icm = list(presencelist)
+            self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False), "sub_class")
+            self.ICM = sps.coo_matrix((self.presencelist_icm, (self.itemlist_icm, self.attributelist_icm))).tocsr()
 
-        self.ICM = sps.coo_matrix((self.presencelist_icm, (self.userlist_icm, self.attributelist_icm))).tocsr()
+        elif ICM_price:
+            ICM_file_name = "data_ICM_price.csv"
+            self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False, True), "price")
 
-    '''def get_ICM_merged(self):
+            # shaping
+            n_items_price = max(self.itemlist_icm_price) + 1
+            n_price = len(set(self.pricelist_icm))
+            ICM_price_shape = (n_items_price, n_price)
 
-        # create ICM ----------------
-        self.get_ICM_all()
+            # label
+            le = preprocessing.LabelEncoder()
+            le.fit(self.pricelist_icm)
+            self.pricelist_icm = le.transform(self.pricelist_icm)
 
-        # create UCM_price ----------
-        file_path_icm_price = "data_ICM_price.csv"
-        self.get_list_ICM(self.get_tuples(self.get_file(file_path_icm_price), True), "price")
+            ones = np.ones(len(self.itemlist_icm_price))
+            self.ICM_price = (sps.coo_matrix((ones, (self.itemlist_icm_price, self.pricelist_icm)),
+                                             shape=ICM_price_shape)).tocsr()
 
-        n_items_price = max(self.itemlist_icm_price) + 1
-        n_price = len(set(self.pricelist_icm_price))
-        ICM_price_shape = (n_price, n_items_price)
+        elif ICM_asset:
+            ICM_file_name = "data_ICM_asset.csv"
+            self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False, True), "asset")
 
-        le = preprocessing.LabelEncoder()
-        le.fit(self.pricelist_icm_price)
+            # shaping
+            n_items_asset = max(self.itemlist_icm_asset) + 1
+            n_asset = len(set(self.assetlist_icm))
+            ICM_asset_shape = (n_items_asset, n_asset)
 
-        self.pricelist_icm_price = le.transform(self.pricelist_icm_price)
+            # label
+            le = preprocessing.LabelEncoder()
+            le.fit(self.assetlist_icm)
+            self.assetlist_icm = le.transform(self.assetlist_icm)
 
-        ones = np.ones(len(self.itemlist_icm_price))
-        self.ICM_price = (sps.coo_matrix((ones, (self.pricelist_icm_price, self.itemlist_icm_price)), shape=ICM_price_shape)).tocsr()
-
-        # create ICM_asset ----------
-        file_path_icm_asset = "data_ICM_asset.csv"
-        self.get_list_ICM(self.get_tuples(self.get_file(file_path_icm_asset), True), "asset")
-
-        n_items_asset = max(self.itemlist_icm_asset) + 1
-        n_asset = len(set(self.assetlist_icm_asset))
-        ICM_asset_shape = (n_asset, n_items_asset)
-
-        leto = preprocessing.LabelEncoder()
-        leto.fit(self.assetlist_icm_asset)
-
-        self.assetlist_icm_asset = leto.transform(self.assetlist_icm_asset)
-
-        ones = np.ones(len(self.itemlist_icm_asset))
-        self.ICM_asset = (sps.coo_matrix((ones, (self.assetlist_icm_asset, self.itemlist_icm_asset)), shape=ICM_asset_shape)).tocsr()
+            ones = np.ones(len(self.itemlist_icm_asset))
+            self.ICM_asset = (sps.coo_matrix((ones, (self.itemlist_icm_asset, self.assetlist_icm)),
+                                             shape=ICM_asset_shape)).tocsr()
 
 
-        self.ICM_price = sps.csr_matrix.transpose(self.ICM_price)
-        self.ICM_asset = sps.csr_matrix.transpose(self.ICM_asset)
-        self.ICM_asset.sort_indices()
-        self.ICM_price.sort_indices()
-
-        # Merging matrix
-        self.ICM_merged = sps.hstack([sps.hstack([self.ICM, self.ICM_price]), self.ICM_asset])'''
-
-    def fit_recommender(self, requires_icm):
+    def fit_recommender(self, requires_icm = False):
         print("Fitting model...")
         if not self.evaluate:
             if requires_icm:
-                self.recommender.fit(self.URM_all, self.ICM)
+                list_ICM = [self.ICM, self.ICM_asset, self.ICM_price]
+                self.recommender.fit(self.URM_all, list_ICM)
             else:
                 self.recommender.fit(self.URM_all)
         else:
             self.split_dataset_loo()
             if requires_icm:
-                self.recommender.fit(self.URM_train, self.ICM)
+                list_ICM = [self.ICM, self.ICM_asset, self.ICM_price]
+                self.recommender.fit(self.URM_all, list_ICM)
             else:
                 self.recommender.fit(self.URM_train)
         print("Model fitted")
@@ -247,10 +246,11 @@ class Runner:
         return saved_tuple
 
     def run(self, requires_icm=False):
-        self.get_URM_all()
+        self.get_URM()
         if requires_icm:
-            # self.get_ICM_merged()
-            self.get_ICM_all()
+            self.get_ICM()
+            self.get_ICM(False, True, False)
+            self.get_ICM(False, False, True)
 
         self.get_target_users()
         self.fit_recommender(requires_icm)
@@ -261,7 +261,7 @@ class Runner:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'ItemCF', 'SlimBPR', 'PureSVD', 'MF_BPR_Cython'])
+    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'HybridItemCBF', 'ItemCF', 'SlimBPR', 'PureSVD', 'MF_BPR_Cython'])
     parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
     requires_icm = False
@@ -277,6 +277,11 @@ if __name__ == '__main__':
 
     if args.recommender == 'ItemCBF':
         print("ItemCBF selected")
+        recommender = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
+        requires_icm = True
+
+    if args.recommender == "HybridItemCBF":
+        print("HybridItemCBF selected")
         recommender = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
         requires_icm = True
 

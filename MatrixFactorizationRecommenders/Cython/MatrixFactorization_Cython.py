@@ -1,6 +1,6 @@
 """ Created on 07/09/17 @author: Maurizio Ferrari Dacrema """
 
-from recommenders.MatrixFactorizationRecommenders.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
+from MatrixFactorizationRecommenders.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
 from Base.Incremental_Training_Early_Stopping import Incremental_Training_Early_Stopping
 
 from CythonCompiler.run_compile_subprocess import run_compile_subprocess
@@ -11,6 +11,9 @@ import numpy as np
 class _MatrixFactorization_Cython(BaseMatrixFactorizationRecommender, Incremental_Training_Early_Stopping):
 
     RECOMMENDER_NAME = "MatrixFactorization_Cython_Recommender"
+
+    def __init__(self):
+        super().__init__()
 
     def instanziate_rec_cython(self, URM_train, verbose=True,recompile_cython = False, algorithm_name = "MF_BPR"):
         super(_MatrixFactorization_Cython, self).instanziate_rec(URM_train, verbose)
@@ -44,7 +47,7 @@ class _MatrixFactorization_Cython(BaseMatrixFactorizationRecommender, Incrementa
 
 
         # Import compiled module
-        from recommenders.MatrixFactorizationRecommenders.Cython import MatrixFactorization_Cython_Epoch
+        from MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython_Epoch import MatrixFactorization_Cython_Epoch
 
         if self.algorithm_name in ["FUNK_SVD", "ASY_SVD"]:
 

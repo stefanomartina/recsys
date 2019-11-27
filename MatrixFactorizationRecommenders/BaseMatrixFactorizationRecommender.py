@@ -12,6 +12,9 @@ class BaseMatrixFactorizationRecommender(object):
 
     RECOMMENDER_NAME = "Recommender_Base_Class"
 
+    def __init__(self):
+        pass
+
     def instanziate_rec(self, URM_train, verbose):
         self.URM_train = check_matrix(URM_train.copy(), 'csr', dtype=np.float32)
         self.URM_train.eliminate_zeros()
@@ -123,7 +126,7 @@ class BaseMatrixFactorizationRecommender(object):
         return item_scores
 
     def recommend(self, user_id_array, cutoff = None, remove_seen_flag=True, items_to_compute = None,
-                  remove_top_pop_flag = False, remove_custom_items_flag = False, return_scores = False):
+                  remove_top_pop_flag = False, remove_custom_items_flag = False, return_scores = False, at = 10):
 
         # If is a scalar transform it in a 1-cell array
         if np.isscalar(user_id_array):
@@ -198,7 +201,7 @@ class BaseMatrixFactorizationRecommender(object):
             return ranking_list, scores_batch
 
         else:
-            return ranking_list
+            return ranking_list[:at]
 
 
 
