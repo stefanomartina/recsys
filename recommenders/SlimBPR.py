@@ -62,7 +62,7 @@ class SlimBPR_Recommender(object):
     def epochIteration(self):
 
         # Get number of available interactions
-        numPositiveIteractions = self.URM_train.nnz
+        numPositiveIteractions = int(self.URM_train.nnz*0.01)
         start_time = time.time()
 
         # Uniform user sampling without replacement
@@ -81,7 +81,7 @@ class SlimBPR_Recommender(object):
 
                 start_time = time.time()
 
-    def fit(self, URM, epochs=16, lambda_i = 0.0025, lambda_j = 0.00025, learning_rate = 0.05):
+    def fit(self, URM, epochs=1, lambda_i = 0.0025, lambda_j = 0.00025, learning_rate = 0.05):
         self.URM_train = URM
         self.n_users = URM.shape[0]
         self.n_items = URM.shape[1]
@@ -112,8 +112,8 @@ class SlimBPR_Recommender(object):
 
     def recommend(self, user_id, at=10, exclude_seen=True):
         # compute the scores using the dot product
-        user_profile = self.URM[user_id]
-        scores = user_profile.dot(self.similarity_matrix).toarray().ravel()
+        user_profile = self.URM_train[user_id]
+        scores = user_profile.dot(self.W).ravel()
 
         if exclude_seen:
             scores = self.filter_seen(user_id, scores)
@@ -125,10 +125,10 @@ class SlimBPR_Recommender(object):
 
     def filter_seen(self, user_id, scores):
 
-        start_pos = self.URM.indptr[user_id]
-        end_pos = self.URM.indptr[user_id + 1]
+        start_pos = self.URM_train.indptr[user_id]
+        end_pos = self.URM_train.indptr[user_id + 1]
 
-        user_profile = self.URM.indices[start_pos:end_pos]
+        user_profile = self.URM_train.indices[start_pos:end_pos]
 
         scores[user_profile] = -np.inf
 
