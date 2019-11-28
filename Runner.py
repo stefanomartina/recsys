@@ -5,6 +5,7 @@ from recommenders import TopPopRecommender
 from recommenders import ItemCBFKNNRecommender
 from recommenders import ItemCFKNNRecommender
 from recommenders import SlimBPR
+from recommenders import HybridItemCF_ItemCB
 from MatrixFactorizationRecommenders import BaseMatrixFactorizationRecommender, PureSVDRecommender
 from MatrixFactorizationRecommenders.Cython import MatrixFactorization_Cython
 from MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython
@@ -253,7 +254,7 @@ class Runner:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'HybridItemCBF', 'ItemCF', 'SlimBPR', 'PureSVD', 'MF_BPR_Cython'])
+    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'HybridItemCBF', 'HybridItemCF_ItemCB', 'ItemCF', 'SlimBPR', 'PureSVD', 'MF_BPR_Cython'])
     parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
     requires_icm = False
@@ -277,13 +278,18 @@ if __name__ == '__main__':
         recommender = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
         requires_icm = True
 
+    if args.recommender == "HybridItemCF_ItemCB":
+        print("HybridItemCF_ItemCB selected")
+        recommender = HybridItemCF_ItemCB.HybridItemCF_ItemCB()
+        requires_icm = True
+
     if args.recommender == 'ItemCF':
         print("ItemCF selected")
         recommender = ItemCFKNNRecommender.ItemCFKNNRecommender()
 
     if args.recommender == 'SlimBPR':
         print("SlimBPR selected")
-        recommender = SlimBPR.SlimBPR_Recommender()
+        recommender = SlimBPR.SLIM_BPR_Recommender()
 
     if args.recommender == 'PureSVD':
         print("PureSVD selected")
