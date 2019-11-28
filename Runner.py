@@ -170,23 +170,28 @@ class Runner:
         # creation of ICM using only data_ICM_sub_class
         if ICM_sub_class:
             ICM_file_name = "data_ICM_sub_class.csv"
-
             self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False), "sub_class")
-            self.ICM = sps.coo_matrix((self.presencelist_icm, (self.itemlist_icm, self.attributelist_icm))).tocsr()
+
+            # shaping
+            n_items_sub_class = self.URM_all.shape[1]
+            n_sub_class = max(self.attributelist_icm) + 1
+            ICM_subclass_shape = (n_items_sub_class, n_sub_class)
+
+
+            self.ICM = (sps.coo_matrix((self.presencelist_icm, (self.itemlist_icm, self.attributelist_icm)), shape = ICM_subclass_shape)).tocsr()
 
         elif ICM_price:
             ICM_file_name = "data_ICM_price.csv"
             self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False, True), "price")
 
-            # shaping
-            n_items_price = max(self.itemlist_icm_price) + 1
-            n_price = len(set(self.pricelist_icm))
-            ICM_price_shape = (n_items_price, n_price)
-
-            # label
+            # shaping and label
             le = preprocessing.LabelEncoder()
             le.fit(self.pricelist_icm)
             self.pricelist_icm = le.transform(self.pricelist_icm)
+            n_items_price = self.URM_all.shape[1]
+            n_price = max(self.pricelist_icm) + 1
+            ICM_price_shape = (n_items_price, n_price)
+
 
             ones = np.ones(len(self.itemlist_icm_price))
             self.ICM_price = (sps.coo_matrix((ones, (self.itemlist_icm_price, self.pricelist_icm)),
@@ -196,15 +201,15 @@ class Runner:
             ICM_file_name = "data_ICM_asset.csv"
             self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False, True), "asset")
 
-            # shaping
-            n_items_asset = max(self.itemlist_icm_asset) + 1
-            n_asset = len(set(self.assetlist_icm))
-            ICM_asset_shape = (n_items_asset, n_asset)
-
-            # label
+            # shaping and label
             le = preprocessing.LabelEncoder()
             le.fit(self.assetlist_icm)
             self.assetlist_icm = le.transform(self.assetlist_icm)
+            n_items_asset = self.URM_all.shape[1]
+            n_asset = max(self.assetlist_icm) + 1
+            ICM_asset_shape = (n_items_asset, n_asset)
+
+
 
             ones = np.ones(len(self.itemlist_icm_asset))
             self.ICM_asset = (sps.coo_matrix((ones, (self.itemlist_icm_asset, self.assetlist_icm)),
