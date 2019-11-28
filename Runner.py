@@ -177,7 +177,6 @@ class Runner:
             n_sub_class = max(self.attributelist_icm) + 1
             ICM_subclass_shape = (n_items_sub_class, n_sub_class)
 
-
             self.ICM = (sps.coo_matrix((self.presencelist_icm, (self.itemlist_icm, self.attributelist_icm)), shape = ICM_subclass_shape)).tocsr()
 
         elif ICM_price:
@@ -191,7 +190,6 @@ class Runner:
             n_items_price = self.URM_all.shape[1]
             n_price = max(self.pricelist_icm) + 1
             ICM_price_shape = (n_items_price, n_price)
-
 
             ones = np.ones(len(self.itemlist_icm_price))
             self.ICM_price = (sps.coo_matrix((ones, (self.itemlist_icm_price, self.pricelist_icm)),
@@ -209,12 +207,9 @@ class Runner:
             n_asset = max(self.assetlist_icm) + 1
             ICM_asset_shape = (n_items_asset, n_asset)
 
-
-
             ones = np.ones(len(self.itemlist_icm_asset))
             self.ICM_asset = (sps.coo_matrix((ones, (self.itemlist_icm_asset, self.assetlist_icm)),
                                              shape=ICM_asset_shape)).tocsr()
-
 
     def fit_recommender(self, requires_icm = False):
         print("Fitting model...")

@@ -27,13 +27,15 @@ class ItemCBFKNNRecommender():
 
 
         # compute similarity_object
-        similarityICM = Compute_Similarity_Python(self.ICM.T, topK=topK, shrink=shrink, normalize=normalize, similarity=similarity, **similarity_args)
-        #similarityICM_asset = Compute_Similarity_Python(self.ICM_asset.T, topK=topK, shrink=shrink, normalize=normalize, similarity=similarity, **similarity_args)
-        #similarityICM_price = Compute_Similarity_Python(self.ICM_price.T, topK=topK, shrink=shrink, normalize=normalize, similarity=similarity, **similarity_args)
 
+        self.ICM_all = sps.hstack((self.ICM, self.ICM_asset, self.ICM_price)).tocsr()
+        self.similarityICM = Compute_Similarity_Python(self.ICM_all.T, topK=topK, shrink=shrink, normalize=normalize, similarity=similarity, **similarity_args)
         # now we can compute hybrid recommendation according combination of similarity object
-        self.W_sparse = similarityICM.compute_similarity()
+        # self.W_sparse = similarityICM.compute_similarity()
         # self.W_sparse = alpha*(similarityICM.compute_similarity()) + (1-alpha)*(similarityICM_asset.compute_similarity())
+
+        self.W_sparse = self.similarityICM.compute_similarity()
+        print("a")
 
     def recommend(self, user_id, at=10, exclude_seen=True):
         user_profile = self.URM[user_id]

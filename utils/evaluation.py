@@ -39,7 +39,7 @@ def MAP(recommended_items, relevant_items):
 """" Evaulation function """
 
 
-def evaluate_algorithm(URM_test, recommender_object, userList_unique, at=5):
+def evaluate_algorithm(URM_test, recommender_object, userList_unique, at=10):
     print("Running evaluation...")
     cumulative_precision = 0.0
     cumulative_recall = 0.0
