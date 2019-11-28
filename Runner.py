@@ -83,7 +83,7 @@ class Runner:
         file = self.get_file("data_target_users_test.csv")
         self.get_tuples(file, target=True)
 
-    def get_tuples(self, file, target=False, sort=False):
+    def get_tuples(self, file, target=False):
         tuples = []
         file.seek(0)
         next(file)
@@ -93,8 +93,6 @@ class Runner:
             if target:
                 line = line.replace("\n", "")
                 self.userlist_unique.append(int(line))
-        if sort:
-            tuples.sort(key=operator.itemgetter(2))
         return tuples
 
     def get_list_URM(self, tuples):
@@ -146,15 +144,10 @@ class Runner:
 
         urm_test.eliminate_zeros()
         urm_train.eliminate_zeros()
-        '''print('URM_TRAIN')
-        print('shape =', urm_train.shape)
-        print('nnz   =', urm_train.nnz)
-        print('URM_TEST')
-        print('shape =', urm_test.shape)
-        print('nnz   =', urm_test.nnz)'''
 
         self.URM_train = urm_train
         self.URM_test = urm_test
+
 
     def get_URM(self):
         URM_file_name = "data_train.csv"
@@ -177,11 +170,11 @@ class Runner:
             n_sub_class = max(self.attributelist_icm) + 1
             ICM_subclass_shape = (n_items_sub_class, n_sub_class)
 
-            self.ICM = (sps.coo_matrix((self.presencelist_icm, (self.itemlist_icm, self.attributelist_icm)), shape = ICM_subclass_shape)).tocsr()
+            self.ICM = sps.coo_matrix((self.presencelist_icm, (self.itemlist_icm, self.attributelist_icm)), shape = ICM_subclass_shape).tocsr()
 
         elif ICM_price:
             ICM_file_name = "data_ICM_price.csv"
-            self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False, True), "price")
+            self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False), "price")
 
             # shaping and label
             le = preprocessing.LabelEncoder()
@@ -192,12 +185,11 @@ class Runner:
             ICM_price_shape = (n_items_price, n_price)
 
             ones = np.ones(len(self.itemlist_icm_price))
-            self.ICM_price = (sps.coo_matrix((ones, (self.itemlist_icm_price, self.pricelist_icm)),
-                                             shape=ICM_price_shape)).tocsr()
+            self.ICM_price = (sps.coo_matrix((ones, (self.itemlist_icm_price, self.pricelist_icm)), shape=ICM_price_shape)).tocsr()
 
         elif ICM_asset:
             ICM_file_name = "data_ICM_asset.csv"
-            self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False, True), "asset")
+            self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False), "asset")
 
             # shaping and label
             le = preprocessing.LabelEncoder()
@@ -223,7 +215,7 @@ class Runner:
             self.split_dataset_loo()
             if requires_icm:
                 list_ICM = [self.ICM, self.ICM_asset, self.ICM_price]
-                self.recommender.fit(self.URM_all, list_ICM)
+                self.recommender.fit(self.URM_train, list_ICM)
             else:
                 self.recommender.fit(self.URM_train)
         print("Model fitted")
@@ -256,7 +248,7 @@ class Runner:
         self.fit_recommender(requires_icm)
         self.run_recommendations()
         if self.evaluate:
-            evaluation.evaluate_algorithm(self.URM_test, self.recommender, self.userlist_unique, at=10)
+            evaluation.evaluate_algorithm(self.URM_test, self.recommender, at=10)
 
 
 if __name__ == '__main__':

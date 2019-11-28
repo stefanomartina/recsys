@@ -16,30 +16,25 @@ class ItemCBFKNNRecommender():
             - [First, Second, Third]
     """
 
-    def fit(self, URM, list_ICM, alpha=1, topK=50, shrink=10, normalize=True, similarity="cosine", **similarity_args):
+    def fit(self, URM, list_ICM, topK=10, shrink=50, normalize=True, similarity="tanimoto"):
 
         # extract all relevant matrix from source
         self.URM = URM
         self.ICM = list_ICM[0]
         self.ICM_asset = list_ICM[1]
         self.ICM_price = list_ICM[2]
-        self.alpha = alpha
-
 
         # compute similarity_object
+        self.ICM_merged = sps.hstack((self.ICM, self.ICM_asset, self.ICM_price)).tocsr()
+        self.similarity = Compute_Similarity_Python(self.ICM_merged.T, shrink=shrink,
+                                                  topK=topK, normalize=normalize,
+                                                  similarity = similarity)
 
-        self.ICM_all = sps.hstack((self.ICM, self.ICM_asset, self.ICM_price)).tocsr()
-        self.similarityICM = Compute_Similarity_Python(self.ICM_all.T, topK=topK, shrink=shrink, normalize=normalize, similarity=similarity, **similarity_args)
-        # now we can compute hybrid recommendation according combination of similarity object
-        # self.W_sparse = similarityICM.compute_similarity()
-        # self.W_sparse = alpha*(similarityICM.compute_similarity()) + (1-alpha)*(similarityICM_asset.compute_similarity())
-
-        self.W_sparse = self.similarityICM.compute_similarity()
-        print("a")
+        self.W_sparse = self.similarity.compute_similarity()
 
     def recommend(self, user_id, at=10, exclude_seen=True):
         user_profile = self.URM[user_id]
-        scores = ((user_profile.dot(self.W_sparse)).toarray()).ravel()
+        scores = (user_profile.dot(self.W_sparse)).toarray().ravel()
 
         if exclude_seen:
             scores = self.filter_seen(user_id, scores)

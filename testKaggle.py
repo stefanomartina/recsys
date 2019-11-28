@@ -108,25 +108,23 @@ class Tuner():
             threshold))
         self.recommender.fit(self.URM_train, topK=topK, shrink=shrink, similarity=similarity, normalize=True,
                              threshold=threshold)
-        evaluation.evaluate_algorithm(self.URM_test, self.recommender, self.userlist_unique, at=10)
+        evaluation.evaluate_algorithm(self.URM_test, self.recommender, at=10)
         print("----------------------------------------")
 
     def run(self):
-        self.recommender = ItemCFKNNRecommender.ItemCFKNNRecommender()
+        self.recommender = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
         self.get_URM_all()
         self.split_dataset_loo()
         self.get_target_users()
 
         topKs = [10, 25, 50, 75, 100]
         shrinks = [10, 25, 50, 100, 250]
-        thresholds = (np.arange(0, 1, 0.05)).tolist()
-        # similarities = ["cosine", "pearson", "jaccard", "dice", "tanimoto"]
+        similarities = ["cosine", "pearson", "jaccard", "dice", "tanimoto"]
 
         for topk in topKs:
             for shrink in shrinks:
-                for threshold in thresholds:
-                    #for similarity in similarities:
-                    self.step(topk, shrink, "tversky", threshold)
+                for similarity in similarities:
+                    self.step(topk, shrink, similarity)
 
 
 if __name__ == "__main__":
