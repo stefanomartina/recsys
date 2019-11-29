@@ -10,6 +10,7 @@ from recommenders import RandomRecommender as rr
 from recommenders import TopPopRecommender as tp
 from recommenders import ItemCBFKNNRecommender
 from recommenders import ItemCFKNNRecommender
+from recommenders import HybridItemCF_ItemCB
 from utils import evaluation
 import os
 import scipy.sparse as sps
@@ -102,20 +103,88 @@ class Tuner():
         self.URM_test = urm_test
         print("Ended")
 
-    def step(self, topK, shrink, similarity, threshold):
+    def get_list_ICM(self, tuples, source):
+
+        if source == "sub_class":
+            itemlist, attributelist, presencelist = zip(*tuples)
+
+            self.itemlist_icm = list(itemlist)
+            self.attributelist_icm = list(attributelist)
+            self.presencelist_icm = list(presencelist)
+
+        if source == "asset":
+            itemlist, uselesslist, assetlist = zip(*tuples)
+
+            self.itemlist_icm_asset = list(itemlist)
+            self.assetlist_icm = list(assetlist)
+
+        if source == "price":
+            itemlist, uselesslist, pricelist = zip(*tuples)
+
+            self.itemlist_icm_price = list(itemlist)
+            self.pricelist_icm = list(pricelist)
+
+    def get_ICM(self, ICM_sub_class = True, ICM_asset = False, ICM_price = False):
+
+        # creation of ICM using only data_ICM_sub_class
+        if ICM_sub_class:
+            ICM_file_name = "data_ICM_sub_class.csv"
+            self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False), "sub_class")
+
+            # shaping
+            n_items_sub_class = self.URM_all.shape[1]
+            n_sub_class = max(self.attributelist_icm) + 1
+            ICM_subclass_shape = (n_items_sub_class, n_sub_class)
+
+            self.ICM = sps.coo_matrix((self.presencelist_icm, (self.itemlist_icm, self.attributelist_icm)), shape = ICM_subclass_shape).tocsr()
+
+        elif ICM_price:
+            ICM_file_name = "data_ICM_price.csv"
+            self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False), "price")
+
+            # shaping and label
+            le = preprocessing.LabelEncoder()
+            le.fit(self.pricelist_icm)
+            self.pricelist_icm = le.transform(self.pricelist_icm)
+            n_items_price = self.URM_all.shape[1]
+            n_price = max(self.pricelist_icm) + 1
+            ICM_price_shape = (n_items_price, n_price)
+
+            ones = np.ones(len(self.itemlist_icm_price))
+            self.ICM_price = (sps.coo_matrix((ones, (self.itemlist_icm_price, self.pricelist_icm)), shape=ICM_price_shape)).tocsr()
+
+        elif ICM_asset:
+            ICM_file_name = "data_ICM_asset.csv"
+            self.get_list_ICM(self.get_tuples(self.get_file(ICM_file_name), False), "asset")
+
+            # shaping and label
+            le = preprocessing.LabelEncoder()
+            le.fit(self.assetlist_icm)
+            self.assetlist_icm = le.transform(self.assetlist_icm)
+            n_items_asset = self.URM_all.shape[1]
+            n_asset = max(self.assetlist_icm) + 1
+            ICM_asset_shape = (n_items_asset, n_asset)
+
+            ones = np.ones(len(self.itemlist_icm_asset))
+            self.ICM_asset = (sps.coo_matrix((ones, (self.itemlist_icm_asset, self.assetlist_icm)),
+                                             shape=ICM_asset_shape)).tocsr()
+
+    def step(self, topK, list_ICM, shrink, similarity):
         print("----------------------------------------")
-        print("topk: " + str(topK) + " shrink: " + str(shrink) + " similarity: " + similarity + " threshold: " + str(
-            threshold))
-        self.recommender.fit(self.URM_train, topK=topK, shrink=shrink, similarity=similarity, normalize=True,
-                             threshold=threshold)
+        print("topk: " + str(topK) + " shrink: " + str(shrink) + " similarity: " + similarity)
+        self.recommender.fit(self.URM_train, list_ICM, topK=topK, shrink=shrink, similarity=similarity, normalize=True)
         evaluation.evaluate_algorithm(self.URM_test, self.recommender, at=10)
         print("----------------------------------------")
 
     def run(self):
-        self.recommender = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
+        self.recommender = HybridItemCF_ItemCB.HybridItemCF_ItemCB()
         self.get_URM_all()
         self.split_dataset_loo()
         self.get_target_users()
+        self.get_ICM()
+        self.get_ICM(False, True, False)
+        self.get_ICM(False, False, True)
+        list_ICM = [self.ICM, self.ICM_asset, self.ICM_price]
 
         topKs = [10, 25, 50, 75, 100]
         shrinks = [10, 25, 50, 100, 250]
@@ -124,7 +193,7 @@ class Tuner():
         for topk in topKs:
             for shrink in shrinks:
                 for similarity in similarities:
-                    self.step(topk, shrink, similarity)
+                    self.step(topk, list_ICM, shrink, similarity)
 
 
 if __name__ == "__main__":
