@@ -16,7 +16,7 @@ class ItemCBFKNNRecommender():
             - [First, Second, Third]
     """
 
-    def fit(self, URM, list_ICM, topK=10, shrink=50, normalize=True, similarity="tanimoto"):
+    def fit(self, URM, list_ICM, topK=10, shrink=50, normalize=True, similarity="tversky"):
 
         # extract all relevant matrix from source
         self.URM = URM

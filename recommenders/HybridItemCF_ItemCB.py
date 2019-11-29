@@ -5,7 +5,7 @@ from recommenders import ItemCBFKNNRecommender
 class HybridItemCF_ItemCB(object):
     # tversky
     # tanimoto
-    def fit(self, URM, ICM, topK=10, shrink=50, normalize=True, similarity="tversky", threshold=0.1):
+    def fit(self, URM, ICM, topK=10, shrink=50, normalize=True, similarity="tversky", threshold=0.0):
         self.URM = URM
         self.ICM_list = ICM
         similarity_object = Compute_Similarity_Python(self.URM, shrink=shrink,

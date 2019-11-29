@@ -4,16 +4,15 @@ from recommenders import RandomRecommender
 from recommenders import TopPopRecommender
 from recommenders import ItemCBFKNNRecommender
 from recommenders import ItemCFKNNRecommender
-from recommenders import SlimBPR
+from recommenders import SlimBPRRecommender
 from recommenders import HybridItemCF_ItemCB
-from MatrixFactorizationRecommenders import BaseMatrixFactorizationRecommender, PureSVDRecommender
-from MatrixFactorizationRecommenders.Cython import MatrixFactorization_Cython
-from MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython
+from recommenders import UserKNNCFRecommender
+#from recommenders.MatrixFactorizationRecommenders.PureSVDRecommender import PureSVDRecommender
+#from recommenders.MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython
 from utils import evaluation
 from Base import Incremental_Training_Early_Stopping
 import scipy.sparse as sps
 import numpy as np
-import operator
 import time
 import csv
 import argparse
@@ -254,7 +253,8 @@ class Runner:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'HybridItemCBF', 'HybridItemCF_ItemCB', 'ItemCF', 'SlimBPR', 'PureSVD', 'MF_BPR_Cython'])
+    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'HybridItemCBF', 'HybridItemCF_ItemCB',
+                                                'UserKNNCF','ItemCF', 'SlimBPR', 'PureSVD', 'MF_BPR_Cython'])
     parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
     requires_icm = False
@@ -289,18 +289,19 @@ if __name__ == '__main__':
 
     if args.recommender == 'SlimBPR':
         print("SlimBPR selected")
-        recommender = SlimBPR.SLIM_BPR_Recommender()
+        recommender = SlimBPRRecommender.SLIM_BPR_Recommender()
+
+    if args.recommender == 'UserKNNCF':
+        print("UserKNNCF selected")
+        recommender = UserKNNCFRecommender.UserKNNCFRecommender()
 
     if args.recommender == 'PureSVD':
         print("PureSVD selected")
-        recommender = PureSVDRecommender.PureSVDRecommender()
+        #recommender = PureSVDRecommender.PureSVDRecommender()
 
     if args.recommender == 'MF_BPR_Cython':
         print("MF_BPR_Cython selected")
-        baseRecommender = BaseMatrixFactorizationRecommender.BaseMatrixFactorizationRecommender()
-        earlyStopping = Incremental_Training_Early_Stopping.Incremental_Training_Early_Stopping()
-        baseCythonRecommender = MatrixFactorization_Cython._MatrixFactorization_Cython()
-        recommender = MatrixFactorization_BPR_Cython()
+        #recommender = MatrixFactorization_BPR_Cython()
 
     print(args)
 

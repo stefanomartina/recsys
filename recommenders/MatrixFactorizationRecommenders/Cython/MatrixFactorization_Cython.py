@@ -1,6 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*
+
 """ Created on 07/09/17 @author: Maurizio Ferrari Dacrema """
 
-from MatrixFactorizationRecommenders.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
+from recommenders.MatrixFactorizationRecommenders import BaseMatrixFactorizationRecommender
 from Base.Incremental_Training_Early_Stopping import Incremental_Training_Early_Stopping
 
 from CythonCompiler.run_compile_subprocess import run_compile_subprocess
@@ -47,7 +50,7 @@ class _MatrixFactorization_Cython(BaseMatrixFactorizationRecommender, Incrementa
 
 
         # Import compiled module
-        from MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython_Epoch import MatrixFactorization_Cython_Epoch
+        from recommenders.MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython_Epoch import MatrixFactorization_Cython_Epoch
 
         if self.algorithm_name in ["FUNK_SVD", "ASY_SVD"]:
 

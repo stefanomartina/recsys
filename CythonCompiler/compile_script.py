@@ -1,4 +1,6 @@
 """ Created on 16/07/2017   @author: Maurizio Ferrari Dacrema """
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 """
 This script is called in a subprocess and compiles the cython source file provided

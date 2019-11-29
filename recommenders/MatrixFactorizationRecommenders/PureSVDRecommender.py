@@ -1,6 +1,6 @@
 """ Created on 14/06/18 @author: Maurizio Ferrari Dacrema """
 
-from MatrixFactorizationRecommenders.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
+from recommenders.MatrixFactorizationRecommenders import BaseMatrixFactorizationRecommender
 from sklearn.utils.extmath import randomized_svd
 import scipy.sparse as sps
 

@@ -1,9 +1,3 @@
-"""
-Created on 07/09/17
-
-@author: Maurizio Ferrari Dacrema
-"""
-
 #cython: language_level=3
 #cython: boundscheck=False
 #cython: wraparound=False
@@ -14,6 +8,10 @@ Created on 07/09/17
 #cython: overflowcheck=False
 
 #defining NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
+""" Created on 07/09/17     @author: Maurizio Ferrari Dacrema """
+
+
 
 from Base.Recommender_utils import check_matrix
 
