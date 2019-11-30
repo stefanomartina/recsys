@@ -56,7 +56,7 @@ class SLIM_BPR_Cython(BaseItemSimilarityMatrixRecommender, Incremental_Training_
             train_with_sparse_weights=None,
             symmetric=True,
             random_seed=None,
-            batch_size=1000, lambda_i=0.0, lambda_j=0.0, learning_rate=1e-4, topK=200,
+            batch_size=1000, lambda_i=0.0001, lambda_j=0.0001, learning_rate=1e-2, topK=200,
             sgd_mode='adagrad', gamma=0.995, beta_1=0.9, beta_2=0.999,
             **earlystopping_kwargs):
 

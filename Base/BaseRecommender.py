@@ -5,14 +5,29 @@
 import numpy as np
 from Base.DataIO import DataIO
 from Base.Recommender_utils import check_matrix
+from recommenders.ItemCBFKNNRecommender import ItemCBFKNNRecommender
+from Runner import Runner
+
+
 
 # Class Base Recommender
 class BaseRecommender(object):
     """Abstract BaseRecommender"""
 
     RECOMMENDER_NAME = "Recommender_Base_Class"
+    RECOMENDER_NAME = "UserCBFKNN"
 
-    def initBaserecommender(self,URM_train, verbose=True):
+
+    def initBaserecommender(self, URM_train, verbose=True):
+
+        self.hybrid_recommender = ItemCBFKNNRecommender()
+        self.runner = Runner(self.hybrid_recommender, "UserCBFKNN")
+        self.runner.get_URM()
+        self.runner.get_ICM(True, False, False)
+        self.runner.get_ICM(False, True, False)
+        self.runner.get_ICM(False, False, True)
+        self.list_ICM = [self.runner.ICM, self.runner.ICM_price, self.runner.ICM_asset]
+        self.hybrid_recommender.fit(URM_train, self.list_ICM)
 
         self.URM_train = check_matrix(URM_train.copy(), 'csr', dtype=np.float32)
         self.URM_train.eliminate_zeros()
@@ -154,10 +169,13 @@ class BaseRecommender(object):
             user_recommendation_list = ranking[user_index]
             user_item_scores = scores_batch[user_index, user_recommendation_list]
 
-            not_inf_scores_mask = np.logical_not(np.isinf(user_item_scores))
+            if user_item_scores.sum() == 0:
+                ranking_list[user_index] = self.hybrid_recommender.recommend(user_index)
 
-            user_recommendation_list = user_recommendation_list[not_inf_scores_mask]
-            ranking_list[user_index] = user_recommendation_list.tolist()
+            else:
+                not_inf_scores_mask = np.logical_not(np.isinf(user_item_scores))
+                user_recommendation_list = user_recommendation_list[not_inf_scores_mask]
+                ranking_list[user_index] = user_recommendation_list.tolist()
 
 
 
@@ -165,11 +183,11 @@ class BaseRecommender(object):
         if single_user:
             ranking_list = ranking_list[0]
 
-
         if return_scores:
             return ranking_list, scores_batch
 
         else:
+
             return ranking_list[:at]
 
 

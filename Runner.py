@@ -7,8 +7,9 @@ from recommenders import ItemCFKNNRecommender
 from recommenders.SlimRecommender.Cython import SLIM_BPR_Cython
 from recommenders import HybridItemCF_ItemCB
 from recommenders import UserCBFKNNRecommender
-from recommenders.MatrixFactorizationRecommenders import PureSVDRecommender
-#from recommenders.MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython
+from recommenders.SLIM_BPR import SLIM_BPR
+# from recommenders.MatrixFactorizationRecommenders import PureSVDRecommender
+# from recommenders.MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython
 from utils import evaluation
 from Base import Incremental_Training_Early_Stopping
 import scipy.sparse as sps
@@ -304,7 +305,7 @@ class Runner:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'HybridItemCBF', 'HybridItemCF_ItemCB',
-                                                'UserCBFKNN','ItemCF', 'SlimBPRCython', 'PureSVD', 'MF_BPR_Cython'])
+                                                'UserCBFKNN', 'ItemCF', 'SlimBPRCython_Hybrid', 'PureSVD', 'MF_BPR_Cython', 'SlimBPR'])
     parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
     requires_icm = False
@@ -338,9 +339,13 @@ if __name__ == '__main__':
         print("ItemCF selected")
         recommender = ItemCFKNNRecommender.ItemCFKNNRecommender()
 
-    if args.recommender == 'SlimBPRCython':
-        print("SlimBPRCython selected")
+    if args.recommender == 'SlimBPRCython_Hybrid':
+        print("SlimBPRCython_Hybrid selected")
         recommender = SLIM_BPR_Cython.SLIM_BPR_Cython()
+
+    if args.recommender == 'SlimBPR':
+        print("SlimBPR")
+        recommender = SLIM_BPR()
 
     if args.recommender == 'UserCBFKNN':
         print("UserKNNCF selected")
@@ -349,7 +354,7 @@ if __name__ == '__main__':
 
     if args.recommender == 'PureSVD':
         print("PureSVD selected")
-        recommender = PureSVDRecommender.PureSVDRecommender()
+        #recommender = PureSVDRecommender.PureSVDRecommender()
 
     if args.recommender == 'MF_BPR_Cython':
         print("MF_BPR_Cython selected")

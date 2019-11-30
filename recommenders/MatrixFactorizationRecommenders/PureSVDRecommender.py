@@ -1,16 +1,16 @@
 """ Created on 14/06/18 @author: Maurizio Ferrari Dacrema """
 
-from recommenders.MatrixFactorizationRecommenders import BaseMatrixFactorizationRecommender
+from Base.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
 from sklearn.utils.extmath import randomized_svd
 import scipy.sparse as sps
 
-class PureSVDRecommender(object):
-    """ PureSVDRecommender"""
+
+class PureSVDRecommender(BaseMatrixFactorizationRecommender):
 
     RECOMMENDER_NAME = "PureSVDRecommender"
 
     def fit(self, URM_train, verbose = True, num_factors=600, random_seed = None):
-        super(PureSVDRecommender, self).instanziate_rec(URM_train, verbose)
+        super(PureSVDRecommender, self).initBaseMatrixFactorizationRecommender(URM_train,verbose)
         self._print("Computing SVD decomposition...")
 
         U, Sigma, VT = randomized_svd(self.URM_train,

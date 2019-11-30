@@ -3,7 +3,7 @@
 
 """ Created on 07/09/17 @author: Maurizio Ferrari Dacrema """
 
-from recommenders.MatrixFactorizationRecommenders import BaseMatrixFactorizationRecommender
+from Base.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
 from Base.Incremental_Training_Early_Stopping import Incremental_Training_Early_Stopping
 
 from CythonCompiler.run_compile_subprocess import run_compile_subprocess
@@ -15,11 +15,8 @@ class _MatrixFactorization_Cython(BaseMatrixFactorizationRecommender, Incrementa
 
     RECOMMENDER_NAME = "MatrixFactorization_Cython_Recommender"
 
-    def __init__(self):
-        super().__init__()
-
-    def instanziate_rec_cython(self, URM_train, verbose=True,recompile_cython = False, algorithm_name = "MF_BPR"):
-        super(_MatrixFactorization_Cython, self).instanziate_rec(URM_train, verbose)
+    def instanziate_rec_cython(self, URM_train, verbose=True, recompile_cython = False, algorithm_name = "MF_BPR"):
+        super(_MatrixFactorization_Cython, self).initBaseMatrixFactorizationRecommender(URM_train, verbose)
         self.n_users, self.n_items = self.URM_train.shape
         self.normalize = False
         self.algorithm_name = algorithm_name
@@ -30,10 +27,10 @@ class _MatrixFactorization_Cython(BaseMatrixFactorizationRecommender, Incrementa
             print("Compilation Complete")
 
 
-    def fit(self, URM_train, verbose=True, recompile_cython = False, algorithm_name = "MF_BPR", epochs=300, batch_size=1000,
-            num_factors=10, positive_threshold_BPR=None, learning_rate = 0.001, use_bias = True, sgd_mode='sgd',
+    def fit(self, URM_train, verbose=True, recompile_cython = False, algorithm_name = "MF_BPR", epochs=600, batch_size=1000,
+            num_factors=30, positive_threshold_BPR=None, learning_rate = 0.002, use_bias = True, sgd_mode='adagrad',
             negative_interactions_quota = 0.0, init_mean = 0.0, init_std_dev = 0.1,
-            user_reg = 0.0, item_reg = 0.0, bias_reg = 0.0, positive_reg = 0.0, negative_reg = 0.0, random_seed = None,
+            user_reg = 0.71, item_reg = 0.2, bias_reg = 0.5, positive_reg = 0.0, negative_reg = 0.0, random_seed = None,
             **earlystopping_kwargs):
 
         self.instanziate_rec_cython(URM_train, verbose)
