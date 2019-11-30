@@ -1,13 +1,13 @@
 from sklearn import preprocessing
-
+from tqdm import tqdm
 from recommenders import RandomRecommender
 from recommenders import TopPopRecommender
 from recommenders import ItemCBFKNNRecommender
 from recommenders import ItemCFKNNRecommender
-from recommenders import SlimBPRRecommender
+from recommenders.SlimRecommender.Cython import SLIM_BPR_Cython
 from recommenders import HybridItemCF_ItemCB
-from recommenders import UserKNNCFRecommender
-#from recommenders.MatrixFactorizationRecommenders.PureSVDRecommender import PureSVDRecommender
+from recommenders import UserCBFKNNRecommender
+from recommenders.MatrixFactorizationRecommenders import PureSVDRecommender
 #from recommenders.MatrixFactorizationRecommenders.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython
 from utils import evaluation
 from Base import Incremental_Training_Early_Stopping
@@ -53,6 +53,18 @@ class Runner:
         self.ICM_price = None
         self.itemlist_icm_price = None
         self.pricelist_icm = None
+
+        # UCM_age ------------
+        self.UCM_age = None
+        self.userlist_ucm_age = None
+        self.agelist_ucm = None
+        self.presencelist_ucm_age = None
+
+        # UCM_region ---------
+        self.UCM_region = None
+        self.userlist_ucm_region = None
+        self.regionlist_ucm = None
+        self.presencelist_ucm_region = None
 
     def rowSplit(self, rowString, token=","):
         split = rowString.split(token)
@@ -122,6 +134,21 @@ class Runner:
 
             self.itemlist_icm_price = list(itemlist)
             self.pricelist_icm = list(pricelist)
+
+    def get_list_UCM(self, tuples, source):
+        if source == "age":
+            itemlist, attributelist, presencelist = zip(*tuples)
+
+            self.userlist_ucm_age = list(itemlist)
+            self.agelist_ucm = list(attributelist)
+            self.presencelist_ucm_age = list(presencelist)
+
+        if source == "region":
+            itemlist, attributelist, presencelist = zip(*tuples)
+
+            self.userlist_ucm_region = list(itemlist)
+            self.regionlist_ucm = list(attributelist)
+            self.presencelist_ucm_region = list(presencelist)
 
     def split_dataset_loo(self):
         print('Using LeaveOneOut')
@@ -203,12 +230,29 @@ class Runner:
             self.ICM_asset = (sps.coo_matrix((ones, (self.itemlist_icm_asset, self.assetlist_icm)),
                                              shape=ICM_asset_shape)).tocsr()
 
-    def fit_recommender(self, requires_icm = False):
+    def get_UCM(self, UCM_age = True, UCM_region = False):
+        if UCM_region:
+            UCM_file_name = "data_UCM_region.csv"
+            self.get_list_UCM(self.get_tuples(self.get_file(UCM_file_name), False), "region")
+            self.UCM_region = sps.coo_matrix(
+                (self.presencelist_ucm_region, (self.userlist_ucm_region, self.regionlist_ucm))).tocsr()
+
+        if UCM_age:
+            UCM_file_name = "data_UCM_age.csv"
+            self.get_list_UCM(self.get_tuples(self.get_file(UCM_file_name), False), "age")
+            self.UCM_age = sps.coo_matrix((self.presencelist_ucm_age, (self.userlist_ucm_age, self.agelist_ucm))).tocsr()
+
+
+
+    def fit_recommender(self, requires_icm = False, requires_ucm = False):
         print("Fitting model...")
         if not self.evaluate:
             if requires_icm:
                 list_ICM = [self.ICM, self.ICM_asset, self.ICM_price]
                 self.recommender.fit(self.URM_all, list_ICM)
+            elif requires_ucm:
+                list_UCM = [self.UCM_age, self.UCM_region]
+                self.recommender.fit(self.URM_all, list_UCM)
             else:
                 self.recommender.fit(self.URM_all)
         else:
@@ -216,6 +260,9 @@ class Runner:
             if requires_icm:
                 list_ICM = [self.ICM, self.ICM_asset, self.ICM_price]
                 self.recommender.fit(self.URM_train, list_ICM)
+            elif requires_ucm:
+                list_UCM = [self.UCM_age, self.UCM_region]
+                self.recommender.fit(self.URM_train, list_UCM)
             else:
                 self.recommender.fit(self.URM_train)
         print("Model fitted")
@@ -224,7 +271,7 @@ class Runner:
         recommendations = []
         saved_tuple = []
         print("Computing recommendations...")
-        for user in self.userlist_unique:
+        for user in tqdm(self.userlist_unique):
             index = [str(user) + ","]
             recommendations.clear()
 
@@ -237,15 +284,18 @@ class Runner:
         print("Ended")
         return saved_tuple
 
-    def run(self, requires_icm=False):
+    def run(self, requires_icm=False, requires_ucm=False):
         self.get_URM()
         if requires_icm:
             self.get_ICM()
             self.get_ICM(False, True, False)
             self.get_ICM(False, False, True)
+        elif requires_ucm:
+            self.get_UCM(False, True)
+            self.get_UCM()
 
         self.get_target_users()
-        self.fit_recommender(requires_icm)
+        self.fit_recommender(requires_icm, requires_ucm)
         self.run_recommendations()
         if self.evaluate:
             evaluation.evaluate_algorithm(self.URM_test, self.recommender, at=10)
@@ -254,10 +304,11 @@ class Runner:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'HybridItemCBF', 'HybridItemCF_ItemCB',
-                                                'UserKNNCF','ItemCF', 'SlimBPR', 'PureSVD', 'MF_BPR_Cython'])
+                                                'UserCBFKNN','ItemCF', 'SlimBPRCython', 'PureSVD', 'MF_BPR_Cython'])
     parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
     requires_icm = False
+    requires_ucm = False
     recommender = None
 
     if args.recommender == 'random':
@@ -287,17 +338,18 @@ if __name__ == '__main__':
         print("ItemCF selected")
         recommender = ItemCFKNNRecommender.ItemCFKNNRecommender()
 
-    if args.recommender == 'SlimBPR':
-        print("SlimBPR selected")
-        recommender = SlimBPRRecommender.SLIM_BPR_Recommender()
+    if args.recommender == 'SlimBPRCython':
+        print("SlimBPRCython selected")
+        recommender = SLIM_BPR_Cython.SLIM_BPR_Cython()
 
-    if args.recommender == 'UserKNNCF':
+    if args.recommender == 'UserCBFKNN':
         print("UserKNNCF selected")
-        recommender = UserKNNCFRecommender.UserKNNCFRecommender()
+        recommender = UserCBFKNNRecommender.UserCBFKNNRecommender()
+        requires_ucm = True
 
     if args.recommender == 'PureSVD':
         print("PureSVD selected")
-        #recommender = PureSVDRecommender.PureSVDRecommender()
+        recommender = PureSVDRecommender.PureSVDRecommender()
 
     if args.recommender == 'MF_BPR_Cython':
         print("MF_BPR_Cython selected")
@@ -305,4 +357,4 @@ if __name__ == '__main__':
 
     print(args)
 
-    Runner(recommender, args.recommender, evaluate=args.eval).run(requires_icm)
+    Runner(recommender, args.recommender, evaluate=args.eval).run(requires_icm, requires_ucm)

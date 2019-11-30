@@ -4,37 +4,39 @@ import pandas as pd
 from utils.Compute_Similarity_Python import Compute_Similarity_Python, check_matrix
 import scipy.sparse as sps
 
-class ItemCBFKNNRecommender():
+class UserCBFKNNRecommender():
 
     """
-        This class refers to a ItemCBFKNNRecommender which uses a similarity matrix. In particular, can compute
+        This class refers to a UserCBFKNNRecommender which uses a similarity matrix. In particular, can compute
         different combination of multiple ICM inputs. In our case, we have 3 different sources from which generate
         ICM, so:
-            - [First, Second]
-            - [First, Third]
-            - [Third, Second]
-            - [First, Second, Third]
+
     """
 
-    def fit(self, URM, list_ICM, topK=10, shrink=50, normalize=True, similarity="tversky"):
+    def fit(self, URM, list_UCM, topK=10, shrink=50, normalize=True, similarity="tversky"):
 
-        # extract all relevant matrix from source
         self.URM = URM
-        self.ICM = list_ICM[0]
-        self.ICM_asset = list_ICM[1]
-        self.ICM_price = list_ICM[2]
+        # extract all relevant matrix from source
+        self.UCM_age = list_UCM[0]
+        self.UCM_region = list_UCM[1]
+
+        denseMatrix_region = self.UCM_region.todense()
+        denseMatrix_age = self.UCM_age.todense()
+
+        mergedMatrixDense = np.concatenate((denseMatrix_age, denseMatrix_region), axis = 1)
+
+        self.UCM_merged = sps.csr_matrix(mergedMatrixDense)
 
         # compute similarity_object
-        self.ICM_merged = sps.hstack((self.ICM, self.ICM_asset, self.ICM_price)).tocsr()
-        self.similarity = Compute_Similarity_Python(self.ICM_merged.T, shrink=shrink,
+        self.similarity = Compute_Similarity_Python(self.UCM_merged.T, shrink=shrink,
                                                   topK=topK, normalize=normalize,
                                                   similarity = similarity)
 
         self.W_sparse = self.similarity.compute_similarity()
+        self.similarityProduct = self.W_sparse.dot(self.URM)
 
     def recommend(self, user_id, at=10, exclude_seen=True):
-        user_profile = self.URM[user_id]
-        scores = (user_profile.dot(self.W_sparse)).toarray().ravel()
+        scores = (self.similarityProduct[user_id]).toarray().ravel()
 
         if exclude_seen:
             scores = self.filter_seen(user_id, scores)

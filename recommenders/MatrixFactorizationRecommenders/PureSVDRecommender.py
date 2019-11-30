@@ -4,7 +4,7 @@ from recommenders.MatrixFactorizationRecommenders import BaseMatrixFactorization
 from sklearn.utils.extmath import randomized_svd
 import scipy.sparse as sps
 
-class PureSVDRecommender(BaseMatrixFactorizationRecommender):
+class PureSVDRecommender(object):
     """ PureSVDRecommender"""
 
     RECOMMENDER_NAME = "PureSVDRecommender"
