@@ -35,7 +35,7 @@ def get_RAM_status():
 class SLIM_BPR_Cython(BaseItemSimilarityMatrixRecommender, Incremental_Training_Early_Stopping):
     RECOMMENDER_NAME = "SLIM_BPR_Recommender"
 
-    def initSlimBPRCython(self, URM_train, verbose=True, free_mem_threshold=0.5, recompile_cython=False):
+    def initSlimBPRCython(self, URM_train, verbose=False, free_mem_threshold=0.5, recompile_cython=False):
         # init of the class
         super(SLIM_BPR_Cython, self).initBaseSimilarityMatrixRecommender(URM_train, verbose=verbose)
 
