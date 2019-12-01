@@ -13,7 +13,7 @@ from CythonCompiler.run_compile_subprocess import run_compile_subprocess
 if __name__ == '__main__':
 
     # list of subfolder in which is allocated .pyx file to be compiled
-    subfolder_to_compile_list = ["recommenders/MatrixFactorizationRecommenders", "Base/Similarity", "recommenders/SlimRecommender"]
+    subfolder_to_compile_list = ["Recommenders/MatrixFactorization", "Base/Similarity", "Recommenders/Slim"]
     cython_file_list = []
 
     for subfolder_to_compile in subfolder_to_compile_list:

@@ -1,9 +1,9 @@
 import numpy as np
 
-from recommenders import HybridItemCF_ItemCB
-from recommenders.SlimRecommender.Cython import SLIM_BPR_Cython
+from Recommenders import HybridItemCF_ItemCB
+from Recommenders.Slim.Cython import SLIM_BPR_Cython
 from Runner import Runner
-from utils import evaluation
+from Utils import evaluation
 
 
 class Tuner(Runner):

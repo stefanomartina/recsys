@@ -1,0 +1,67 @@
+""" Created on 14/06/18 @author: Maurizio Ferrari Dacrema """
+import numpy as np
+import scipy.sparse as sps
+from scipy import sparse
+
+from sklearn.utils.extmath import randomized_svd
+from scipy.sparse.linalg import svds
+from sklearn.decomposition import TruncatedSVD
+
+SVD_LIBRARY = ["svd", "svds", "randomized_svd", "Trunked_svd"]
+
+class PureSVDRecommender(object):
+
+    def fit(self, URM_train, verbose=True, library="random_svd"):
+        self.URM = URM_train
+        self.vebose = verbose
+
+
+        if library == "random_svd":
+            self.URM_SVD = self.get_URM_Random_SVD()
+
+        if library == "svds":
+            self.URM_SVD = self.get_URM_SVDS()
+
+    def get_expected_ratings(self, user_profile):
+        user_profile = self.URM[user_profile]
+        expected_ratings = user_profile.dot(self.URM_SVD)
+        return expected_ratings[0]
+
+    def recommend(self, user_id, at=10):
+        expected_ratings = self.get_expected_ratings(user_id)
+        recommended_items = np.flip(np.argsort(expected_ratings), 0)
+
+        unseen_items_mask = np.in1d(recommended_items, self.URM[user_id].indices, assume_unique=True, invert=True)
+        recommended_items = recommended_items[unseen_items_mask]
+        return recommended_items[0:at]
+
+    def get_URM_SVDS(self, num_factors=2000, which='LM'):
+        print("Computing SVD decomposition...")
+
+        U, Sigma, VT = svds(self.URM, k=num_factors, which=which)
+        UT = U.T
+        Sigma_2_flatten = np.power(Sigma, 2)
+        Sigma_2 = np.diagflat(Sigma_2_flatten)
+        Sigma_2_csr = sparse.csr_matrix(Sigma_2)
+        URM_SVDS = U.dot(Sigma_2_csr.dot(UT))
+        print("Computing SVD decomposition... Done!")
+
+        return URM_SVDS
+
+    def get_URM_Random_SVD(self, n_components =2000, n_iter=5, random_seed=None):
+        print("Computing SVD decomposition...")
+
+        # U: 30911x2000
+        # SIGMA: 2000
+        # VT: 2000x18495
+        U, Sigma, VT = randomized_svd(self.URM, n_components = n_components, n_iter=n_iter, random_state=random_seed)
+
+        # SIGMA_VT: 2000x18495
+        Sigma_Vt = sps.diags(Sigma)*VT
+
+        # URM_SVD: 30911x18495 -> 18495x30911 after transpose
+        URM_Random_SVD = sps.csr_matrix(U.dot(Sigma_Vt)).T
+
+        print("Computing SVD decomposition... Done!")
+
+        return URM_Random_SVD

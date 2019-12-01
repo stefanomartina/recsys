@@ -42,8 +42,8 @@ class Compute_Similarity:
         else:
 
             assert not (dataMatrix.shape[0] == 1 and dataMatrix.nnz == dataMatrix.shape[1]),\
-                "Compute_Similarity: data has only 1 feature (shape: {}) with dense values," \
-                " vector and set based similarities are not defined on 1-dimensional dense data," \
+                "Compute_Similarity: Data has only 1 feature (shape: {}) with dense values," \
+                " vector and set based similarities are not defined on 1-dimensional dense Data," \
                 " use Euclidean similarity instead.".format(dataMatrix.shape)
 
             if similarity is not None:

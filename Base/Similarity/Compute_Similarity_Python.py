@@ -116,7 +116,7 @@ class Compute_Similarity_Python:
 
     def applyAdjustedCosine(self):
         """
-        Remove from every data point the average for the corresponding row
+        Remove from every Data point the average for the corresponding row
         :return:
         """
 
@@ -132,7 +132,7 @@ class Compute_Similarity_Python:
         rowAverage[nonzeroRows] = sumPerRow[nonzeroRows] / interactionsPerRow[nonzeroRows]
 
 
-        # Split in blocks to avoid duplicating the whole data structure
+        # Split in blocks to avoid duplicating the whole Data structure
         start_row = 0
         end_row= 0
 
@@ -153,7 +153,7 @@ class Compute_Similarity_Python:
 
     def applyPearsonCorrelation(self):
         """
-        Remove from every data point the average for the corresponding column
+        Remove from every Data point the average for the corresponding column
         :return:
         """
 
@@ -169,7 +169,7 @@ class Compute_Similarity_Python:
         colAverage[nonzeroCols] = sumPerCol[nonzeroCols] / interactionsPerCol[nonzeroCols]
 
 
-        # Split in blocks to avoid duplicating the whole data structure
+        # Split in blocks to avoid duplicating the whole Data structure
         start_col = 0
         end_col= 0
 
@@ -188,7 +188,7 @@ class Compute_Similarity_Python:
 
     def useOnlyBooleanInteractions(self):
 
-        # Split in blocks to avoid duplicating the whole data structure
+        # Split in blocks to avoid duplicating the whole Data structure
         start_pos = 0
         end_pos= 0
 
@@ -277,7 +277,7 @@ class Compute_Similarity_Python:
 
 
 
-            # All data points for a given item
+            # All Data points for a given item
             item_data = self.dataMatrix[:, start_col_block:end_col_block]
             item_data = item_data.toarray().squeeze()
 
@@ -340,7 +340,7 @@ class Compute_Similarity_Python:
 
                 # Sort indices and select TopK
                 # Sorting is done in three steps. Faster then plain np.argsort for higher number of items
-                # - Partition the data to extract the set of relevant items
+                # - Partition the Data to extract the set of relevant items
                 # - Sort only the relevant items
                 # - Get the original item index
                 relevant_items_partition = (-this_column_weights).argpartition(self.TopK-1)[0:self.TopK]

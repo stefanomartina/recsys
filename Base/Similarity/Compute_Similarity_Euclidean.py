@@ -138,7 +138,7 @@ class Compute_Similarity_Euclidean:
                 start_time_print_batch = time.time()
 
 
-            # All data points for a given item
+            # All Data points for a given item
             item_data = self.dataMatrix[:, start_col_block:end_col_block]
             item_data = item_data.toarray().squeeze()
 
@@ -210,7 +210,7 @@ class Compute_Similarity_Euclidean:
 
                 # Sort indices and select TopK
                 # Sorting is done in three steps. Faster then plain np.argsort for higher number of items
-                # - Partition the data to extract the set of relevant items
+                # - Partition the Data to extract the set of relevant items
                 # - Sort only the relevant items
                 # - Get the original item index
                 relevant_items_partition = (-this_column_weights).argpartition(self.TopK-1)[0:self.TopK]

@@ -140,7 +140,7 @@ cdef class Compute_Similarity_Cython:
         self.this_item_weights_mask = np.zeros(self.n_columns, dtype=np.int32)
         self.this_item_weights_counter = 0
 
-        # Copy data to avoid altering the original object
+        # Copy Data to avoid altering the original object
         dataMatrix = dataMatrix.copy()
 
 
@@ -169,7 +169,7 @@ cdef class Compute_Similarity_Cython:
 
 
         # Apply weight after sumOfSquared has been computed but before the matrix is
-        # split in its inner data structures
+        # split in its inner Data structures
         self.use_row_weights = False
 
         if row_weights is not None:
@@ -209,7 +209,7 @@ cdef class Compute_Similarity_Cython:
 
     cdef useOnlyBooleanInteractions(self, dataMatrix):
         """
-        Set to 1 all data points
+        Set to 1 all Data points
         :return:
         """
 
@@ -224,7 +224,7 @@ cdef class Compute_Similarity_Cython:
 
     cdef applyPearsonCorrelation(self, dataMatrix):
         """
-        Remove from every data point the average for the corresponding column
+        Remove from every Data point the average for the corresponding column
         :return:
         """
 
@@ -265,7 +265,7 @@ cdef class Compute_Similarity_Cython:
 
     cdef applyAdjustedCosine(self, dataMatrix):
         """
-        Remove from every data point the average for the corresponding row
+        Remove from every Data point the average for the corresponding row
         :return:
         """
 
@@ -324,9 +324,9 @@ cdef class Compute_Similarity_Cython:
         -- Given the two items, get the users they have in common
         -- Update the similarity for all common users
         
-        That is VERY slow due to the common user part, in which a long data structure is looped multiple times.
+        That is VERY slow due to the common user part, in which a long Data structure is looped multiple times.
         
-        A better way is to use the data structure in a different way skipping the search part, getting directly the
+        A better way is to use the Data structure in a different way skipping the search part, getting directly the
         information we need.
         
         The implementation here used is:
@@ -389,7 +389,7 @@ cdef class Compute_Similarity_Cython:
                     self.this_item_weights[item_id_second] += rating_item_input*rating_item_second*row_weight
 
 
-                    # Update global data structure
+                    # Update global Data structure
                     if not self.this_item_weights_mask[item_id_second]:
 
                         self.this_item_weights_mask[item_id_second] = True
@@ -415,7 +415,7 @@ cdef class Compute_Similarity_Cython:
 
         cdef long long[:] top_k_idx
 
-        # Declare numpy data type to use vetor indexing and simplify the topK selection code
+        # Declare numpy Data type to use vetor indexing and simplify the topK selection code
         cdef np.ndarray[LONG_t, ndim=1] top_k_partition, top_k_partition_sorting
         cdef np.ndarray[np.float64_t, ndim=1] this_item_weights_np = np.zeros(self.n_columns, dtype=np.float64)
         #cdef double[:] this_item_weights
@@ -508,7 +508,7 @@ cdef class Compute_Similarity_Cython:
 
                 # Sorting is done in three steps. Faster then plain np.argsort for higher number of items
                 # because we avoid sorting elements we already know we don't care about
-                # - Partition the data to extract the set of TopK items, this set is unsorted
+                # - Partition the Data to extract the set of TopK items, this set is unsorted
                 # - Sort only the TopK items, discarding the rest
                 # - Get the original item index
                 #
@@ -520,7 +520,7 @@ cdef class Compute_Similarity_Cython:
                     this_item_weights_np[innerItemIndex] = 0.0
 
 
-                # Add weights in the same ordering as the self.this_item_weights_id data structure
+                # Add weights in the same ordering as the self.this_item_weights_id Data structure
                 for innerItemIndex in range(self.this_item_weights_counter):
                     item_id = self.this_item_weights_id[innerItemIndex]
                     this_item_weights_np[innerItemIndex] = - self.this_item_weights[item_id]
