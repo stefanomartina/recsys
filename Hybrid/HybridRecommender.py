@@ -18,14 +18,14 @@ item_cf_param = {
     "shrink": 0
 }
 
-cbf_param = {
-    "knn": 45,
-    "shrink": 8,
+cf_param = {
+    "knn": 10,
+    "shrink": 25,
 }
 
 slim_param = {
-    "epochs": 40,
-    "topK": 200
+    "epochs": 300,
+    "topK": 10
 }
 
 
@@ -35,7 +35,7 @@ class HybridRecommender(object):
     #                                  INIT ALGORITHM                                     #
     #######################################################################################
 
-    def __init__(self, user_cf_param = user_cf_param, item_cf_param = item_cf_param, cbf_param = cbf_param,
+    def __init__(self, user_cf_param = user_cf_param, item_cf_param = item_cf_param, cf_param = cf_param,
                  slim_param = slim_param):
 
         # User Content Based
@@ -45,7 +45,7 @@ class HybridRecommender(object):
         self.itemContentBased = ItemCBFKNNRecommender.ItemCBFKNNRecommender(knn=item_cf_param["knn"], shrink=item_cf_param["shrink"])
 
         # Collaborative Filtring
-        self.cbf = ItemKNNCFRecommender(knn=cbf_param["knn"], shrink=cbf_param["shrink"])
+        self.cf = ItemKNNCFRecommender(knn=cf_param["knn"], shrink=cf_param["shrink"])
 
         # Slim
         self.slim_random = SLIM_BPR_Cython(epochs=slim_param["epochs"], topK=slim_param["topK"])
@@ -65,7 +65,7 @@ class HybridRecommender(object):
         self.itemContentBased.fit(URM.copy(), list_ICM)
 
         print("Fitting Collaborative Filtering...")
-        self.cbf.fit(URM.copy())
+        self.cf.fit(URM.copy())
 
         print("Fitting slim...")
         self.slim_random.fit(URM.copy())
@@ -74,18 +74,18 @@ class HybridRecommender(object):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def recommend(self, user_id, weights=[0.25,0.25,0.25,0.25], at=10):
+    def recommend(self, user_id, weights=[0.15, 0.15, 0.4, 0.3], at=10):
 
         self.hybrid_ratings = None
 
         self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
         self.itemContentBased_ratings = self.itemContentBased.get_expected_ratings(user_id)
-        self.cbf_ratings = self.cbf.get_expected_ratings(user_id)
+        self.cf_ratings = self.cf.get_expected_ratings(user_id)
         self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
 
         self.hybrid_ratings = self.userContentBased_ratings * weights[0]
         self.hybrid_ratings += self.itemContentBased_ratings * weights[1]
-        self.hybrid_ratings += self.cbf_ratings * weights[2]
+        self.hybrid_ratings += self.cf_ratings * weights[2]
         self.hybrid_ratings += self.slim_ratings * weights[3]
 
         recommended_items = np.flip(np.argsort(self.hybrid_ratings), 0)
