@@ -8,19 +8,13 @@ RECOMMENDER_NAME = "ItemKNNCFRecommender"
 
 class ItemKNNCFRecommender():
 
-    def __init__(self, knn=300, shrink=4, similarity="tversky", normalize=True, feature_weighting=None):
-        self.knn = knn
-        self.shrink = shrink
-        self.similarity = similarity
-        self.normalize = normalize
-        self.feature_weighting = feature_weighting
+    def __init__(self):
         self.helper = BaseFunction()
-        self.URM = None
 
-    def fit(self, URM):
+    def fit(self, URM, knn=300, shrink=4, similarity="tversky", normalize=True, feature_weighting=None):
         self.URM = URM
         # Compute similarity
-        self.similarity_object = Compute_Similarity_Python(self.URM, shrink=self.shrink, topK=self.knn, normalize=self.normalize, similarity=self.similarity)
+        self.similarity_object = Compute_Similarity_Python(self.URM, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
         self.W_sparse = self.similarity_object.compute_similarity()
         self.similarityProduct = self.URM.dot(self.W_sparse)
 

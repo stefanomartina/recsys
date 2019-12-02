@@ -10,16 +10,10 @@ RECOMMENDER_NAME = "UserCBFKNNRecommender("
 
 class UserCBFKNNRecommender():
 
-    def __init__(self, knn=300, shrink=4, similarity="tversky", normalize=True, feature_weighting="TF-IDF"):
-        self.knn = knn
-        self.shrink = shrink
-        self.similarity = similarity
-        self.normalize = normalize
-        self.feature_weighting = feature_weighting
+    def __init__(self):
         self.helper = BaseFunction()
-        self.URM = None
 
-    def fit(self, URM, list_UCM):
+    def fit(self, URM, list_UCM, knn=300, shrink=4, similarity="tversky", normalize=True, feature_weighting="TF-IDF"):
         self.URM = URM
         self.UCM_age, self.UCM_region = list_UCM
 
@@ -29,10 +23,10 @@ class UserCBFKNNRecommender():
         self.UCM_merged = sps.csr_matrix(mergedMatrixDense)
 
         # IR Feature Weighting
-        self.URM = self.helper.feature_weight(self.URM, self.feature_weighting)
+        self.URM = self.helper.feature_weight(self.URM, feature_weighting)
 
         # Compute similarity
-        self.similarity = Compute_Similarity_Python(self.UCM_merged.T, shrink=self.shrink, topK=self.knn, normalize=self.normalize, similarity=self.similarity)
+        self.similarity = Compute_Similarity_Python(self.UCM_merged.T, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
         self.W_sparse = self.similarity.compute_similarity()
         self.similarityProduct = self.W_sparse.dot(self.URM)
 

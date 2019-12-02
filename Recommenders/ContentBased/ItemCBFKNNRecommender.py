@@ -10,25 +10,20 @@ RECOMMENDER_NAME = "ItemCBFKNNRecommender"
 
 class ItemCBFKNNRecommender():
 
-    def __init__(self, knn=300, shrink=4, similarity="tversky", normalize=True, feature_weighting=None):
-        self.knn = knn
-        self.shrink = shrink
-        self.similarity = similarity
-        self.normalize = normalize
-        self.feature_weighting = feature_weighting
+    def __init__(self):
         self.helper = BaseFunction()
-        self.URM = None
 
-    def fit(self, URM, list_ICM):
+
+    def fit(self, URM, list_ICM, knn=300, shrink=4, similarity="tversky", normalize=True, feature_weighting=None):
         self.URM = URM
         self.ICM, self.ICM_asset, self.ICM_price = list_ICM
         self.ICM_merged = sps.hstack((self.ICM, self.ICM_asset, self.ICM_price)).tocsr()
 
         # IR Feature Weighting
-        self.ICM_merged = self.helper.feature_weight(self.ICM_merged, self.feature_weighting)
+        self.ICM_merged = self.helper.feature_weight(self.ICM_merged, feature_weighting)
 
         # Compute similarity
-        self.similarity = Compute_Similarity_Python(self.ICM_merged.T, shrink=self.shrink, topK=self.knn, normalize=self.normalize, similarity=self.similarity)
+        self.similarity = Compute_Similarity_Python(self.ICM_merged.T, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
         self.W_sparse = self.similarity.compute_similarity()
         self.similarityProduct = self.URM.dot(self.W_sparse)
 

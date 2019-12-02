@@ -22,10 +22,9 @@ class PureSVDRecommender(object):
         if library == "svds":
             self.URM_SVD = self.get_URM_SVDS()
 
-    def get_expected_ratings(self, user_profile):
-        user_profile = self.URM[user_profile]
-        expected_ratings = user_profile.dot(self.URM_SVD)
-        return expected_ratings[0]
+    def get_expected_ratings(self, user_id):
+        expected_ratings = self.U[user_id].dot(self.Sigma_Vt)
+        return expected_ratings
 
     def recommend(self, user_id, at=10):
         expected_ratings = self.get_expected_ratings(user_id)
@@ -54,14 +53,9 @@ class PureSVDRecommender(object):
         # U: 30911x2000
         # SIGMA: 2000
         # VT: 2000x18495
-        U, Sigma, VT = randomized_svd(self.URM, n_components = n_components, n_iter=n_iter, random_state=random_seed)
+        self.U, Sigma, VT = randomized_svd(self.URM, n_components = n_components, n_iter=n_iter, random_state=random_seed)
 
         # SIGMA_VT: 2000x18495
-        Sigma_Vt = sps.diags(Sigma)*VT
-
-        # URM_SVD: 30911x18495 -> 18495x30911 after transpose
-        URM_Random_SVD = sps.csr_matrix(U.dot(Sigma_Vt)).T
+        self.Sigma_Vt = sps.diags(Sigma)*VT
 
         print("Computing SVD decomposition... Done!")
-
-        return URM_Random_SVD

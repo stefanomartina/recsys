@@ -1,23 +1,27 @@
 import numpy as np
 
-from Recommenders import HybridItemCF_ItemCB
-from Recommenders.Slim.Cython import SLIM_BPR_Cython
-from Runner import Runner
+from Recommenders.Combination.ItemCF_ItemCB import ItemCF_ItemCB
+from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
+from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
+from Base.BaseFunction import BaseFunction
 from Utils import evaluation
 
 
-class Tuner(Runner):
+class Tuner():
 
     def __init__(self, recommender, name):
-        super(Tuner, self).__init__(self, recommender, name)
         self.recommender = recommender
-
+        self.name = name
+        self.helper = BaseFunction()
+        self.helper.get_URM()
+        self.helper.get_UCM()
+        self.helper.get_ICM()
 
     def step_HybridItemCF_ItemCB(self, topK, list_ICM, shrink, similarity):
         print("----------------------------------------")
         print("topk: " + str(topK) + " shrink: " + str(shrink) + " similarity: " + similarity)
-        self.recommender.fit(self.URM_train, list_ICM, topK=topK, shrink=shrink, similarity=similarity, normalize=True)
-        evaluation.evaluate_algorithm(self.URM_test, self.recommender, at=10)
+        self.recommender.fit(self.helper.URM_train, list_ICM, topK=topK, shrink=shrink, similarity=similarity, normalize=True)
+        evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         print("----------------------------------------")
 
     def step_SlimBPR_Cython(self, topK, learning_rate, L1, L2, sgd_mode, gamma=0.995, beta1=0.9, beta2=0.999):
@@ -25,15 +29,30 @@ class Tuner(Runner):
         print("topk: " + str(topK) + " learning_rate: " + str(learning_rate) + " L1: " + str(L1) + " L2: " + str(L2) + " beta1: " + str(beta1) + " beta2: " + str(beta2) +
              " gamma: " + str(gamma) + " sgd_mode: " + sgd_mode)
 
-        self.recommender.fit(self.URM_train, topK=topK, learning_rate=learning_rate, lambda_i = L1, lambda_j = L2, beta_1 = beta1, beta_2 = beta2, gamma = gamma, sgd_mode = sgd_mode)
-        evaluation.evaluate_algorithm(self.URM_test, self.recommender, at=10)
+        self.recommender.fit(self.helper.URM_train, topK=topK, learning_rate=learning_rate, lambda_i = L1, lambda_j = L2, beta_1 = beta1, beta_2 = beta2, gamma = gamma, sgd_mode = sgd_mode)
+        evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         print("----------------------------------------")
 
+    def step_Item_CB(self, knn, shrink):
+        print("----------------------------------------")
+        print("Recommender: " + self.name + "knn: " + str(knn) + " shrink: " + str(shrink))
+        list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
+        self.recommender.fit(self.helper.URM_train, list_ICM, knn=knn, shrink=shrink)
+        evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        print("----------------------------------------")
 
-    def run(self, requires_icm=False, requires_ucm=False):
-        self.get_URM()
-        self.split_dataset_loo()
-        self.get_target_users()
+    def step_User_CB(self, knn, shrink):
+        print("----------------------------------------")
+        print("Recommender: " + self.name + "knn: " + str(knn) + " shrink: " + str(shrink))
+
+        list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
+        self.recommender.fit(self.helper.URM_train, list_UCM, knn=knn, shrink=shrink)
+        evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        print("----------------------------------------")
+
+    def run_Slim(self):
+        self.helper.split_dataset_loo()
+        self.helper.get_target_users()
 
         topKs = np.arange(start=10, stop = 200, step = 10)
         learning_rates = [1e-2, 1e-3, 1e-4]
@@ -57,7 +76,28 @@ class Tuner(Runner):
                                         for beta_2 in beta_2s:
                                             self.step_SlimBPR_Cython(topk, learning_rate, lambda_i, lambda_j, sgd_mode, beta_1, beta_2)
 
+    def run_Item(self):
+        self.helper.split_dataset_loo()
+        self.helper.get_target_users()
+
+        topKs = np.arange(start=10, stop=210, step=20)
+        shrinks = np.arange(start=10, stop=210, step=20)
+
+        for topk in topKs:
+            for shrink in shrinks:
+                    self.step_Item_CB(topk, shrink)
+
+    def run_User(self):
+        self.helper.split_dataset_loo()
+        self.helper.get_target_users()
+
+        topKs = np.arange(start=10, stop=210, step=20)
+        shrinks = np.arange(start=10, stop=210, step=20)
+
+        for topk in topKs:
+            for shrink in shrinks:
+                    self.step_Item_CB(topk, shrink)
 
 if __name__ == "__main__":
-    recommender = SLIM_BPR_Cython.SLIM_BPR_Cython()
-    Tuner(recommender, "SlimBPR_Cython").run()
+    recommender = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
+    Tuner(recommender, "Item Content Base").run_Item()
