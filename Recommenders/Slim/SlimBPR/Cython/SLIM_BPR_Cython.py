@@ -73,7 +73,7 @@ class SLIM_BPR_Cython(object):
         URM_train_positive.data = URM_train_positive.data >= self.positive_threshold
         URM_train_positive.eliminate_zeros()
 
-        from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython_Epoch
+        from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython_Epoch import SLIM_BPR_Cython_Epoch
         self.cythonEpoch = SLIM_BPR_Cython_Epoch(self.URM_mask,
                                                  train_with_sparse_weights=self.train_with_sparse_weights,
                                                  final_model_sparse_weights=self.sparse_weights,

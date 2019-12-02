@@ -1,52 +1,32 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
 
-from Utils.Compute_Similarity_Python import Compute_Similarity_Python, check_matrix
-from Utils.IR_feature_weighting import okapi_BM_25, TF_IDF
+from Utils.Compute_Similarity_Python import Compute_Similarity_Python
+from Base.BaseFunction import BaseFunction
 import numpy as np
 
-class ItemKNNCFRecommender(object):
-    RECOMMENDER_NAME = "ItemKNNCFRecommender"
+RECOMMENDER_NAME = "ItemKNNCFRecommender"
 
-    def __init__(self):
-        pass
+class ItemKNNCFRecommender():
 
-    def feature_weight(self, feature_weighting):
-        if feature_weighting == "BM25":
-            self.URM = self.URM.astype(np.float32)
-            self.URM = okapi_BM_25(self.URM.T).T
-            self.URM = check_matrix(self.URM, 'csr')
+    def __init__(self, knn=300, shrink=4, similarity="tversky", normalize=True, feature_weighting=None):
+        self.knn = knn
+        self.shrink = shrink
+        self.similarity = similarity
+        self.normalize = normalize
+        self.feature_weighting = feature_weighting
+        self.helper = BaseFunction()
+        self.URM = None
 
-        elif feature_weighting == "TF-IDF":
-            self.URM = self.URM.astype(np.float32)
-            self.URM = TF_IDF(self.URM.T).T
-            self.URM = check_matrix(self.URM, 'csr')
-
-    def compute_similarity(self, topK=10, shrink=50, normalize=True, similarity="tversky", feature_weighting="TF-IDF"):
-
-        if not None:
-            self.feature_weight(feature_weighting)
-
-        similarity_object = Compute_Similarity_Python(self.URM,
-                                                      shrink=shrink,
-                                                      topK=topK,
-                                                      normalize=normalize,
-                                                      similarity=similarity)
-        return similarity_object
-
-    def fit(self, URM, ICM = None):
+    def fit(self, URM):
         self.URM = URM
-        similarity_object = self.compute_similarity()
+        # Compute similarity
+        self.similarity_object = Compute_Similarity_Python(self.URM, shrink=self.shrink, topK=self.knn, normalize=self.normalize, similarity=self.similarity)
+        self.W_sparse = self.similarity_object.compute_similarity()
+        self.similarityProduct = self.URM.dot(self.W_sparse)
 
-        self.W_sparse = similarity_object.compute_similarity()
-
-    def recommend(self, user_id, at=10, exclude_seen=True):
-        user_profile = self.URM[user_id]
-        scores = user_profile.dot(self.W_sparse).toarray().ravel()
-
-        if exclude_seen:
-            scores = self.filter_seen(user_id, scores)
-        ranking = scores.argsort()[::-1]
-        return ranking[:at]
+    def get_expected_ratings(self, user_id):
+        expected_scores = (self.similarityProduct[user_id]).toarray().ravel()
+        return expected_scores
 
     def filter_seen(self, user_id, scores):
         start_pos = self.URM.indptr[user_id]
@@ -55,3 +35,12 @@ class ItemKNNCFRecommender(object):
         user_profile = self.URM.indices[start_pos:end_pos]
         scores[user_profile] = -np.inf
         return scores
+
+    def recommend(self, user_id, at=10, exclude_seen=True):
+
+        expected_scores = self.get_expected_ratings(user_id)
+
+        if exclude_seen:
+            expected_scores = self.filter_seen(user_id, expected_scores)
+        ranking = expected_scores.argsort()[::-1]
+        return ranking[:at]

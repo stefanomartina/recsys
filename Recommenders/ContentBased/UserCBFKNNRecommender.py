@@ -1,20 +1,25 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
 
-"""
-    This class refers to a UserCBFKNNRecommender which uses a similarity matrix. In particular, can compute different 
-    combination of multiple UCM inputs. In our case, we have 2 different sources from which generate an UCM_merged
-"""
-
-from Utils.Compute_Similarity_Python import Compute_Similarity_Python, check_matrix
-from Utils.IR_feature_weighting import okapi_BM_25, TF_IDF
+from Utils.Compute_Similarity_Python import Compute_Similarity_Python
+from Base.BaseFunction import BaseFunction
 import scipy.sparse as sps
 import numpy as np
 
+RECOMMENDER_NAME = "UserCBFKNNRecommender("
+
 
 class UserCBFKNNRecommender():
-    RECOMMENDER_NAME = "UserCBFKNNRecommender("
 
-    def fit(self, URM, list_UCM, topK=200, shrink=100, normalize=True,  similarity="tversky", feature_weighting="TF-IDF"):
+    def __init__(self, knn=300, shrink=4, similarity="tversky", normalize=True, feature_weighting="TF-IDF"):
+        self.knn = knn
+        self.shrink = shrink
+        self.similarity = similarity
+        self.normalize = normalize
+        self.feature_weighting = feature_weighting
+        self.helper = BaseFunction()
+        self.URM = None
+
+    def fit(self, URM, list_UCM):
         self.URM = URM
         self.UCM_age, self.UCM_region = list_UCM
 
@@ -23,36 +28,34 @@ class UserCBFKNNRecommender():
         mergedMatrixDense = np.concatenate((denseMatrix_age, denseMatrix_region), axis = 1)
         self.UCM_merged = sps.csr_matrix(mergedMatrixDense)
 
-        if feature_weighting == "BM25":
-            self.URM = self.URM.astype(np.float32)
-            self.URM = okapi_BM_25(self.URM.T).T
-            self.URM = check_matrix(self.URM, 'csr')
+        # IR Feature Weighting
+        self.URM = self.helper.feature_weight(self.URM, self.feature_weighting)
 
-        elif feature_weighting == "TF-IDF":
-            self.URM = self.URM.astype(np.float32)
-            self.URM = TF_IDF(self.URM.T).T
-            self.URM = check_matrix(self.URM, 'csr')
-
-        self.similarity = Compute_Similarity_Python(self.UCM_merged.T, shrink=shrink, topK=topK, normalize=normalize, similarity=similarity)
-
+        # Compute similarity
+        self.similarity = Compute_Similarity_Python(self.UCM_merged.T, shrink=self.shrink, topK=self.knn, normalize=self.normalize, similarity=self.similarity)
         self.W_sparse = self.similarity.compute_similarity()
         self.similarityProduct = self.W_sparse.dot(self.URM)
 
-    def recommend(self, user_id, at=10, exclude_seen=True):
-
-        scores = (self.similarityProduct[user_id]).toarray().ravel()
-
-        if exclude_seen:
-            scores = self.filter_seen(user_id, scores)
-        ranking = scores.argsort()[::-1]
-
-        return ranking[:at]
-
     def filter_seen(self, user_id, scores):
         start_pos = self.URM.indptr[user_id]
-        end_pos = self.URM.indptr[user_id+1]
+        end_pos = self.URM.indptr[user_id + 1]
 
         user_profile = self.URM.indices[start_pos:end_pos]
         scores[user_profile] -= np.inf
 
         return scores
+
+    def get_expected_ratings(self, user_id):
+        expected_scores = (self.similarityProduct[user_id]).toarray().ravel()
+        return expected_scores
+
+    def recommend(self, user_id, at=10, exclude_seen=True):
+
+        expected_scores = self.get_expected_ratings(user_id)
+
+        if exclude_seen:
+            scores = self.filter_seen(user_id, expected_scores)
+        ranking = expected_scores.argsort()[::-1]
+
+        return ranking[:at]
+
