@@ -9,13 +9,13 @@ from Recommenders.MatrixFactorization.PureSVD.PureSVDRecommender import PureSVDR
 import numpy as np
 
 user_cf_param = {
-    "knn": 140,
-    "shrink": 0
+    "knn": 800,
+    "shrink": 100
 }
 
 item_cf_param = {
-    "knn": 310,
-    "shrink": 0
+    "knn": 350,
+    "shrink": 20
 }
 
 cf_param = {
@@ -35,17 +35,16 @@ class HybridRecommender(object):
     #                                  INIT ALGORITHM                                     #
     #######################################################################################
 
-    def __init__(self, user_cf_param = user_cf_param, item_cf_param = item_cf_param, cf_param = cf_param,
-                 slim_param = slim_param):
+    def __init__(self, slim_param = slim_param):
 
         # User Content Based
-        self.userContentBased = UserCBFKNNRecommender.UserCBFKNNRecommender(knn=user_cf_param["knn"], shrink=user_cf_param["shrink"])
+        self.userContentBased = UserCBFKNNRecommender.UserCBFKNNRecommender()
 
         # Item Content Based
-        self.itemContentBased = ItemCBFKNNRecommender.ItemCBFKNNRecommender(knn=item_cf_param["knn"], shrink=item_cf_param["shrink"])
+        self.itemContentBased = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
 
         # Collaborative Filtring
-        self.cf = ItemKNNCFRecommender(knn=cf_param["knn"], shrink=cf_param["shrink"])
+        self.cf = ItemKNNCFRecommender()
 
         # Slim
         self.slim_random = SLIM_BPR_Cython(epochs=slim_param["epochs"], topK=slim_param["topK"])
@@ -54,18 +53,20 @@ class HybridRecommender(object):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, list_ICM, list_UCM):
+    def fit(self, URM, list_ICM, list_UCM, weights, knn_user=user_cf_param["knn"], shrink_user=user_cf_param["shrink"],
+            knn_item=item_cf_param["knn"], shrink_item=item_cf_param["shrink"], knn_cf=cf_param["knn"], shrink_cf=cf_param["shrink"]):
         self.URM = URM
+        self.weights = weights
 
         # Sub-Fitting
         print("Fitting UserContentRecommender...")
-        self.userContentBased.fit(URM.copy(), list_UCM)
+        self.userContentBased.fit(URM.copy(), list_UCM, knn_user, shrink_user)
 
         print("Fitting ItemContentRecommender...")
-        self.itemContentBased.fit(URM.copy(), list_ICM)
+        self.itemContentBased.fit(URM.copy(), list_ICM, knn_item, shrink_item)
 
         print("Fitting Collaborative Filtering...")
-        self.cf.fit(URM.copy())
+        self.cf.fit(URM.copy(), knn_cf, shrink_cf)
 
         print("Fitting slim...")
         self.slim_random.fit(URM.copy())
@@ -74,7 +75,7 @@ class HybridRecommender(object):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def recommend(self, user_id, weights=[0.15, 0.15, 0.4, 0.3], at=10):
+    def recommend(self, user_id, at=10):
 
         self.hybrid_ratings = None
 
@@ -83,10 +84,10 @@ class HybridRecommender(object):
         self.cf_ratings = self.cf.get_expected_ratings(user_id)
         self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
 
-        self.hybrid_ratings = self.userContentBased_ratings * weights[0]
-        self.hybrid_ratings += self.itemContentBased_ratings * weights[1]
-        self.hybrid_ratings += self.cf_ratings * weights[2]
-        self.hybrid_ratings += self.slim_ratings * weights[3]
+        self.hybrid_ratings = self.userContentBased_ratings * self.weights[0,0]
+        self.hybrid_ratings += self.itemContentBased_ratings * self.weights[0,1]
+        self.hybrid_ratings += self.cf_ratings * self.weights[0,2]
+        self.hybrid_ratings += self.slim_ratings * self.weights[0,3]
 
         recommended_items = np.flip(np.argsort(self.hybrid_ratings), 0)
 

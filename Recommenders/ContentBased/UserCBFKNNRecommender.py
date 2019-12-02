@@ -1,6 +1,6 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
 
-from Utils.Compute_Similarity_Python import Compute_Similarity_Python
+from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
 from Base.BaseFunction import BaseFunction
 import scipy.sparse as sps
 import numpy as np
@@ -26,7 +26,7 @@ class UserCBFKNNRecommender():
         self.URM = self.helper.feature_weight(self.URM, feature_weighting)
 
         # Compute similarity
-        self.similarity = Compute_Similarity_Python(self.UCM_merged.T, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
+        self.similarity = Compute_Similarity_Cython(self.UCM_merged.T, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
         self.W_sparse = self.similarity.compute_similarity()
         self.similarityProduct = self.W_sparse.dot(self.URM)
 

@@ -301,7 +301,7 @@ class BaseFunction:
         elif isinstance(X, np.ndarray):
             X = sps.csr_matrix(X, dtype=dtype)
             X.eliminate_zeros()
-            return check_matrix(X, format=format, dtype=dtype)
+            return self.check_matrix(X, format=format, dtype=dtype)
         else:
             return X.astype(dtype)
 

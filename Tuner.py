@@ -3,6 +3,7 @@ import numpy as np
 from Recommenders.Combination.ItemCF_ItemCB import ItemCF_ItemCB
 from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
 from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
+from Hybrid.HybridRecommender import HybridRecommender
 from Base.BaseFunction import BaseFunction
 from Utils import evaluation
 
@@ -35,7 +36,7 @@ class Tuner():
 
     def step_Item_CB(self, knn, shrink):
         print("----------------------------------------")
-        print("Recommender: " + self.name + "knn: " + str(knn) + " shrink: " + str(shrink))
+        print("Recommender: " + self.name + " knn: " + str(knn) + " shrink: " + str(shrink))
         list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
         self.recommender.fit(self.helper.URM_train, list_ICM, knn=knn, shrink=shrink)
         evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
@@ -43,10 +44,20 @@ class Tuner():
 
     def step_User_CB(self, knn, shrink):
         print("----------------------------------------")
-        print("Recommender: " + self.name + "knn: " + str(knn) + " shrink: " + str(shrink))
-
+        print("Recommender: " + self.name + " knn: " + str(knn) + " shrink: " + str(shrink))
         list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
         self.recommender.fit(self.helper.URM_train, list_UCM, knn=knn, shrink=shrink)
+        evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        print("----------------------------------------")
+
+    def step_weight(self, list_weight):
+        print("----------------------------------------")
+        print("Recommender: " + self.name + " First weight: " + str(list_weight[0,0]) +
+              " Second_weight: " + str(list_weight[0,1]) + " Third_weight: " + str(list_weight[0,2]) + " Fourth_weight: " + str(list_weight[0,3]))
+
+        list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
+        list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
+        self.recommender.fit(self.helper.URM_train, list_ICM, list_UCM,list_weight)
         evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         print("----------------------------------------")
 
@@ -80,8 +91,8 @@ class Tuner():
         self.helper.split_dataset_loo()
         self.helper.get_target_users()
 
-        topKs = np.arange(start=10, stop=210, step=20)
-        shrinks = np.arange(start=10, stop=210, step=20)
+        topKs = np.arange(start=100, stop=500, step=50)
+        shrinks = np.arange(start=0, stop=400, step=50)
 
         for topk in topKs:
             for shrink in shrinks:
@@ -96,8 +107,17 @@ class Tuner():
 
         for topk in topKs:
             for shrink in shrinks:
-                    self.step_Item_CB(topk, shrink)
+                    self.step_User_CB(topk, shrink)
+
+    def run_hybrid(self):
+        self.helper.split_dataset_loo()
+        self.helper.get_target_users()
+
+        for i in range(0, 30):
+            self.step_weight(np.random.dirichlet(np.ones(4), size=1))
+
+
 
 if __name__ == "__main__":
-    recommender = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
-    Tuner(recommender, "Item Content Base").run_Item()
+    recommender = HybridRecommender()
+    Tuner(recommender, "Item Content Base").run_hybrid()
