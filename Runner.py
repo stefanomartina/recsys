@@ -4,6 +4,7 @@ from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommend
 from Recommenders.Combination import ItemCF_TopPop, ItemCF_ItemCB
 from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
 from Recommenders.MatrixFactorization.PureSVD import PureSVDRecommender
+from Hybrid.HybridRecommender import HybridRecommender
 from Utils import evaluation
 
 from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRecommender
@@ -50,7 +51,10 @@ class Runner:
         list_UCM = [self.functionality.UCM_age, self.functionality.UCM_region]
 
         if not self.evaluate:
-            if requires_icm:
+
+            if requires_icm and requires_ucm:
+                self.recommender.fit(self.functionality.URM_all, list_ICM, list_UCM)
+            elif requires_icm:
                 self.recommender.fit(self.functionality.URM_all, list_ICM)
             elif requires_ucm:
                 self.recommender.fit(self.functionality.URM_all, list_UCM)
@@ -58,7 +62,9 @@ class Runner:
                 self.recommender.fit(self.functionality.URM_all)
         else:
             self.functionality.split_dataset_loo()
-            if requires_icm:
+            if requires_icm and requires_ucm:
+                self.recommender.fit(self.functionality.URM_train, list_ICM, list_UCM)
+            elif requires_icm:
                 self.recommender.fit(self.functionality.URM_train, list_ICM)
             elif requires_ucm:
                 self.recommender.fit(self.functionality.URM_train, list_UCM)
@@ -98,7 +104,7 @@ class Runner:
         if requires_icm:
             self.functionality.get_ICM()
 
-        elif requires_ucm:
+        if requires_ucm:
             self.functionality.get_UCM()
 
         self.functionality.get_target_users()
@@ -110,10 +116,12 @@ class Runner:
 
 
 
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'UserCBF', 'ItemCF_TopPop_Combo', 'ItemCF_ItemCB_Combo',
-                                                 'ItemCF', 'SlimBPRCython_Hybrid', 'PureSVD', 'MF_BPR_Cython', 'Slim'])
+                                                 'ItemCF', 'SlimBPRCython_Hybrid', 'PureSVD', 'MF_BPR_Cython', 'Slim', 'Hybrid'])
     parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
     requires_icm = False
@@ -154,6 +162,12 @@ if __name__ == '__main__':
     if args.recommender == 'PureSVD':
         print("PureSVD selected")
         recommender = PureSVDRecommender.PureSVDRecommender()
+
+    if args.recommender == "Hybrid":
+        print("Hybrid")
+        recommender = HybridRecommender()
+        requires_icm = True
+        requires_ucm = True
 
     if args.recommender == 'MF_BPR_Cython':
         print("MF_BPR_Cython selected")
