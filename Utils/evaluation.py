@@ -82,3 +82,5 @@ def evaluate_algorithm(urm_test, recommender_object, at=10):
     }
 
     return result_dict '''
+
+    return cumulative_map

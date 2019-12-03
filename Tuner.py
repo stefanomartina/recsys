@@ -55,14 +55,15 @@ class Tuner():
 
     def step_weight(self, list_weight):
         print("----------------------------------------")
-        print("Recommender: " + self.name + " First weight: " + str(list_weight[0]) +
-              " Second_weight: " + str(list_weight[1]) + " Third_weight: " + str(list_weight[2]) + " Fourth_weight: " + str(list_weight[3]))
+        # print("Recommender: " + self.name + " First weight: " + str(list_weight[0]) +
+        #     " Second_weight: " + str(list_weight[1]) + " Third_weight: " + str(list_weight[2]) + " Fourth_weight: " + str(list_weight[3]))
 
         list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
         list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
         self.recommender.fit(self.helper.URM_train, list_ICM, list_UCM,list_weight)
-        evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         print("----------------------------------------")
+        return cumulative
 
     def run_Slim(self):
         self.helper.split_dataset_loo()
@@ -120,7 +121,6 @@ class Tuner():
         one = 1
         weights = []
 
-
         for i in range(0, 30):
             weights.clear()
             #self.step_weight(np.random.dirichlet(np.ones(4), size=1))
@@ -130,14 +130,107 @@ class Tuner():
             weights.append(random.uniform(0, 0.2))
             one -= weights[1]
 
-            weights.append(random.uniform(0, one))
+            weights.append(random.uniform(0.1, 0.2))
             one -= weights[2]
 
             weights.append(one)
             one = 1
             self.step_weight(weights)
 
+    def random_pop(self):
+        weights = []
+        for i in range(self.pop_size):
+            w1 = random.uniform(0, 0.2)
+            w2 = random.uniform(0, 0.2)
+            w3 = random.uniform(0.3, 0.5)
+            res = 1 - w1 - w2 - w3
+            w4 = random.uniform(0, res)
+            line = [w1, w2, w3, w4]
+            weights.append(line)
+
+        return weights
+
+    def evaluate_pop(self):
+        return [self.evaluate_chromosome(chromosome) for chromosome in self.pop]
+
+    def evaluate_chromosome(self, chromosome):
+        return self.step_weight(chromosome)
+
+    def select_parents(self):
+        max_score = max(self.pop_score)
+        adj_scores = [max_score + 1 - score for score in self.pop_score]
+        tot_score = sum(adj_scores)
+        probs = [p/tot_score for p in adj_scores]
+        parents = [self.pop[i] for i in np.random.choice(len(self.pop), p = probs)]
+
+        return parents
+
+    def generate_offspring(self, p1, p2, b1, b2):
+        c1, c2 = p1[:], p2[:]
+
+        size = len(c1)
+        offspring = np.empty((size), dtype='object')
+
+        for i in range(b1, b2 + 1):
+            offspring[i] = c1[i]
+
+        for i in range(b2+1, size):
+            offspring[i] = c2[i]
+
+        return offspring
+
+    def crossover(self, parents):
+        b1, b2 = np.sort(np.random.randint(0, len(parents[0]), size=2))
+
+        offspring1 = self.generate_offspring(parents[0], parents[1], b1, b2)
+        offspring2 = self.generate_offspring(parents[1], parents[0], b1, b2)
+
+        offspring1 = self.mutation(offspring1)
+        offspring2 = self.mutation(offspring2)
+
+        return offspring1, offspring2
+
+    def mutation(self, offspring):
+        offspring += int(random.randrange(0, 0.1))
+        return offspring
+
+    def elitism(self, new_pop):
+        els = self.pop[:]
+        score_c = self.pop_score[:]
+
+        for _ in range(4):
+            index = np.argmin(score_c)
+            score_c.pop(index)
+            new_pop.append(els.pop(index))
+
+
+
+    def run_hybrid_hill_climbing(self, max = 1000, pop_size=10, p_mutation=0.1):
+        self.helper.split_dataset_loo()
+        self.helper.get_target_users()
+        self.pop_size = pop_size
+        self.p_mutation = p_mutation
+
+        self.pop = self.random_pop()
+        self.pop_score = self.evaluate_pop()
+
+        for i in range(max):
+            new_pop = []
+            self.elitism(new_pop)
+
+            while(len(new_pop) < len(self.pop)):
+                parents = self.select_parents()
+                off1, off2 = self.crossover(parents)
+                new_pop.append(off1)
+                new_pop.append(off2)
+
+            self.pop_score = new_pop
+            self.pop_score = self.evaluate_pop()
+
+            print("best score: %i"%np.min(self.pop_score))
+            print("best res: %i"%np.argmin(self.pop_score))
+
 
 if __name__ == "__main__":
     recommender = HybridRecommender()
-    Tuner(recommender, "Item Content Base").run_hybrid()
+    Tuner(recommender, "Item Content Base").run_hybrid_hill_climbing()
