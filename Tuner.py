@@ -1,3 +1,6 @@
+import random
+from _decimal import Decimal
+
 import numpy as np
 
 from Recommenders.Combination.ItemCF_ItemCB import ItemCF_ItemCB
@@ -52,8 +55,8 @@ class Tuner():
 
     def step_weight(self, list_weight):
         print("----------------------------------------")
-        print("Recommender: " + self.name + " First weight: " + str(list_weight[0,0]) +
-              " Second_weight: " + str(list_weight[0,1]) + " Third_weight: " + str(list_weight[0,2]) + " Fourth_weight: " + str(list_weight[0,3]))
+        print("Recommender: " + self.name + " First weight: " + str(list_weight[0]) +
+              " Second_weight: " + str(list_weight[1]) + " Third_weight: " + str(list_weight[2]) + " Fourth_weight: " + str(list_weight[3]))
 
         list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
         list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
@@ -111,11 +114,26 @@ class Tuner():
 
     def run_hybrid(self):
         self.helper.split_dataset_loo()
+
         self.helper.get_target_users()
 
-        for i in range(0, 30):
-            self.step_weight(np.random.dirichlet(np.ones(4), size=1))
+        one = 1
+        weights = []
 
+
+        for i in range(0, 30):
+            #self.step_weight(np.random.dirichlet(np.ones(4), size=1))
+            weights.append(random.uniform(0, 0.2))
+            one -= weights[0]
+
+            weights.append(random.uniform(0, 0.2))
+            one -= weights[1]
+
+            weights.append(random.uniform(0, one))
+            one -= weights[2]
+
+            weights.append(one)
+            self.step_weight(weights)
 
 
 if __name__ == "__main__":

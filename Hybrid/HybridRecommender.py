@@ -84,10 +84,10 @@ class HybridRecommender(object):
         self.cf_ratings = self.cf.get_expected_ratings(user_id)
         self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
 
-        self.hybrid_ratings = self.userContentBased_ratings * self.weights[0,0]
-        self.hybrid_ratings += self.itemContentBased_ratings * self.weights[0,1]
-        self.hybrid_ratings += self.cf_ratings * self.weights[0,2]
-        self.hybrid_ratings += self.slim_ratings * self.weights[0,3]
+        self.hybrid_ratings = self.userContentBased_ratings * self.weights[0]
+        self.hybrid_ratings += self.itemContentBased_ratings * self.weights[1]
+        self.hybrid_ratings += self.cf_ratings * self.weights[2]
+        self.hybrid_ratings += self.slim_ratings * self.weights[3]
 
         recommended_items = np.flip(np.argsort(self.hybrid_ratings), 0)
 
