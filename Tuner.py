@@ -122,6 +122,7 @@ class Tuner():
 
 
         for i in range(0, 30):
+            weights.clear()
             #self.step_weight(np.random.dirichlet(np.ones(4), size=1))
             weights.append(random.uniform(0, 0.2))
             one -= weights[0]
@@ -133,6 +134,7 @@ class Tuner():
             one -= weights[2]
 
             weights.append(one)
+            one = 1
             self.step_weight(weights)
 
 
