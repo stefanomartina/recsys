@@ -3,7 +3,9 @@ from tqdm import tqdm
 from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
 from Recommenders.Combination import ItemCF_TopPop, ItemCF_ItemCB
 from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
+from Recommenders.Slim.SlimElasticNet import SLIMElasticNetRecommender
 from Recommenders.MatrixFactorization.PureSVD import PureSVDRecommender
+from Recommenders.Collaborative import UserKNNCFRecommender, ItemKNNCFRecommender
 from Hybrid.HybridRecommender import HybridRecommender
 from Utils import evaluation
 
@@ -120,8 +122,14 @@ class Runner:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('recommender', choices=['random', 'top-pop', 'ItemCBF', 'UserCBF', 'ItemCF_TopPop_Combo', 'ItemCF_ItemCB_Combo',
-                                                 'ItemCF', 'SlimBPRCython_Hybrid', 'PureSVD', 'MF_BPR_Cython', 'Slim', 'Hybrid'])
+    parser.add_argument('recommender', choices=['random', 'top-pop',
+                                                'ItemCBF', 'UserCBF', 'UserCF', 'ItemCF',
+                                                'ItemCF_TopPop_Combo', 'ItemCF_ItemCB_Combo',
+                                                'Slim', 'SlimElasticNet',
+                                                'SlimBPRCython_Hybrid',
+                                                'PureSVD', 'MF_BPR_Cython',
+                                                'Hybrid'])
+
     parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
     requires_icm = False
@@ -146,6 +154,10 @@ if __name__ == '__main__':
         recommender = UserCBFKNNRecommender.UserCBFKNNRecommender()
         requires_ucm = True
 
+    if args.recommender == 'UserCF':
+        print("UserKNNCF selected")
+        recommender = UserKNNCFRecommender.UserKNNCFRecommender()
+
     if args.recommender == "ItemCF_TopPop_Combo":
         print("ItemCF_TopPop_Combo selected")
         recommender = ItemCF_TopPop.ItemCF_TopPop()
@@ -156,8 +168,12 @@ if __name__ == '__main__':
         requires_icm = True
 
     if args.recommender == 'Slim':
-        print("Slim")
+        print("Slim selected")
         recommender = SLIM_BPR_Cython.SLIM_BPR_Cython()
+
+    if args.recommender == 'SlimElasticNet':
+        print("SlimElasticNet selected")
+        recommender = SLIMElasticNetRecommender.SLIMElasticNetRecommender()
 
     if args.recommender == 'PureSVD':
         print("PureSVD selected")
