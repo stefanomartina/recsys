@@ -1,5 +1,5 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
-
+from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
 
 """ 
 This class collects the main support function for the recommender algorithms that are developed in this repository, 
@@ -9,6 +9,7 @@ based on the dataset provided.
 import scipy.sparse as sps
 import numpy as np
 from sklearn import preprocessing
+import os
 
 
 class BaseFunction:
@@ -317,3 +318,33 @@ class BaseFunction:
             URM = self.check_matrix(URM, 'csr')
 
         return URM
+
+    #######################################################################################
+    #                                   SIMILARITY UTILS                                  #
+    #######################################################################################
+
+    def return_path(self):
+        return os.getcwd()
+
+    def exporting_similarity_matrix(self, filename, matrix):
+            sps.save_npz(filename, matrix)
+
+    def compute_similarity(self, matrix, SIMILARITY_PATH, knn=500, shrink=100, similarity="tversky",
+                           normalize=True, transpose=False, tuning=False,):
+
+        if transpose:
+            matrixt = matrix.T
+
+        if not tuning:
+            similarity_object = Compute_Similarity_Cython(matrix, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
+            W_sparse = similarity_object.compute_similarity()
+
+        else:
+            if not os.path.exists(self.return_path() + SIMILARITY_PATH):
+                similarity_object = Compute_Similarity_Cython(matrix, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
+                W_sparse = similarity_object.compute_similarity()
+                self.exporting_similarity_matrix(self.return_path() + SIMILARITY_PATH, W_sparse)
+
+            W_sparse = sps.load_npz(self.return_path() + SIMILARITY_PATH)
+
+        return W_sparse
