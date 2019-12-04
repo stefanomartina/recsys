@@ -142,6 +142,7 @@ class Tuner():
             self.step_weight(weights)
 
     def random_pop(self):
+        print([np.random.dirichlet(np.ones(4), size=1) for _ in range(self.pop_size)])
         weights = []
         for i in range(self.pop_size):
             w1 = random.uniform(0, 0.2)
@@ -150,14 +151,17 @@ class Tuner():
             res = 1 - w1 - w2 - w3
             w4 = random.uniform(0, res)
             line = [w1, w2, w3, w4]
-            weights.append(line)
+            weights.append(np.array([line]))
 
         return weights
+
+
+
 
     def evaluate_pop(self):
         appo = []
         for chromosome in self.pop:
-            res = self.evaluate_chromosome(chromosome)
+            res = self.evaluate_chromosome(chromosome[0])
             appo.append(res)
         return appo
         # return [self.evaluate_chromosome(chromosome) for chromosome in self.pop]
@@ -168,9 +172,12 @@ class Tuner():
     def select_parents(self):
         max_score = max(self.pop_scores)
         adj_scores = [max_score + 1 - score for score in self.pop_scores]
+
         tot_score = sum(adj_scores)
+
         probs = [p/tot_score for p in adj_scores]
-        parents = [self.pop[i] for i in np.random.choice(len(self.pop)-1, p = probs)]
+
+        parents = [self.pop[i] for i in np.random.choice(len(self.pop), 2, p = probs)]
 
         return parents
 
@@ -200,7 +207,7 @@ class Tuner():
         return offspring1, offspring2
 
     def mutation(self, offspring):
-        offspring += int(random.randrange(0, 0.1))
+        offspring += int(random.uniform(0, 0.1))
         return offspring
 
     def elitism(self, new_pop):
@@ -208,12 +215,12 @@ class Tuner():
         score_c = self.pop_scores[:]
 
         for _ in range(4):
-            index = np.argmin(score_c)
+            index = np.argmax(score_c)
             score_c.pop(index)
             new_pop.append(els.pop(index))
 
 
-    def run_hybrid_hill_climbing(self, max = 1000, pop_size=4, p_mutation=0.1):
+    def run_hybrid_hill_climbing(self, max = 1000, pop_size=5, p_mutation=0.1):
         self.pop_size = pop_size
         self.p_mutation = p_mutation
 
@@ -230,12 +237,17 @@ class Tuner():
                 new_pop.append(off1)
                 new_pop.append(off2)
 
-            self.pop_scores = new_pop
+            self.pop = new_pop
             self.pop_scores = self.evaluate_pop()
 
-            print("best score: %i" % np.min(self.pop_scores))
-            print("best res: %i" % np.argmin(self.pop_scores))
-
+            print("-----------------------------------------------")
+            print("-----------------------------------------------")
+            print("-----------------------------------------------")
+            print("            best pop: %i" % self.pop)
+            print("            best res: %i" % np.argmax(self.pop_scores))
+            print("-----------------------------------------------")
+            print("-----------------------------------------------")
+            print("-----------------------------------------------")
 
 if __name__ == "__main__":
     recommender = HybridRecommender()

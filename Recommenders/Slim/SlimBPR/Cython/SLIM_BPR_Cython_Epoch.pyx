@@ -196,7 +196,7 @@ cdef class SLIM_BPR_Cython_Epoch:
 
     def _dealloc(self):
 
-        print("Deallocating Cython objects")
+        # print("Deallocating Cython objects")
 
         if self.S_sparse is not None:
             self.S_sparse.dealloc()
