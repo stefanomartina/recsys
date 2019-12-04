@@ -4,6 +4,9 @@ import scipy.sparse as sps
 
 # relevant items: items in the test set
 # precision: how many of the recommended items are relevant
+from tqdm import tqdm
+
+
 def precision(is_relevant, relevant_items):
 
     # is_relevant = np.in1d(recommended_items, relevant_items, assume_unique=True)
@@ -47,10 +50,7 @@ def evaluate_algorithm(urm_test, recommender_object, at=10):
 
     n_users = urm_test.shape[0]
 
-    for user_id in range(n_users):
-
-        if user_id % 10000 == 0:
-            print("Evaluated user {} of {}".format(user_id, n_users))
+    for user_id in tqdm(range(n_users)):
 
         start_pos = urm_test.indptr[user_id]
         end_pos = urm_test.indptr[user_id + 1]
