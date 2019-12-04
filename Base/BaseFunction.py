@@ -166,11 +166,14 @@ class BaseFunction:
         self.URM_train = urm_train
         self.URM_test = urm_test
 
-    def split_80_20(self, percentage=80):
+    def split_80_20(self, percentage=0.8):
         urm = self.URM_all.tocsr()
 
         # Count the number of relevant interaction between user and item
         numInteractions = urm.nnz
+        self.ratinglist_urm = np.array(self.ratinglist_urm)
+        self.userlist_urm = np.array(self.userlist_urm)
+        self.itemlist_urm = np.array(self.itemlist_urm)
 
         # Create a random mask to put on URM
         train_mask = np.random.choice([True, False], numInteractions, p=[percentage, 1 - percentage])
