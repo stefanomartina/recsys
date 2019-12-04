@@ -18,8 +18,10 @@ class ItemKNNCFRecommender():
         self.URM = URM
 
         # Compute similarity
-        self.W_sparse = self.helper.compute_similarity(self.URM, SIMILARITY_PATH, shrink, knn, normalize, similarity)
+        self.W_sparse = self.helper.get_similarity(self.URM, SIMILARITY_PATH, knn, shrink, similarity,normalize)
         self.similarityProduct = self.URM.dot(self.W_sparse)
+
+
 
     def get_expected_ratings(self, user_id):
         expected_scores = (self.similarityProduct[user_id]).toarray().ravel()

@@ -329,8 +329,8 @@ class BaseFunction:
     def exporting_similarity_matrix(self, filename, matrix):
             sps.save_npz(filename, matrix)
 
-    def compute_similarity(self, matrix, SIMILARITY_PATH, knn=500, shrink=100, similarity="tversky",
-                           normalize=True, transpose=False, tuning=False,):
+    def get_similarity(self, matrix, SIMILARITY_PATH, knn, shrink, similarity,
+                           normalize, transpose=False, tuning=False):
 
         if transpose:
             matrixt = matrix.T
