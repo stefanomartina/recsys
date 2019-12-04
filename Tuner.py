@@ -2,7 +2,7 @@ import random
 from _decimal import Decimal
 
 import numpy as np
-
+import time
 from Recommenders.Combination.ItemCF_ItemCB import ItemCF_ItemCB
 from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
 from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
@@ -54,15 +54,17 @@ class Tuner():
         print("----------------------------------------")
 
     def step_weight(self, list_weight):
+        start_time = time.time()
         print("----------------------------------------")
         # print("Recommender: " + self.name + " First weight: " + str(list_weight[0]) +
         #     " Second_weight: " + str(list_weight[1]) + " Third_weight: " + str(list_weight[2]) + " Fourth_weight: " + str(list_weight[3]))
 
         list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
         list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
-        self.recommender.fit(self.helper.URM_train, list_ICM, list_UCM,list_weight)
+        self.recommender.fit(self.helper.URM_train, list_ICM, list_UCM,list_weight, tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
-        print("----------------------------------------")
+        elapsed_time = time.time() - start_time
+        print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
     def run_Slim(self):
@@ -151,17 +153,22 @@ class Tuner():
         return weights
 
     def evaluate_pop(self):
-        return [self.evaluate_chromosome(chromosome) for chromosome in self.pop]
+        appo = []
+        for chromosome in self.pop:
+            res = self.evaluate_chromosome(chromosome)
+            appo.append(res)
+        return appo
+        # return [self.evaluate_chromosome(chromosome) for chromosome in self.pop]
 
     def evaluate_chromosome(self, chromosome):
         return self.step_weight(chromosome)
 
     def select_parents(self):
-        max_score = max(self.pop_score)
-        adj_scores = [max_score + 1 - score for score in self.pop_score]
+        max_score = max(self.pop_scores)
+        adj_scores = [max_score + 1 - score for score in self.pop_scores]
         tot_score = sum(adj_scores)
         probs = [p/tot_score for p in adj_scores]
-        parents = [self.pop[i] for i in np.random.choice(len(self.pop), p = probs)]
+        parents = [self.pop[i] for i in np.random.choice(len(self.pop)-1, p = probs)]
 
         return parents
 
@@ -196,7 +203,7 @@ class Tuner():
 
     def elitism(self, new_pop):
         els = self.pop[:]
-        score_c = self.pop_score[:]
+        score_c = self.pop_scores[:]
 
         for _ in range(4):
             index = np.argmin(score_c)
@@ -205,14 +212,14 @@ class Tuner():
 
 
 
-    def run_hybrid_hill_climbing(self, max = 1000, pop_size=10, p_mutation=0.1):
+    def run_hybrid_hill_climbing(self, max = 1000, pop_size=5, p_mutation=0.1):
         self.helper.split_dataset_loo()
         self.helper.get_target_users()
         self.pop_size = pop_size
         self.p_mutation = p_mutation
 
         self.pop = self.random_pop()
-        self.pop_score = self.evaluate_pop()
+        self.pop_scores = self.evaluate_pop()
 
         for i in range(max):
             new_pop = []
@@ -224,11 +231,11 @@ class Tuner():
                 new_pop.append(off1)
                 new_pop.append(off2)
 
-            self.pop_score = new_pop
-            self.pop_score = self.evaluate_pop()
+            self.pop_scores = new_pop
+            self.pop_scores = self.evaluate_pop()
 
-            print("best score: %i"%np.min(self.pop_score))
-            print("best res: %i"%np.argmin(self.pop_score))
+            print("best score: %i" % np.min(self.pop_scores))
+            print("best res: %i" % np.argmin(self.pop_scores))
 
 
 if __name__ == "__main__":

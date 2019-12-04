@@ -13,6 +13,7 @@ class UserKNNCFRecommender(object):
         self.helper = BaseFunction()
 
     def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, tuning=False, feature_weighting=None):
+        print("Fitting User Collaborative Filerting Recommender...")
         self.URM = URM
 
         if feature_weighting is not None:

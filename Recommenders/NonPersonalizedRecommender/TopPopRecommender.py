@@ -4,6 +4,8 @@ class TopPopRecommender():
     RECOMMENDER_NAME = "TopPopRecommender"
 
     def fit(self, URM_train):
+        print("Fitting Top Pop Recommender...")
+
         self.URM_train = URM_train
         itemPopularity = (URM_train>0).sum(axis=0)
         itemPopularity = np.array(itemPopularity).squeeze()

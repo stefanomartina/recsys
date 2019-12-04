@@ -94,7 +94,7 @@ class HybridRecommender(object):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def switch_fit(self, argument, URM, list_ICM, list_UCM, weights,
+    def switch_fit(self, argument, URM, list_ICM = None, list_UCM = None,
                    knn_user=user_cf_param["knn"], shrink_user=user_cf_param["shrink"],
                    knn_item=item_cf_param["knn"], shrink_item=item_cf_param["shrink"],
                    knn_cf=cf_param["knn"], shrink_cf=cf_param["shrink"],
@@ -123,25 +123,38 @@ class HybridRecommender(object):
         self.weights = np.array(weights)
 
         # Sub-Fitting
-        # if combination == "First":
+        if combination == "first":
+            self.switch_fit("UserContentBased", self.URM, list_UCM)
+            self.switch_fit("ItemContentbased", self.URM, list_ICM)
+            self.switch_fit("ItemCF", self.URM)
+            self.switch_fit("Slim", self.URM)
 
-        print("Fitting User Content Recommender...")
-        self.userContentBased.fit(URM.copy(), list_UCM, knn_user, shrink_user)
+        if combination == "second":
+            self.switch_fit("ItemCF", self.URM)
+            self.switch_fit("Slim", self.URM)
+            self.switch_fit("ItemCF_TopPop_Combo", self.URM, list_ICM)
+            self.switch_fit("ItemCF_ItemCB_Combo", self.URM, list_ICM)
 
-        print("Fitting Item Content Recommender...")
-        self.itemContentBased.fit(URM.copy(), list_ICM, knn_item, shrink_item)
+        if combination == "third":
+            self.switch_fit("UserContentBased", self.URM, list_UCM)
+            self.switch_fit("ItemContentBased", self.URM, list_ICM)
+            self.switch_fit("ItemCF_TopPop_Combo", self.URM, list_ICM)
 
-        print("Fitting Item Collaborative Filtering Recommender...")
-        self.cf.fit(URM.copy(), knn_cf, shrink_cf)
+
+
+
+
+
+
+
+
 
         print("Fitting Item Collaborative/TopPop Combination Recommender...")
-        self.itemCF_TopPop_Combo.fit(URM.copy(), knn_cftp, shrink_cftp)
 
         print("Fitting Item Collaborative/Item Content Based Combination Recommender...")
-        self.itemCf_itemCB_Combo.fit(URM.copy(), list_ICM, knn_cfcb, shrink_cfcb)
 
         print("Fitting slim...")
-        self.slim_random.fit(URM.copy())
+
 
 
     #######################################################################################

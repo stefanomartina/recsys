@@ -4,6 +4,8 @@ class RandomRecommender():
     RECOMMENDER_NAME = "RandomRecommender"
 
     def fit(self, URM_train):
+        print("Fitting Random Recommender...")
+
         self.numItems = URM_train.shape[0]
 
     def recommend(self, user_id, at = 10):
