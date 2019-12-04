@@ -6,15 +6,16 @@ import scipy.sparse as sps
 import numpy as np
 
 RECOMMENDER_NAME = "ItemCBFKNNRecommender"
+SIMILARITY_PATH = "/SimilarityProduct/ItemCB_similarity.npz"
 
+""" Working with ICM_merged.transpose() - Transpose field = True """
 
 class ItemCBFKNNRecommender():
 
     def __init__(self):
         self.helper = BaseFunction()
 
-
-    def fit(self, URM, list_ICM, knn=200, shrink=50, similarity="tversky", normalize=True, feature_weighting=None):
+    def fit(self, URM, list_ICM, knn=200, shrink=50, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting=None):
         self.URM = URM
         self.ICM, self.ICM_asset, self.ICM_price = list_ICM
 
@@ -26,11 +27,11 @@ class ItemCBFKNNRecommender():
         self.ICM_merged = sps.csr_matrix(mergedMatrixDense)
 
         # IR Feature Weighting
-        self.ICM_merged = self.helper.feature_weight(self.ICM_merged, feature_weighting)
+        if feature_weighting is not None:
+            self.ICM_merged = self.helper.feature_weight(self.ICM_merged, feature_weighting)
 
         # Compute similarity
-        self.similarity = Compute_Similarity_Cython(self.ICM_merged.T, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
-        self.W_sparse = self.similarity.compute_similarity()
+        self.W_sparse = self.helper.get_cosine_similarity(self.ICM_merged, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         self.similarityProduct = self.URM.dot(self.W_sparse)
 
     def filter_seen(self, user_id, scores):

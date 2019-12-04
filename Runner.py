@@ -158,6 +158,10 @@ if __name__ == '__main__':
         print("UserKNNCF selected")
         recommender = UserKNNCFRecommender.UserKNNCFRecommender()
 
+    if args.recommender == 'ItemCF':
+        print("ItemCF selected")
+        recommender = ItemKNNCFRecommender.ItemKNNCFRecommender()
+
     if args.recommender == "ItemCF_TopPop_Combo":
         print("ItemCF_TopPop_Combo selected")
         recommender = ItemCF_TopPop.ItemCF_TopPop()

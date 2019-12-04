@@ -1,16 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on 23/10/17
+""" Created on 23/10/17     @author: Maurizio Ferrari Dacrema """
 
-@author: Maurizio Ferrari Dacrema
-"""
-
+import sys
+import time
 import numpy as np
-import time, sys
 import scipy.sparse as sps
-from Base.Recommender_utils import check_matrix
-
+from Base.BaseFunction import BaseFunction
 
 
 class Compute_Similarity_Python:
@@ -47,7 +41,7 @@ class Compute_Similarity_Python:
 
         super(Compute_Similarity_Python, self).__init__()
 
-
+        self.helper = BaseFunction()
         self.shrink = shrink
         self.normalize = normalize
 
@@ -120,7 +114,7 @@ class Compute_Similarity_Python:
         :return:
         """
 
-        self.dataMatrix = check_matrix(self.dataMatrix, 'csr')
+        self.dataMatrix = self.helper.check_matrix(self.dataMatrix, 'csr')
 
 
         interactionsPerRow = np.diff(self.dataMatrix.indptr)
@@ -157,7 +151,7 @@ class Compute_Similarity_Python:
         :return:
         """
 
-        self.dataMatrix = check_matrix(self.dataMatrix, 'csc')
+        self.dataMatrix = self.helper.check_matrix(self.dataMatrix, 'csc')
 
 
         interactionsPerCol = np.diff(self.dataMatrix.indptr)
@@ -235,7 +229,7 @@ class Compute_Similarity_Python:
 
 
         # We explore the matrix column-wise
-        self.dataMatrix = check_matrix(self.dataMatrix, 'csc')
+        self.dataMatrix = self.helper.check_matrix(self.dataMatrix, 'csc')
 
 
         # Compute sum of squared values to be used in normalization
@@ -250,7 +244,7 @@ class Compute_Similarity_Python:
             sumOfSquared_to_alpha = np.power(sumOfSquared, 2 * self.asymmetric_alpha)
 
 
-        self.dataMatrix = check_matrix(self.dataMatrix, 'csc')
+        self.dataMatrix = self.helper.check_matrix(self.dataMatrix, 'csc')
 
         start_col_local = 0
         end_col_local = self.n_columns

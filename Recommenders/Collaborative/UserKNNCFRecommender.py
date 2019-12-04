@@ -2,20 +2,28 @@ import numpy as np
 from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
 from Base.BaseFunction import BaseFunction
 
+RECOMMENDER_NAME = "UserKNNCFRecommender"
+SIMILARITY_PATH = "/SimilarityProduct/UserCF_similarity.npz"
+
+""" Working with URM.transpose() - Transpose field = True """
+
 class UserKNNCFRecommender(object):
 
     def __init__(self):
         self.helper = BaseFunction()
 
-
-    def fit(self, URM, knn=300, shrink=50, normalize=True, similarity="cosine"):
+    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, tuning=False, feature_weighting=None):
         self.URM = URM
-        similarity_object = Compute_Similarity_Cython(URM.transpose(), shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
-        self.SM_user = similarity_object.compute_similarity()
-        self.RECS = self.SM_user.dot(self.URM)
+
+        if feature_weighting is not None:
+            self.helper.feature_weight(URM, feature_weighting)
+
+        # Compute similarity
+        self.W_sparse = self.helper.get_cosine_similarity(self.URM, SIMILARITY_PATH, knn, shrink, similarity, normalize, True, tuning)
+        self.similarityProduct = self.W_sparse.dot(self.URM)
 
     def get_expected_ratings(self, user_id):
-        expected_ratings = self.RECS[user_id].todense()
+        expected_ratings = self.similarityProduct[user_id].todense()
         return np.squeeze(np.asarray(expected_ratings))
 
     def recommend(self, user_id, at=10):

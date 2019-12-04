@@ -5,29 +5,30 @@ from Base.BaseFunction import BaseFunction
 import scipy.sparse as sps
 import numpy as np
 
-RECOMMENDER_NAME = "UserCBFKNNRecommender("
-
+RECOMMENDER_NAME = "UserCBFKNNRecommender"
+SIMILARITY_PATH = "/SimilarityProduct/UserCB_similarity.npz"
 
 class UserCBFKNNRecommender():
 
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, list_UCM, knn=300, shrink=4, similarity="tversky", normalize=True, feature_weighting="TF-IDF"):
+    def fit(self, URM, list_UCM, knn=300, shrink=4, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting="TF_IDF"):
         self.URM = URM
         self.UCM_age, self.UCM_region = list_UCM
 
         denseMatrix_region = self.UCM_region.todense()
         denseMatrix_age = self.UCM_age.todense()
-        mergedMatrixDense = np.concatenate((denseMatrix_age, denseMatrix_region), axis = 1)
+
+        mergedMatrixDense = np.concatenate((denseMatrix_age, denseMatrix_region), axis=1)
         self.UCM_merged = sps.csr_matrix(mergedMatrixDense)
 
         # IR Feature Weighting
-        self.URM = self.helper.feature_weight(self.URM, feature_weighting)
+        if feature_weighting is not None:
+            self.UCM_merged = self.helper.feature_weight(self.UCM_merged, feature_weighting)
 
         # Compute similarity
-        self.similarity = Compute_Similarity_Cython(self.UCM_merged.T, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
-        self.W_sparse = self.similarity.compute_similarity()
+        self.W_sparse = self.helper.get_cosine_similarity(self.UCM_merged, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         self.similarityProduct = self.W_sparse.dot(self.URM)
 
     def filter_seen(self, user_id, scores):

@@ -13,7 +13,7 @@
 
 
 
-from Base.Recommender_utils import check_matrix
+from Base.BaseFunction import BaseFunction
 
 import cython
 
@@ -108,9 +108,11 @@ cdef class MatrixFactorization_Cython_Epoch:
         if algorithm_name not in self.ALGORITHM_NAME_VALUES:
            raise ValueError("Value for 'algorithm_name' not recognized. Acceptable values are {}, provided was '{}'".format(self.ALGORITHM_NAME_VALUES, algorithm_name))
 
+        self.helper = BaseFunction()
+
         # Create copy of URM_train in csr format
         # make sure indices are sorted
-        URM_train = check_matrix(URM_train, 'csr')
+        URM_train = self.helper.check_matrix(URM_train, 'csr')
         URM_train = URM_train.sorted_indices()
 
         self.profile_length = np.ediff1d(URM_train.indptr)

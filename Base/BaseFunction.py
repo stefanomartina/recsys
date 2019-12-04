@@ -1,5 +1,6 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
 from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
+from Utils.similarityMatrixTopK import similarityMatrixTopK
 
 """ 
 This class collects the main support function for the recommender algorithms that are developed in this repository, 
@@ -164,6 +165,25 @@ class BaseFunction:
         self.URM_train = urm_train
         self.URM_test = urm_test
 
+    def split_80_20(self, percentage=80):
+        urm = self.URM_all.tocsr()
+
+        # Count the number of relevant interaction between user and item
+        numInteractions = urm.nnz
+
+        # Create a random mask to put on URM
+        train_mask = np.random.choice([True, False], numInteractions, p=[percentage, 1 - percentage])
+
+        # Create URM_train with all list of original dataset randomly choosed
+        urm_train = sps.coo_matrix((self.ratinglist_urm[train_mask], (self.userlist_urm[train_mask], self.itemlist_urm[train_mask]))).tocsr()
+
+        # Create URM_test using the logical_not operator applied on the train_mask (to keep the remain part of dataset as test set)
+        test_mask = np.logical_not(train_mask)
+        urm_test = sps.coo_matrix((self.ratinglist_urm[test_mask], (self.userlist_urm[test_mask], self.itemlist_urm[test_mask]))).tocsr()
+
+        self.URM_train = urm_train
+        self.URM_test = urm_test
+
     def shaping(self, asRows, asColumns, require_label=False):
         if not require_label:
             row_shape = asRows.shape[1]
@@ -244,7 +264,7 @@ class BaseFunction:
         dataMatrix.data = dataMatrix.data * (K1 + 1.0) / denominator * idf[dataMatrix.col]
         return dataMatrix.tocsr()
 
-    def TF_IDF(self,dataMatrix):
+    def TF_IDF(self, dataMatrix):
 
         assert np.all(np.isfinite(dataMatrix.data)), \
             "TF_IDF: Data matrix contains {} non finite values.".format(
@@ -306,18 +326,18 @@ class BaseFunction:
         else:
             return X.astype(dtype)
 
-    def feature_weight(self, URM, feature_weighting):
+    def feature_weight(self, matrix, feature_weighting):
         if feature_weighting == "BM25":
-            URM = URM.astype(np.float32)
-            URM = self.okapi_BM_25(URM.T).T
-            URM = self.check_matrix(URM, 'csr')
+            matrix = matrix.astype(np.float32)
+            matrix = self.okapi_BM_25(matrix.T).T
+            matrix = self.check_matrix(matrix, 'csr')
 
         elif feature_weighting == "TF-IDF":
-            URM = URM.astype(np.float32)
-            URM = self.TF_IDF(URM.T).T
-            URM = self.check_matrix(URM, 'csr')
+            matrix = matrix.astype(np.float32)
+            matrix = self.TF_IDF(matrix.T).T
+            matrix = self.check_matrix(matrix, 'csr')
 
-        return URM
+        return matrix
 
     #######################################################################################
     #                                   SIMILARITY UTILS                                  #
@@ -329,11 +349,10 @@ class BaseFunction:
     def exporting_similarity_matrix(self, filename, matrix):
             sps.save_npz(filename, matrix)
 
-    def get_similarity(self, matrix, SIMILARITY_PATH, knn, shrink, similarity,
-                           normalize, transpose=False, tuning=False):
+    def get_cosine_similarity(self, matrix, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=False, tuning=False):
 
         if transpose:
-            matrixt = matrix.T
+            matrix = matrix.T
 
         if not tuning:
             similarity_object = Compute_Similarity_Cython(matrix, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
@@ -345,6 +364,19 @@ class BaseFunction:
                 W_sparse = similarity_object.compute_similarity()
                 self.exporting_similarity_matrix(self.return_path() + SIMILARITY_PATH, W_sparse)
 
+            W_sparse = sps.load_npz(self.return_path() + SIMILARITY_PATH)
+
+        return W_sparse
+
+    def get_matrixTopK_similarity(self, S_incremental, topK, SIMILARITY_PATH, tuning=False):
+
+        if not tuning:
+            W_sparse = similarityMatrixTopK(S_incremental, k=topK)
+
+        else:
+            if not os.path.exists(self.return_path() + SIMILARITY_PATH):
+                W_sparse = similarityMatrixTopK(S_incremental, k=topK)
+                self.exporting_similarity_matrix(self.return_path() + SIMILARITY_PATH, W_sparse)
             W_sparse = sps.load_npz(self.return_path() + SIMILARITY_PATH)
 
         return W_sparse

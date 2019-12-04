@@ -14,14 +14,15 @@ class ItemKNNCFRecommender():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True):
+    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, tuning=False, feature_weighting=None):
         self.URM = URM
 
+        if feature_weighting is not None:
+            self.helper.feature_weight(URM, feature_weighting)
+
         # Compute similarity
-        self.W_sparse = self.helper.get_similarity(self.URM, SIMILARITY_PATH, knn, shrink, similarity,normalize)
+        self.W_sparse = self.helper.get_cosine_similarity(self.URM, SIMILARITY_PATH, knn, shrink, similarity, normalize, tuning=tuning)
         self.similarityProduct = self.URM.dot(self.W_sparse)
-
-
 
     def get_expected_ratings(self, user_id):
         expected_scores = (self.similarityProduct[user_id]).toarray().ravel()

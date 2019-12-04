@@ -1,23 +1,28 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
+
 import numpy as np
 
-from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
 from Base.BaseFunction import BaseFunction
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 
-class ItemCF_TopPop():
+RECOMMENDER_NAME = "ItemCF_TopPopRecommender"
+SIMILARITY_PATH = "/SimilarityProduct/ItemCF_TopPop_similarity.npz"
 
+class ItemCF_TopPop():
 
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, knn=350, shrink=20, normalize=True, similarity="tversky"):
+    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, transpose=False, tuning=False, feature_weighting="TF-IDF"):
         self.URM = URM
         self.TP = TopPopRecommender()
         self.TP.fit(self.URM)
+
+        if feature_weighting is not None:
+            self.helper.feature_weight(URM, feature_weighting)
+
         # Compute similarity
-        self.similarity_object = Compute_Similarity_Cython(self.URM, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
-        self.W_sparse = self.similarity_object.compute_similarity()
+        self.W_sparse = self.helper.get_cosine_similarity(self.URM, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         self.similarityProduct = self.URM.dot(self.W_sparse)
 
     def get_expected_ratings(self, user_id):
