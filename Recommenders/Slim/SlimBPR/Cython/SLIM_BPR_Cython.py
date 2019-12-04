@@ -4,8 +4,7 @@
 
 import sys
 import numpy as np
-from CythonCompiler.run_compile_subprocess import run_compile_subprocess
-from Utils.similarityMatrixTopK import similarityMatrixTopK
+from Base.Recommender_utils import similarityMatrixTopK, check_matrix
 
 
 class SLIM_BPR_Cython(object):

@@ -30,7 +30,7 @@ ELSE:
 
 
 
-from Base.BaseFunction import BaseFunction
+from Base.Recommender_utils import check_matrix
 from Utils.similarityMatrixTopK import similarityMatrixTopK
 # from Base.Recommender_utils import similarityMatrixTopK, check_matrix
 import numpy as np
@@ -95,11 +95,10 @@ cdef class SLIM_BPR_Cython_Epoch:
 
         super(SLIM_BPR_Cython_Epoch, self).__init__()
 
-        self.helper = BaseFunction()
 
         # Create copy of URM_train in csr format
         # make sure indices are sorted
-        URM_mask = self.helper.check_matrix(URM_mask, 'csr')
+        URM_mask = check_matrix(URM_mask, 'csr')
         URM_mask = URM_mask.sorted_indices()
 
         self.n_users = URM_mask.shape[0]
