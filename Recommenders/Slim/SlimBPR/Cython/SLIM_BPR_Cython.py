@@ -52,7 +52,7 @@ class SLIM_BPR_Cython(object):
     #######################################################################################
 
     def fit(self, URM_train):
-
+        print("Fitting Slim...")
         self.__init__()
         self.URM = URM_train
 
