@@ -140,23 +140,6 @@ class HybridRecommender(object):
             self.switch_fit("ItemContentBased", self.URM, list_ICM)
             self.switch_fit("ItemCF_TopPop_Combo", self.URM, list_ICM)
 
-
-
-
-
-
-
-
-
-
-        print("Fitting Item Collaborative/TopPop Combination Recommender...")
-
-        print("Fitting Item Collaborative/Item Content Based Combination Recommender...")
-
-        print("Fitting slim...")
-
-
-
     #######################################################################################
     #                                  EXTRACT RATINGS                                    #
     #######################################################################################
