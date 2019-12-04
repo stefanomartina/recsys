@@ -71,7 +71,7 @@ class HybridRecommender(object):
         # Slim
         self.slim_random = SLIM_BPR_Cython(epochs=slim_param["epochs"], topK=slim_param["topK"])
 
-        # Ratings from each algortihm
+        # Ratings from each available algorith
         self.userContentBased_ratings = None
         self.itemContentBased_ratings = None
         self.cf_ratings = None
@@ -94,7 +94,25 @@ class HybridRecommender(object):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, list_ICM, list_UCM, weights,
+    def switch_fit(self, argument, URM, list_ICM, list_UCM, weights,
+                   knn_user=user_cf_param["knn"], shrink_user=user_cf_param["shrink"],
+                   knn_item=item_cf_param["knn"], shrink_item=item_cf_param["shrink"],
+                   knn_cf=cf_param["knn"], shrink_cf=cf_param["shrink"],
+                   knn_cftp=cftp_param["knn"], shrink_cftp=cftp_param["shrink"],
+                   knn_cfcb=cfcb_param["knn"], shrink_cfcb=cfcb_param["shrink"]):
+
+        switcher = {
+            "UserContentBased": self.userContentBased.fit(URM.copy(), list_UCM, knn_user, shrink_user),
+            "ItemContentBased": self.itemContentBased.fit(URM.copy(), list_ICM, knn_item, shrink_item),
+            "ItemCF": self.cf.fit(URM.copy(), knn_cf, shrink_cf),
+            "ItemCF_TopPop_Combo": self.itemCF_TopPop_Combo.fit(URM.copy(), knn_cftp, shrink_cftp),
+            "ItemCF_ItemCB_Combo": self.itemCf_itemCB_Combo.fit(URM.copy(), list_ICM, knn_cfcb, shrink_cfcb),
+            "Slim": self.slim_random.fit(URM.copy()),
+        }
+        return switcher.get(argument, "Invalid argument")
+
+
+    def fit(self, URM, list_ICM, list_UCM, weights, combination,
             knn_user=user_cf_param["knn"], shrink_user=user_cf_param["shrink"],
             knn_item=item_cf_param["knn"], shrink_item=item_cf_param["shrink"],
             knn_cf=cf_param["knn"], shrink_cf=cf_param["shrink"],
@@ -105,6 +123,8 @@ class HybridRecommender(object):
         self.weights = np.array(weights)
 
         # Sub-Fitting
+        # if combination == "First":
+
         print("Fitting User Content Recommender...")
         self.userContentBased.fit(URM.copy(), list_UCM, knn_user, shrink_user)
 
@@ -141,21 +161,26 @@ class HybridRecommender(object):
     #                                    RECOMMENDING                                     #
     #######################################################################################
 
-    def recommend(self, user_id, at=10, hybrid="second"):
+    def recommend(self, user_id, at=10, hybrid="third"):
 
         self.sum_score(user_id)
 
         if hybrid == "first":
-            self.hybrid_ratings = self.userContentBased_ratings * self.weights[0]
-            self.hybrid_ratings += self.itemContentBased_ratings * self.weights[1]
-            self.hybrid_ratings += self.cf_ratings * self.weights[2]
-            self.hybrid_ratings += self.slim_ratings * self.weights[3]
+            self.hybrid_ratings = self.switch_ratings("UserContentBased") * self.weights[0]
+            self.hybrid_ratings += self.switch_ratings("ItemContentbased") * self.weights[1]
+            self.hybrid_ratings += self.switch_ratings("ItemCF") * self.weights[2]
+            self.hybrid_ratings += self.switch_ratings("Slim") * self.weights[3]
 
         if hybrid == "second":
             self.hybrid_ratings = self.switch_ratings("ItemCF") * self.weights[0]
             self.hybrid_ratings += self.switch_ratings("Slim") * self.weights[1]
             self.hybrid_ratings += self.switch_ratings("ItemCF_TopPop_Combo") * self.weights[2]
             self.hybrid_ratings += self.switch_ratings("ItemCF_ItemCB_Combo") * self.weights[3]
+
+        if hybrid == "third":
+            self.hybrid_ratings = self.switch_ratings("UserContentBased") * self.weights[0]
+            self.hybrid_ratings += self.switch_ratings("ItemContentBased") * (self.weights[1] + self.weights[3])
+            self.hybrid_ratings += self.switch_ratings("ItemCF_TopPop_Combo") * (self.weights[2] + self.weights[3])
 
         recommended_items = np.flip(np.argsort(self.hybrid_ratings), 0)
 

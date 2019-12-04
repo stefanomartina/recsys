@@ -1,6 +1,5 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
 
-from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
 from Base.BaseFunction import BaseFunction
 import scipy.sparse as sps
 import numpy as np
