@@ -17,7 +17,7 @@ class ItemCF_ItemCB():
         self.URM = URM
         self.ICM_list = ICM
         self.CB = ItemCBFKNNRecommender()
-        self.CB.fit(self.URM, self.ICM_list)
+        self.CB.fit(self.URM, self.ICM_list, tuning=tuning)
 
         if feature_weighting is not None:
             self.helper.feature_weight(URM, feature_weighting)

@@ -16,8 +16,12 @@ class Tuner():
     def __init__(self, recommender, name):
         self.recommender = recommender
         self.name = name
+
         self.helper = BaseFunction()
         self.helper.get_URM()
+        self.helper.split_dataset_loo()
+        self.helper.get_target_users()
+
         self.helper.get_UCM()
         self.helper.get_ICM()
 
@@ -61,7 +65,7 @@ class Tuner():
 
         list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
         list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
-        self.recommender.fit(self.helper.URM_train, list_ICM, list_UCM,list_weight, tuning=True)
+        self.recommender.fit(self.helper.URM_train, list_weight, list_ICM = list_ICM, list_UCM=list_UCM,  tuning=True, combination="second")
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
@@ -116,9 +120,7 @@ class Tuner():
                     self.step_User_CB(topk, shrink)
 
     def run_hybrid(self):
-        self.helper.split_dataset_loo()
 
-        self.helper.get_target_users()
 
         one = 1
         weights = []
@@ -211,10 +213,7 @@ class Tuner():
             new_pop.append(els.pop(index))
 
 
-
-    def run_hybrid_hill_climbing(self, max = 1000, pop_size=5, p_mutation=0.1):
-        self.helper.split_dataset_loo()
-        self.helper.get_target_users()
+    def run_hybrid_hill_climbing(self, max = 1000, pop_size=4, p_mutation=0.1):
         self.pop_size = pop_size
         self.p_mutation = p_mutation
 

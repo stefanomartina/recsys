@@ -116,7 +116,6 @@ class HybridRecommender(object):
             self.slim_random.fit(URM.copy())
             self.itemCF_TopPop_Combo.fit(URM.copy(), knn_cftp, shrink_cftp, tuning=tuning)
             self.itemCF_itemCB_Combo.fit(URM.copy(), list_ICM, knn_cfcb, shrink_cfcb, tuning=tuning)
-            self.i
 
         if combination == "third":
             self.userContentBased.fit(URM.copy(), list_UCM, knn_user, shrink_user, tuning=tuning)
