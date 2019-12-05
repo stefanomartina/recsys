@@ -13,7 +13,7 @@ class UserCBFKNNRecommender():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, list_UCM, knn=300, shrink=4, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting="TF_IDF"):
+    def fit(self, URM, list_UCM, knn=800, shrink=5, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting="TF_IDF"):
         print("Fitting User Content Based Recommender Recommender...")
         self.URM = URM
         self.UCM_age, self.UCM_region = list_UCM

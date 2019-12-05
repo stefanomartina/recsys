@@ -14,7 +14,7 @@ class ItemKNNCFRecommender():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, tuning=False, feature_weighting=None):
+    def fit(self, URM, knn=700, shrink=5, similarity="tversky", normalize=True, tuning=False, feature_weighting=None):
         print("Fitting Item Collaborative Filtering Recommender...")
         self.URM = URM
 

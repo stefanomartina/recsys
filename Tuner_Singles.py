@@ -44,8 +44,6 @@ class Tuner_Singles():
             if self.my_index(weights, line) == -1:
                 weights.append(np.array(line))
                 i += 1
-            else:
-                i -= 1
 
         return weights
 
@@ -72,28 +70,28 @@ class Tuner_Singles():
         l = (self.pop_size*(self.pop_size+1))/2
 
         for i in self.pop:
-            '''print("self.pop")
+            print("self.pop")
             print(self.pop)
             print("i")
             print(i)
             print("score")
             print(self.pop_scores)
             print("sorted_pop_score")
-            print(sorted_pop_score)'''
+            print(sorted_pop_score)
             pos_of_i_in_pop = self.my_index(self.pop, i)
-            '''print("pos_of_i_in_pop")
-            print(pos_of_i_in_pop)'''
+            print("pos_of_i_in_pop")
+            print(pos_of_i_in_pop)
             score_of_pos = self.pop_scores[pos_of_i_in_pop]
-            '''print("score_of_pos")
-            print(score_of_pos)'''
+            print("score_of_pos")
+            print(score_of_pos)
             ranking = self.my_index(sorted_pop_score, score_of_pos) + 1
-            '''print("ranking")
-            print(ranking)'''
+            print("ranking")
+            print(ranking)
             prob = ranking/l
-            '''print("prob")
-            print(prob)'''
+            print("prob")
+            print(prob)
             probs.append(prob)
-        '''print("------------")
+        print("------------")
         print("probs")
         print(probs)
         print("self.pop")
@@ -101,13 +99,14 @@ class Tuner_Singles():
         print("self.pop_scores")
         print(self.pop_scores)
         print("l")
-        print(l)'''
+        print(l)
 
         parents = [self.pop[i] for i in np.random.choice(len(self.pop), 2, p=probs)]
 
         return parents
 
-    '''def select_parents(self):
+    ''' 
+    def select_parents(self):
         sorted_pop_score = sorted(self.pop_scores)
         probs = []
         l = (len(sorted_pop_score) * (len(sorted_pop_score) + 1)) / 2
@@ -115,18 +114,20 @@ class Tuner_Singles():
 
         parents = [self.pop[i] for i in np.random.choice(len(self.pop), 2, p=probs)]
 
-        return parents'''
-
+        return parents
+    '''
 
     def generate_offspring(self, p1, p2):
-        c1, c2 = p1[:], p2[:]
-        size = len(c1)
+        size = len(p1)
         offspring = np.empty((size), dtype='object')
 
         offspring[0] = p1[0]
         offspring[1] = p2[1]
 
-        return offspring
+        if self.my_index(self.new_pop, offspring) == -1:
+            return offspring
+
+        return p1
 
     def crossover(self, parents):
         offspring1 = self.generate_offspring(parents[0], parents[1])
@@ -139,18 +140,20 @@ class Tuner_Singles():
 
     def mutation(self, offspring):
         if np.random.choice([True, False], 1, p=[self.p_mutation, 1-self.p_mutation]) == True:
-            offspring += random.randint(0,100)
+            if self.my_index(self.new_pop, offspring) == -1:
+                offspring += random.randint(0,100)
+                return offspring
         return offspring
 
 
-    def elitism(self, new_pop):
+    def elitism(self):
         els = self.pop[:]
         score_c = self.pop_scores[:]
 
         for _ in range(4):
             index = np.argmax(score_c)
             score_c.pop(index)
-            new_pop.append(els.pop(index))
+            self.new_pop.append(els.pop(index))
 
     def run(self, max=1000, pop_size=10, p_mutation=0.1):
         self.pop_size = pop_size
@@ -160,16 +163,16 @@ class Tuner_Singles():
         self.pop_scores = self.evaluate_pop()
 
         for i in range(max):
-            new_pop = []
-            self.elitism(new_pop)
+            self.new_pop = []
+            self.elitism()
 
-            while len(new_pop) < len(self.pop):
+            while len(self.new_pop) < len(self.pop):
                 parents = self.select_parents()
                 off1, off2 = self.crossover(parents)
 
-                new_pop.append(off1)
-                new_pop.append(off2)
-            self.pop = new_pop
+                self.new_pop.append(off1)
+                self.new_pop.append(off2)
+            self.pop = self.new_pop
             self.pop_scores = self.evaluate_pop()
             print("----------------------------------------")
             print("-----------------ENDED------------------")
