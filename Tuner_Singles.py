@@ -70,26 +70,10 @@ class Tuner_Singles():
         l = (self.pop_size*(self.pop_size+1))/2
 
         for i in self.pop:
-            print("self.pop")
-            print(self.pop)
-            print("i")
-            print(i)
-            print("score")
-            print(self.pop_scores)
-            print("sorted_pop_score")
-            print(sorted_pop_score)
             pos_of_i_in_pop = self.my_index(self.pop, i)
-            print("pos_of_i_in_pop")
-            print(pos_of_i_in_pop)
             score_of_pos = self.pop_scores[pos_of_i_in_pop]
-            print("score_of_pos")
-            print(score_of_pos)
             ranking = self.my_index(sorted_pop_score, score_of_pos) + 1
-            print("ranking")
-            print(ranking)
             prob = ranking/l
-            print("prob")
-            print(prob)
             probs.append(prob)
         print("------------")
         print("probs")
@@ -98,24 +82,10 @@ class Tuner_Singles():
         print(self.pop)
         print("self.pop_scores")
         print(self.pop_scores)
-        print("l")
-        print(l)
 
         parents = [self.pop[i] for i in np.random.choice(len(self.pop), 2, p=probs)]
 
         return parents
-
-    ''' 
-    def select_parents(self):
-        sorted_pop_score = sorted(self.pop_scores)
-        probs = []
-        l = (len(sorted_pop_score) * (len(sorted_pop_score) + 1)) / 2
-        probs = [self.my_index(sorted_pop_score, self.pop_scores[self.my_index(self.pop, i)]) + 1 / l for i in self.pop]
-
-        parents = [self.pop[i] for i in np.random.choice(len(self.pop), 2, p=probs)]
-
-        return parents
-    '''
 
     def generate_offspring(self, p1, p2):
         size = len(p1)
@@ -126,8 +96,11 @@ class Tuner_Singles():
 
         if self.my_index(self.new_pop, offspring) == -1:
             return offspring
-
-        return p1
+        if self.my_index(self.new_pop, p1) == -1:
+            return p1
+        if self.my_index(self.new_pop, p2) == -1:
+            return p2
+        return np.array([random.randint(100, 600), random.randint(0, 300)])
 
     def crossover(self, parents):
         offspring1 = self.generate_offspring(parents[0], parents[1])
