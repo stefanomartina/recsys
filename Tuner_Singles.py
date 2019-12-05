@@ -34,12 +34,19 @@ class Tuner_Singles():
 
     def random_pop(self):
         weights = []
-        for i in range(self.pop_size):
+        i = 0
+        while i < self.pop_size:
             w1 = random.randint(100, 600)
             w2 = random.randint(0, 300)
             line = [w1, w2]
             # weights.append(np.array([line]))
-            weights.append(np.array(line))
+
+            if self.my_index(weights, line) == -1:
+                weights.append(np.array(line))
+                i += 1
+            else:
+                i -= 1
+
         return weights
 
     def evaluate_pop(self):
@@ -60,18 +67,33 @@ class Tuner_Singles():
         return -1
 
     def select_parents(self):
-        sorted_pop_score = sorted(self.pop_scores)
+        sorted_pop_score = sorted(self.pop_scores, reverse=False)
         probs=[]
-        l = (len(sorted_pop_score)*(len(sorted_pop_score)+1))/2
+        l = (self.pop_size*(self.pop_size+1))/2
 
         for i in self.pop:
+            '''print("self.pop")
+            print(self.pop)
+            print("i")
+            print(i)
+            print("score")
+            print(self.pop_scores)
+            print("sorted_pop_score")
+            print(sorted_pop_score)'''
             pos_of_i_in_pop = self.my_index(self.pop, i)
+            '''print("pos_of_i_in_pop")
+            print(pos_of_i_in_pop)'''
             score_of_pos = self.pop_scores[pos_of_i_in_pop]
+            '''print("score_of_pos")
+            print(score_of_pos)'''
             ranking = self.my_index(sorted_pop_score, score_of_pos) + 1
+            '''print("ranking")
+            print(ranking)'''
             prob = ranking/l
-
+            '''print("prob")
+            print(prob)'''
             probs.append(prob)
-
+        '''print("------------")
         print("probs")
         print(probs)
         print("self.pop")
@@ -79,7 +101,7 @@ class Tuner_Singles():
         print("self.pop_scores")
         print(self.pop_scores)
         print("l")
-        print(l)
+        print(l)'''
 
         parents = [self.pop[i] for i in np.random.choice(len(self.pop), 2, p=probs)]
 
@@ -116,11 +138,10 @@ class Tuner_Singles():
         return offspring1, offspring2
 
     def mutation(self, offspring):
-        for i, el in enumerate(offspring):
-            if np.random.choice(2, 1, p=[1 - self.p_mutation, self.p_mutation]):
-                j = np.random.choice(len(offspring))
-                offspring[i], offspring[j] = offspring[j], offspring[i]
+        if np.random.choice([True, False], 1, p=[self.p_mutation, 1-self.p_mutation]) == True:
+            offspring += random.randint(0,100)
         return offspring
+
 
     def elitism(self, new_pop):
         els = self.pop[:]
@@ -131,7 +152,7 @@ class Tuner_Singles():
             score_c.pop(index)
             new_pop.append(els.pop(index))
 
-    def run(self, max=1000, pop_size=5, p_mutation=0.1):
+    def run(self, max=1000, pop_size=10, p_mutation=0.1):
         self.pop_size = pop_size
         self.p_mutation = p_mutation
 
