@@ -38,26 +38,62 @@ class Tuner_Singles():
             w1 = random.randint(100, 600)
             w2 = random.randint(0, 300)
             line = [w1, w2]
-            weights.append(np.array([line]))
+            # weights.append(np.array([line]))
+            weights.append(np.array(line))
         return weights
 
     def evaluate_pop(self):
         appo = []
         for chromosome in self.pop:
-            res = self.evaluate_chromosome(chromosome[0])
+            # res = self.evaluate_chromosome(chromosome[0])
+            res = self.evaluate_chromosome(chromosome)
             appo.append(res)
         return appo
 
     def evaluate_chromosome(self, chromosome):
         return self.step_User_CB(knn=chromosome[0], shrink=chromosome[1])
 
+    def my_index(self, l, item):
+        for i in range(len(l)):
+            if (item == l[i]).all():
+                return i
+        return -1
+
     def select_parents(self):
+        sorted_pop_score = sorted(self.pop_scores)
+        probs=[]
+        l = (len(sorted_pop_score)*(len(sorted_pop_score)+1))/2
+
+        for i in self.pop:
+            pos_of_i_in_pop = self.my_index(self.pop, i)
+            score_of_pos = self.pop_scores[pos_of_i_in_pop]
+            ranking = self.my_index(sorted_pop_score, score_of_pos) + 1
+            prob = ranking/l
+
+            probs.append(prob)
+
+        print("probs")
+        print(probs)
+        print("self.pop")
         print(self.pop)
+        print("self.pop_scores")
         print(self.pop_scores)
-        print(self.pop_scores.sort(reverse=True))
+        print("l")
+        print(l)
 
-        
+        parents = [self.pop[i] for i in np.random.choice(len(self.pop), 2, p=probs)]
 
+        return parents
+
+    '''def select_parents(self):
+        sorted_pop_score = sorted(self.pop_scores)
+        probs = []
+        l = (len(sorted_pop_score) * (len(sorted_pop_score) + 1)) / 2
+        probs = [self.my_index(sorted_pop_score, self.pop_scores[self.my_index(self.pop, i)]) + 1 / l for i in self.pop]
+
+        parents = [self.pop[i] for i in np.random.choice(len(self.pop), 2, p=probs)]
+
+        return parents'''
 
 
     def generate_offspring(self, p1, p2):
@@ -71,7 +107,6 @@ class Tuner_Singles():
         return offspring
 
     def crossover(self, parents):
-        # b1, b2 = np.sort(np.random.randint(0, len(parents[0]), size=2))
         offspring1 = self.generate_offspring(parents[0], parents[1])
         offspring2 = self.generate_offspring(parents[1], parents[0])
         # randomly mutate offsprings
@@ -109,7 +144,6 @@ class Tuner_Singles():
 
             while len(new_pop) < len(self.pop):
                 parents = self.select_parents()
-                print(parents)
                 off1, off2 = self.crossover(parents)
 
                 new_pop.append(off1)
