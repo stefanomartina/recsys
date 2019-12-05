@@ -67,21 +67,33 @@ class Tuner_Singles():
     def select_parents(self):
         sorted_pop_score = sorted(self.pop_scores, reverse=False)
         probs=[]
+        taken = [False]*self.pop_size
+
         l = (self.pop_size*(self.pop_size+1))/2
 
         for i in self.pop:
             pos_of_i_in_pop = self.my_index(self.pop, i)
             score_of_pos = self.pop_scores[pos_of_i_in_pop]
-            ranking = self.my_index(sorted_pop_score, score_of_pos) + 1
-            prob = ranking/l
-            probs.append(prob)
-        print("------------")
+            ranking = self.my_index(sorted_pop_score, score_of_pos)
+
+            if not taken[ranking]:
+                prob = (ranking + 1) / l
+                probs.append(prob)
+
+            else:
+                while taken[ranking]:
+                    ranking = self.my_index(sorted_pop_score[:ranking], i)
+
+                taken[ranking] = True
+                prob = ranking+1/l
+                probs.append(prob)
+        '''print("------------")
         print("probs")
         print(probs)
         print("self.pop")
         print(self.pop)
         print("self.pop_scores")
-        print(self.pop_scores)
+        print(self.pop_scores)'''
 
         parents = [self.pop[i] for i in np.random.choice(len(self.pop), 2, p=probs)]
 
@@ -96,10 +108,7 @@ class Tuner_Singles():
 
         if self.my_index(self.new_pop, offspring) == -1:
             return offspring
-        if self.my_index(self.new_pop, p1) == -1:
-            return p1
-        if self.my_index(self.new_pop, p2) == -1:
-            return p2
+
         return np.array([random.randint(100, 600), random.randint(0, 300)])
 
     def crossover(self, parents):
