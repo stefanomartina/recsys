@@ -62,18 +62,24 @@ class Tuner_Singles():
     def select_parents(self):
         sorted_pop_score = sorted(self.pop_scores, reverse=False)
         probs=[]
-        taken = [False]*self.pop_size
+        taken_pop = [False]*self.pop_size
+        taken_score = [False]*self.pop_size
 
         l = (self.pop_size*(self.pop_size+1))/2
 
         for i in self.pop:
             pos_of_i_in_pop = self.my_index(self.pop, i)
-            while taken[pos_of_i_in_pop]:
+            while taken_pop[pos_of_i_in_pop]:
                 pos_of_i_in_pop += self.my_index(self.pop[pos_of_i_in_pop + 1 : ], i) + 1
 
             score_of_pos = self.pop_scores[pos_of_i_in_pop]
             ranking = self.my_index(sorted_pop_score, score_of_pos)
-            taken[pos_of_i_in_pop] = True
+
+            while taken_score[ranking]:
+                ranking += self.my_index(sorted_pop_score[ranking + 1 : ], score_of_pos) +1
+
+            taken_score[ranking] = True
+            taken_pop[pos_of_i_in_pop] = True
             prob = (ranking+1)/l
             probs.append(prob)
 
@@ -129,15 +135,13 @@ class Tuner_Singles():
                 self.new_pop.append(off2)
             self.pop = self.new_pop
             self.pop_scores = self.evaluate_pop()
-            print("----------------------------------------")
             print("-----------------ENDED------------------")
             print(self.pop)
             print(np.argmax(self.pop_scores))
-            print("----------------------------------------")
             print("----------------------------------------")
 
 
 if __name__ == "__main__":
     recommender = ItemKNNCFRecommender()
-    recommender = UserKNNCFRecommender()
-    Tuner_Singles(recommender, "UserCF").run()
+    #recommender = UserKNNCFRecommender()
+    Tuner_Singles(recommender, "ItemCF").run()
