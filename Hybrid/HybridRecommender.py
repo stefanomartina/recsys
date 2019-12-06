@@ -170,7 +170,7 @@ class HybridRecommender(object):
         if hybrid == "third":
             self.hybrid_ratings = self.switch_ratings("Slim") * self.weights[0]
             self.hybrid_ratings += self.switch_ratings("UserContentBased") * (self.weights[1])
-            self.hybrid_ratings += self.switch_ratings("ItemCF") * (self.weights[2] + self.weights[3])
+            self.hybrid_ratings += self.switch_ratings("ItemCF") * self.weights[2]
 
         recommended_items = np.flip(np.argsort(self.hybrid_ratings), 0)
 
