@@ -7,6 +7,7 @@ from Recommenders.Combination.ItemCF_ItemCB import ItemCF_ItemCB
 from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
 from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
+from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Hybrid.HybridRecommender import HybridRecommender
 from Base.BaseFunction import BaseFunction
 from Utils import evaluation
@@ -73,27 +74,33 @@ class Tuner_Singles():
 
         for i in self.pop:
             pos_of_i_in_pop = self.my_index(self.pop, i)
+            print("pos_of_i_in_pop: ")
+            print(pos_of_i_in_pop)
             score_of_pos = self.pop_scores[pos_of_i_in_pop]
+            print("score_of_pos")
+            print(score_of_pos)
             ranking = self.my_index(sorted_pop_score, score_of_pos)
+            print("ranking: ")
+            print(ranking)
 
-            if not taken[ranking]:
-                prob = (ranking + 1) / l
-                probs.append(prob)
+            while taken[ranking]:
+                print("self.my_index(sorted_pop_score[:ranking], i): ")
+                print(self.my_index(sorted_pop_score[:ranking], i))
+                ranking = ranking+self.my_index(sorted_pop_score[:ranking], i)+1
+                print("ranking: ")
+                print(ranking)
 
-            else:
-                while taken[ranking]:
-                    ranking = self.my_index(sorted_pop_score[:ranking], i)
+            taken[ranking] = True
+            prob = (ranking+1)/l
+            probs.append(prob)
 
-                taken[ranking] = True
-                prob = ranking+1/l
-                probs.append(prob)
-        '''print("------------")
+        print("------------")
         print("probs")
         print(probs)
         print("self.pop")
         print(self.pop)
         print("self.pop_scores")
-        print(self.pop_scores)'''
+        print(self.pop_scores)
 
         parents = [self.pop[i] for i in np.random.choice(len(self.pop), 2, p=probs)]
 
@@ -106,10 +113,7 @@ class Tuner_Singles():
         offspring[0] = p1[0]
         offspring[1] = p2[1]
 
-        if self.my_index(self.new_pop, offspring) == -1:
-            return offspring
-
-        return np.array([random.randint(100, 600), random.randint(0, 300)])
+        return offspring
 
     def crossover(self, parents):
         offspring1 = self.generate_offspring(parents[0], parents[1])
@@ -122,10 +126,8 @@ class Tuner_Singles():
 
     def mutation(self, offspring):
         if np.random.choice([True, False], 1, p=[self.p_mutation, 1-self.p_mutation]) == True:
-            if self.my_index(self.new_pop, offspring) == -1:
-                offspring += random.randint(0,100)
-                return offspring
-        return offspring
+            offspring += random.randint(0,100)
+            return offspring
 
 
     def elitism(self):
@@ -166,4 +168,5 @@ class Tuner_Singles():
 
 if __name__ == "__main__":
     recommender = ItemKNNCFRecommender()
-    Tuner_Singles(recommender, "ItemCF").run()
+    recommender = UserKNNCFRecommender()
+    Tuner_Singles(recommender, "UserCF").run()
