@@ -1,3 +1,4 @@
+import argparse
 import random
 from _decimal import Decimal
 
@@ -45,7 +46,7 @@ class Tuner():
         print("----------------------------------------")
         print("Recommender: " + self.name + " knn: " + str(knn) + " shrink: " + str(shrink))
         list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
-        self.recommender.fit(self.helper.URM_train, list_ICM, knn=knn, shrink=shrink)
+        self.recommender.fit(self.helper.URM_train, list_ICM, knn=knn, shrink=shrink, tuning=True)
         evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         print("----------------------------------------")
 
@@ -58,18 +59,16 @@ class Tuner():
         print("----------------------------------------")
 
     def step_weight(self, list_weight):
-        start_time = time.time()
         print("----------------------------------------")
-        # print("Recommender: " + self.name + " First weight: " + str(list_weight[0]) +
-        #     " Second_weight: " + str(list_weight[1]) + " Third_weight: " + str(list_weight[2]) + " Fourth_weight: " + str(list_weight[3]))
-
+        print("HybridCombination: " + self.name)
+        print(list_weight)
+        print("----------------------------------------")
         list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
         list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
-        self.recommender.fit(self.helper.URM_train, list_weight, list_ICM = list_ICM, list_UCM=list_UCM,  tuning=True, combination="second")
-        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
-        elapsed_time = time.time() - start_time
-        print("----------------" + str(elapsed_time) + "----------------")
-        return cumulative
+        self.recommender.fit(self.helper.URM_train, list_weight, list_ICM=list_ICM, list_UCM=list_UCM,  tuning=False)
+        evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        print("----------------------------------------")
+
 
     def run_Slim(self):
         self.helper.split_dataset_loo()
@@ -112,38 +111,43 @@ class Tuner():
         self.helper.split_dataset_loo()
         self.helper.get_target_users()
 
-        topKs = np.arange(start=10, stop=210, step=20)
-        shrinks = np.arange(start=10, stop=210, step=20)
+        topKs = np.arange(start=400, stop=600, step=10)
+        shrinks = np.arange(start=0, stop=30, step=5)
 
         for topk in topKs:
             for shrink in shrinks:
                     self.step_User_CB(topk, shrink)
 
     def run_hybrid(self):
-
-
         one = 1
         weights = []
 
-        for i in range(0, 30):
+        for i in range(0, 150):
             weights.clear()
             #self.step_weight(np.random.dirichlet(np.ones(4), size=1))
-            weights.append(random.uniform(0, 0.2))
+            weights.append(random.uniform(0, 0.1))
             one -= weights[0]
 
             weights.append(random.uniform(0, 0.2))
             one -= weights[1]
 
-            weights.append(random.uniform(0.1, 0.2))
+            weights.append(random.uniform(0, 0.3))
             one -= weights[2]
 
             weights.append(one)
             one = 1
             self.step_weight(weights)
 
+
+
     def random_pop(self):
-        print([np.random.dirichlet(np.ones(4), size=1) for _ in range(self.pop_size)])
+        # print([np.random.dirichlet(np.ones(4), size=1) for _ in range(self.pop_size)])
         weights = []
+        weights.append(np.array([0.1663826]))
+        weights.append(np.array([0.0953606]))
+        weights.append(np.array([0.36586317]))
+        weights.append(np.array([0.18856729]))
+        """
         for i in range(self.pop_size):
             w1 = random.uniform(0, 0.2)
             w2 = random.uniform(0, 0.2)
@@ -152,15 +156,13 @@ class Tuner():
             w4 = random.uniform(0, res)
             line = [w1, w2, w3, w4]
             weights.append(np.array([line]))
-
+        """
         return weights
-
-
-
 
     def evaluate_pop(self):
         appo = []
         for chromosome in self.pop:
+            print(chromosome)
             res = self.evaluate_chromosome(chromosome[0])
             appo.append(res)
         return appo
@@ -219,8 +221,7 @@ class Tuner():
             score_c.pop(index)
             new_pop.append(els.pop(index))
 
-
-    def run_hybrid_hill_climbing(self, max = 1000, pop_size=5, p_mutation=0.1):
+    def run_hybrid_hill_climbing(self, max = 1000, pop_size=10, p_mutation=0.1):
         self.pop_size = pop_size
         self.p_mutation = p_mutation
 
@@ -243,12 +244,43 @@ class Tuner():
             print("-----------------------------------------------")
             print("-----------------------------------------------")
             print("-----------------------------------------------")
-            print("            best pop: %i" % self.pop)
-            print("            best res: %i" % np.argmax(self.pop_scores))
+            print("            best pop:")
+            print(self.pop)
+            print("            best res:")
+            print(np.argmax(self.pop_scores))
             print("-----------------------------------------------")
             print("-----------------------------------------------")
             print("-----------------------------------------------")
 
+
+
+
 if __name__ == "__main__":
-    recommender = HybridRecommender()
-    Tuner(recommender, "Item Content Base").run_hybrid_hill_climbing()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('recommender', choices=['Combo1', 'Combo2', 'Combo3', 'Combo4', 'Combo5', 'Combo6'])
+    args = parser.parse_args()
+    recommender = None
+
+    if args.recommender == 'Combo1':
+        recommender = HybridRecommender(combination='Combo1')
+        Tuner(recommender, args.recommender).run_hybrid()
+
+    if args.recommender == 'Combo2':
+        recommender = HybridRecommender(combination='Combo2')
+        Tuner(recommender, args.recommender).run_hybrid()
+
+    if args.recommender == 'Combo3':
+        recommender = HybridRecommender(combination='Combo3')
+        Tuner(recommender, args.recommender).run_hybrid()
+
+    if args.recommender == 'Combo4':
+        recommender = HybridRecommender(combination='Combo4')
+        Tuner(recommender, args.recommender).run_hybrid()
+
+    if args.recommender == 'Combo5':
+        recommender = HybridRecommender(combination='Combo5')
+        Tuner(recommender, args.recommender).run_hybrid()
+
+    if args.recommender == 'Combo6':
+        recommender = HybridRecommender(combination='Combo6')
+        Tuner(recommender, args.recommender).run_hybrid()

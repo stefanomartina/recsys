@@ -14,7 +14,7 @@ class ItemCBFKNNRecommender():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, list_ICM, knn=200, shrink=50, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting=None):
+    def fit(self, URM, list_ICM, knn=200, shrink=50, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting=None, similarity_path=SIMILARITY_PATH):
         print("Fitting Item Content Based Recommender...")
         self.URM = URM
         self.ICM, self.ICM_asset, self.ICM_price = list_ICM
@@ -32,7 +32,7 @@ class ItemCBFKNNRecommender():
 
         # Compute similarity
         if tuning:
-            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.ICM_merged, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
+            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.ICM_merged, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         else:
             self.W_sparse = self.helper.get_cosine_similarity(self.ICM_merged, knn, shrink, similarity, normalize, transpose=transpose)
 

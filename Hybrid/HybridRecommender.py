@@ -3,6 +3,7 @@ import pandas as pd
 from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from Recommenders.ContentBased import UserCBFKNNRecommender, ItemCBFKNNRecommender
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
+from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Recommenders.Combination.ItemCF_ItemCB import ItemCF_ItemCB
 from Recommenders.Combination.ItemCF_TopPop import ItemCF_TopPop
 from Base.BaseFunction import BaseFunction
@@ -16,13 +17,13 @@ user_cf_param = {
 }
 
 item_cf_param = {
-    "knn": 147,
-    "shrink": 36,
+    "knn": 10,
+    "shrink": 10,
 }
 
 user_cb_param = {
-    "knn": 800,
-    "shrink": 5,
+    "knn": 700,
+    "shrink": 0,
 }
 
 item_cb_param = {
@@ -30,14 +31,9 @@ item_cb_param = {
     "shrink": 5,
 }
 
-cf_param = {
-    "knn": 5,
-    "shrink": 10,
-}
-
 slim_param = {
-    "epochs": 500,
-    "topK": 200,
+    "epochs": 300,
+    "topK": 250,
 }
 
 cftp_param = {
@@ -59,9 +55,10 @@ class HybridRecommender(object):
     #                                  INIT ALGORITHM                                     #
     #######################################################################################
 
-    def __init__(self):
+    def __init__(self, combination):
 
         self.hybrid_ratings = None
+        self.combination = combination
 
         # User Content Based
         self.userContentBased = UserCBFKNNRecommender.UserCBFKNNRecommender()
@@ -75,8 +72,11 @@ class HybridRecommender(object):
         # Item Collaborative + Item Content Based
         self.itemCF_TopPop_Combo = ItemCF_TopPop()
 
-        # Collaborative Filtring
-        self.cf = ItemKNNCFRecommender()
+        # User Collaborative
+        self.userCF = UserKNNCFRecommender()
+
+        # Item Collavboratice
+        self.itemCF = ItemKNNCFRecommender()
 
         # Slim
         self.slim_random = SLIM_BPR_Cython(epochs=slim_param["epochs"], topK=slim_param["topK"])
@@ -84,7 +84,8 @@ class HybridRecommender(object):
         # Ratings from each available algorith
         self.userContentBased_ratings = None
         self.itemContentBased_ratings = None
-        self.cf_ratings = None
+        self.itemCF_ratings = None
+        self.userCF_ratings = None
         self.cf_tp_combo_ratings = None
         self.cf_cb_combo_ratings = None
         self.slim_ratings = None
@@ -93,7 +94,8 @@ class HybridRecommender(object):
         switcher = {
             "UserContentBased": self.userContentBased_ratings,
             "ItemContentBased": self.itemContentBased_ratings,
-            "ItemCF": self.cf_ratings,
+            "ItemCF": self.itemCF_ratings,
+            "UserCF": self.userCF_ratings,
             "ItemCF_TopPop_Combo": self.cf_tp_combo_ratings,
             "ItemCF_ItemCB_Combo": self.cf_cb_combo_ratings,
             "Slim": self.slim_ratings,
@@ -107,32 +109,46 @@ class HybridRecommender(object):
     # To force a production from hybrid recommender, set manually weights and move it after list_ICM and list_UCM
 
     def fit(self, URM, weights, list_ICM = None, list_UCM = None,
-                   knn_user=user_cf_param["knn"], shrink_user=user_cf_param["shrink"],
-                   knn_item=item_cf_param["knn"], shrink_item=item_cf_param["shrink"],
-                   knn_cf=cf_param["knn"], shrink_cf=cf_param["shrink"],
+                   knn_usercf=user_cf_param["knn"], shrink_usercf=user_cf_param["shrink"],
+                   knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
+                   knn_usercb=user_cb_param["knn"], shrink_usercb=user_cb_param["shrink"],
+                   knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],
                    knn_cftp=cftp_param["knn"], shrink_cftp=cftp_param["shrink"],
-                   knn_cfcb=cfcb_param["knn"], shrink_cfcb=cfcb_param["shrink"], tuning=False, combination="third"):
+                   knn_cfcb=cfcb_param["knn"], shrink_cfcb=cfcb_param["shrink"], tuning=False):
 
         self.URM = URM
         self.weights = np.array(weights)
 
         # Sub-Fitting
-        if combination == "first":
-            self.userContentBased.fit(URM.copy(), list_UCM, knn_user, shrink_user, tuning=tuning)
-            self.itemContentBased.fit(URM.copy(), list_ICM, knn_item, shrink_item, tuning=tuning)
-            self.cf.fit(URM.copy(), knn_cf, shrink_cf, tuning=tuning)
+        if self.combination == "Combo1":
+            self.userContentBased.fit(URM.copy(), list_UCM, knn_usercb, shrink_usercb, tuning=tuning)
+            self.itemContentBased.fit(URM.copy(), list_ICM, knn_itemcb, shrink_itemcb, tuning=tuning)
+            self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
             self.slim_random.fit(URM.copy())
 
-        if combination == "second":
-            self.cf.fit(URM.copy(), knn_cf, shrink_cf, tuning=tuning)
+        if self.combination == "Combo2":
+            self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
             self.slim_random.fit(URM.copy())
             self.itemCF_TopPop_Combo.fit(URM.copy(), knn_cftp, shrink_cftp, tuning=tuning)
             self.itemCF_itemCB_Combo.fit(URM.copy(), list_ICM, knn_cfcb, shrink_cfcb, tuning=tuning)
 
-        if combination == "third":
-            self.userContentBased.fit(URM.copy(), list_UCM, knn_user, shrink_user, tuning=tuning)
+        if self.combination == "Combo3":
+            self.userContentBased.fit(URM.copy(), list_UCM, knn_usercb, shrink_usercb, tuning=tuning)
             self.slim_random.fit(URM.copy())
-            self.cf.fit(URM.copy(), knn_cf, shrink_cf, tuning=tuning)
+            self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
+
+        if self.combination == "Combo4":
+            self.userContentBased.fit(URM.copy(), list_UCM, knn_usercb, shrink_usercb, tuning=tuning, similarity_path="/SimilarityProduct/UserCB2_similarity.npz")
+            self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF2_similarity.npz")
+
+        if self.combination == "Combo5":
+            self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning, similarity_path="/SimilarityProduct/UserCF3_similarity.npz")
+            self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF3_similarity.npz")
+
+        if self.combination == "Combo6":
+            self.itemContentBased.fit(URM.copy(), list_ICM, knn_usercb, shrink_usercb, tuning=tuning)
+            self.slim_random.fit(URM.copy())
+            self.userCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
 
     #######################################################################################
     #                                  EXTRACT RATINGS                                    #
@@ -141,7 +157,8 @@ class HybridRecommender(object):
     def sum_score(self, user_id):
         self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
         #self.itemContentBased_ratings = self.itemContentBased.get_expected_ratings(user_id)
-        self.cf_ratings = self.cf.get_expected_ratings(user_id)
+        self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
+        #self.userCF_ratings = self.userCF.get_expected_ratings(user_id)
         #self.cf_tp_combo_ratings = self.itemCF_TopPop_Combo.get_expected_ratings(user_id)
         #self.cf_cb_combo_ratings = self.itemCF_itemCB_Combo.get_expected_ratings(user_id)
         self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
@@ -150,27 +167,41 @@ class HybridRecommender(object):
     #                                    RECOMMENDING                                     #
     #######################################################################################
 
-    def recommend(self, user_id, at=10, hybrid="third"):
+    def recommend(self, user_id, at=10):
 
         self.sum_score(user_id)
 
-        if hybrid == "first":
+        if self.combination == "Combo1":
             self.hybrid_ratings = self.switch_ratings("UserContentBased") * self.weights[0]
             self.hybrid_ratings += self.switch_ratings("ItemContentbased") * self.weights[1]
             self.hybrid_ratings += self.switch_ratings("ItemCF") * self.weights[2]
             self.hybrid_ratings += self.switch_ratings("Slim") * self.weights[3]
 
-        if hybrid == "second":
+        if self.combination == "Combo2":
             self.hybrid_ratings = self.switch_ratings("ItemCF") * self.weights[0]
             self.hybrid_ratings += self.switch_ratings("Slim") * self.weights[1]
             self.hybrid_ratings += self.switch_ratings("ItemCF_TopPop_Combo") * self.weights[2]
             self.hybrid_ratings += self.switch_ratings("ItemCF_ItemCB_Combo") * self.weights[3]
 
 
-        if hybrid == "third":
-            self.hybrid_ratings = self.switch_ratings("Slim") * self.weights[0]
+        if self.combination == "Combo3":
+            self.hybrid_ratings = self.switch_ratings("Slim") * (self.weights[0])
             self.hybrid_ratings += self.switch_ratings("UserContentBased") * (self.weights[1])
             self.hybrid_ratings += self.switch_ratings("ItemCF") * (self.weights[2] + self.weights[3])
+
+        if self.combination == "Combo4":
+            self.hybrid_ratings = self.switch_ratings("UserContentBased") * (self.weights[0])
+            self.hybrid_ratings += self.switch_ratings("ItemCF") * (self.weights[1])
+
+
+        if self.combination == "Combo5":
+            self.hybrid_ratings = self.switch_ratings("UserCF") * (self.weights[0])
+            self.hybrid_ratings += self.switch_ratings("ItemCF") * (self.weights[1])
+
+        if self.combination == "Combo6":
+            self.hybrid_ratings = self.switch_ratings("Slim") * self.weights[0]
+            self.hybrid_ratings += self.switch_ratings("ItemContentBased") * (self.weights[1])
+            self.hybrid_ratings += self.switch_ratings("UserCF") * (self.weights[2])
 
         recommended_items = np.flip(np.argsort(self.hybrid_ratings), 0)
 

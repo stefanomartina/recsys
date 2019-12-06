@@ -13,7 +13,7 @@ class ItemCF_TopPop():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, transpose=False, tuning=False, feature_weighting="TF-IDF"):
+    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, transpose=False, tuning=False, feature_weighting="TF-IDF", similarity_path=SIMILARITY_PATH):
         self.URM = URM
         self.TP = TopPopRecommender()
         self.TP.fit(self.URM)
@@ -23,7 +23,7 @@ class ItemCF_TopPop():
 
         # Compute similarity
         if tuning:
-            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.URM, SIMILARITY_PATH, knn, shrink,
+            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.URM, similarity_path, knn, shrink,
                                                                          similarity, normalize, transpose=transpose,
                                                                          tuning=tuning)
         else:

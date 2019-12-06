@@ -1,5 +1,4 @@
 import numpy as np
-from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
 from Base.BaseFunction import BaseFunction
 
 RECOMMENDER_NAME = "UserKNNCFRecommender"
@@ -12,7 +11,7 @@ class UserKNNCFRecommender(object):
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting=None):
+    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting=None, similarity_path=SIMILARITY_PATH):
         print("Fitting User Collaborative Filerting Recommender...")
         self.URM = URM
 
@@ -21,7 +20,7 @@ class UserKNNCFRecommender(object):
 
         # Compute similarity
         if tuning:
-            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.URM, SIMILARITY_PATH, knn, shrink,
+            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.URM, similarity_path, knn, shrink,
                                                                          similarity, normalize, transpose=transpose,
                                                                          tuning=tuning)
         else:
