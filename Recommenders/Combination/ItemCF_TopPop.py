@@ -22,7 +22,13 @@ class ItemCF_TopPop():
             self.helper.feature_weight(URM, feature_weighting)
 
         # Compute similarity
-        self.W_sparse = self.helper.get_cosine_similarity(self.URM, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
+        if tuning:
+            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.URM, SIMILARITY_PATH, knn, shrink,
+                                                                         similarity, normalize, transpose=transpose,
+                                                                         tuning=tuning)
+        else:
+            self.W_sparse = self.helper.get_cosine_similarity(self.URM, knn, shrink, similarity, normalize,
+                                                                  transpose=transpose)
         self.similarityProduct = self.URM.dot(self.W_sparse)
 
     def get_expected_ratings(self, user_id):

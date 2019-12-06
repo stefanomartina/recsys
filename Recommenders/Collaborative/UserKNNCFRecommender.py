@@ -12,7 +12,7 @@ class UserKNNCFRecommender(object):
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, tuning=False, feature_weighting=None):
+    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting=None):
         print("Fitting User Collaborative Filerting Recommender...")
         self.URM = URM
 
@@ -20,7 +20,13 @@ class UserKNNCFRecommender(object):
             self.helper.feature_weight(URM, feature_weighting)
 
         # Compute similarity
-        self.W_sparse = self.helper.get_cosine_similarity(self.URM, SIMILARITY_PATH, knn, shrink, similarity, normalize, True, tuning)
+        if tuning:
+            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.URM, SIMILARITY_PATH, knn, shrink,
+                                                                         similarity, normalize, transpose=transpose,
+                                                                         tuning=tuning)
+        else:
+            self.W_sparse = self.helper.get_cosine_similarity(self.URM, knn, shrink, similarity, normalize,
+                                                                  transpose=transpose)
         self.similarityProduct = self.W_sparse.dot(self.URM)
 
     def get_expected_ratings(self, user_id):

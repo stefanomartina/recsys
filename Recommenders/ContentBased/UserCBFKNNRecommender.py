@@ -29,7 +29,11 @@ class UserCBFKNNRecommender():
             self.UCM_merged = self.helper.feature_weight(self.UCM_merged, feature_weighting)
 
         # Compute similarity
-        self.W_sparse = self.helper.get_cosine_similarity(self.UCM_merged, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
+        if tuning:
+            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.UCM_merged, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
+        else:
+            self.W_sparse = self.helper.get_cosine_similarity(self.UCM_merged, knn, shrink, similarity, normalize,
+                                                                  transpose=transpose)
         self.similarityProduct = self.W_sparse.dot(self.URM)
 
     def filter_seen(self, user_id, scores):
