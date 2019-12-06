@@ -344,7 +344,7 @@ class BaseFunction:
         return matrix
 
     #######################################################################################
-    #                                   SIMILARITY UTILS                                  #
+    #                               SIMILARITY UTILS                                      #
     #######################################################################################
 
     def return_path(self):
@@ -353,7 +353,7 @@ class BaseFunction:
     def exporting_similarity_matrix(self, filename, matrix):
             sps.save_npz(filename, matrix)
 
-    def get_cosine_similarity(self, matrix, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=False, tuning=False):
+    def get_cosine_similarity_hybrid(self, matrix, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=False, tuning=False):
 
         if transpose:
             matrix = matrix.T
@@ -372,6 +372,14 @@ class BaseFunction:
 
         return W_sparse
 
+    def get_cosine_similarity(self, matrix, knn, shrink, similarity, normalize, transpose=False):
+        if transpose:
+            matrix = matrix.T
+
+        similarity_object = Compute_Similarity_Cython(matrix, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
+        W_sparse = similarity_object.compute_similarity()
+        return W_sparse
+
     def get_matrixTopK_similarity(self, S_incremental, topK, SIMILARITY_PATH, tuning=False):
 
         if not tuning:
@@ -384,3 +392,5 @@ class BaseFunction:
             W_sparse = sps.load_npz(self.return_path() + SIMILARITY_PATH)
 
         return W_sparse
+
+
