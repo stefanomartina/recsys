@@ -6,15 +6,17 @@ from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
 from Recommenders.Slim.SlimElasticNet import SLIMElasticNetRecommender
 from Recommenders.MatrixFactorization.PureSVD import PureSVDRecommender
 from Recommenders.Collaborative import UserKNNCFRecommender, ItemKNNCFRecommender
+from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRecommender
 from Hybrid.HybridRecommender import HybridRecommender
 from Utils import evaluation
 
-from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRecommender
 
 import time
 import csv
 import argparse
 from Base.BaseFunction import BaseFunction
+
+FIELDS = ["user_id", "item_list"]
 
 class Runner:
 
@@ -33,7 +35,8 @@ class Runner:
     #                                     WRITE RESULT                                    #
     #######################################################################################
 
-    def write_csv(self, rows, name, fields=["user_id", "item_list"]):
+    def write_csv(self, rows, name):
+        fields = FIELDS
         timestr = time.strftime("%Y-%m-%d_%H.%M.%S")
         file_path = "Results/" + name + "-" + timestr + ".csv"
 
@@ -90,9 +93,10 @@ class Runner:
                 recommendations.append(recommendation)
             saved_tuple.append(index + recommendations)
         print("Recommendations computed")
-        print("Printing csv...")
-        self.write_csv(saved_tuple, self.name)
-        print("Ended")
+        if not self.evaluate:
+            print("Printing csv...")
+            self.write_csv(saved_tuple, self.name)
+            print("Ended")
         return saved_tuple
 
     #######################################################################################
@@ -194,5 +198,4 @@ if __name__ == '__main__':
         #recommender = MatrixFactorization_BPR_Cython()
 
     print(args)
-
     Runner(recommender, args.recommender, evaluate=args.eval).run(requires_ucm, requires_icm)

@@ -13,7 +13,7 @@ class UserCBFKNNRecommender():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, list_UCM, knn=800, shrink=5, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting="TF_IDF"):
+    def fit(self, URM, list_UCM, knn=800, shrink=5, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting="TF_IDF", similarity_path=SIMILARITY_PATH):
         print("Fitting User Content Based Recommender Recommender...")
         self.URM = URM
         self.UCM_age, self.UCM_region = list_UCM
@@ -30,7 +30,7 @@ class UserCBFKNNRecommender():
 
         # Compute similarity
         if tuning:
-            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.UCM_merged, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
+            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.UCM_merged, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         else:
             self.W_sparse = self.helper.get_cosine_similarity(self.UCM_merged, knn, shrink, similarity, normalize,
                                                                   transpose=transpose)
