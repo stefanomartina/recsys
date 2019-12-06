@@ -35,16 +35,11 @@ class Tuner_Singles():
 
     def random_pop(self):
         weights = []
-        i = 0
-        while i < self.pop_size:
+        for i in range(self.pop_size):
             w1 = random.randint(100, 600)
             w2 = random.randint(0, 300)
             line = [w1, w2]
-            # weights.append(np.array([line]))
-
-            if self.my_index(weights, line) == -1:
-                weights.append(np.array(line))
-                i += 1
+            weights.append(np.array(line))
 
         return weights
 
@@ -65,7 +60,6 @@ class Tuner_Singles():
         return -1
 
     def select_parents(self):
-        print("in select paarents")
         sorted_pop_score = sorted(self.pop_scores, reverse=False)
         probs=[]
         taken = [False]*self.pop_size
@@ -74,13 +68,12 @@ class Tuner_Singles():
 
         for i in self.pop:
             pos_of_i_in_pop = self.my_index(self.pop, i)
+            while taken[pos_of_i_in_pop]:
+                pos_of_i_in_pop += self.my_index(self.pop[pos_of_i_in_pop + 1 : ], i) + 1
+
             score_of_pos = self.pop_scores[pos_of_i_in_pop]
             ranking = self.my_index(sorted_pop_score, score_of_pos)
-
-            while taken[ranking]:
-                ranking = ranking+self.my_index(sorted_pop_score[ranking:], i)+1
-
-            taken[ranking] = True
+            taken[pos_of_i_in_pop] = True
             prob = (ranking+1)/l
             probs.append(prob)
 
@@ -98,10 +91,8 @@ class Tuner_Singles():
         return offspring
 
     def crossover(self, parents):
-        print("in crossover")
         offspring1 = self.generate_offspring(parents[0], parents[1])
         offspring2 = self.generate_offspring(parents[1], parents[0])
-        # randomly mutate offsprings
         offspring1 = self.mutation(offspring1)
         offspring2 = self.mutation(offspring2)
 
@@ -110,7 +101,7 @@ class Tuner_Singles():
     def mutation(self, offspring):
         if np.random.choice([True, False], 1, p=[self.p_mutation, 1-self.p_mutation]) == True:
             offspring += random.randint(0,100)
-            return offspring
+        return offspring
 
 
     def elitism(self):
@@ -128,21 +119,15 @@ class Tuner_Singles():
 
         self.pop = self.random_pop()
         self.pop_scores = self.evaluate_pop()
-
         for i in range(max):
             self.new_pop = []
             self.elitism()
-
             while len(self.new_pop) < len(self.pop):
                 parents = self.select_parents()
-                print(parents)
                 off1, off2 = self.crossover(parents)
-
                 self.new_pop.append(off1)
                 self.new_pop.append(off2)
-
             self.pop = self.new_pop
-            print(self.pop)
             self.pop_scores = self.evaluate_pop()
             print("----------------------------------------")
             print("-----------------ENDED------------------")
