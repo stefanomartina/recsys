@@ -2,16 +2,16 @@ import random
 import numpy as np
 import time
 
-from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
-from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
-from Hybrid import HybridRecommender
-
 from Base.BaseFunction import BaseFunction
 from Utils import evaluation
 
 
 class Tuner_Singles():
+
+    #######################################################################################
+    #                                      INIT CLASS                                     #
+    #######################################################################################
 
     def __init__(self, recommender, name):
         self.recommender = recommender
@@ -23,28 +23,9 @@ class Tuner_Singles():
         self.helper.split_80_20()
         self.helper.get_target_users()
 
-    def step_SlimBPR_Cython(self, w1, w2):
-        start_time = time.time()
-        print("----------------------------------------")
-        print("Recommender: " + self.name)
-        print("epoch: " + str(w1) + " topk: " + str(w2))
-
-        self.recommender.fit(self.helper.URM_train)
-        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
-        elapsed_time = time.time() - start_time
-        print("----------------" + str(elapsed_time) + "----------------")
-        return cumulative
-
-
-    def step_User_CB(self, knn, shrink):
-        start_time = time.time()
-        print("----------------------------------------")
-        print("Recommender: " + self.name + " knn: " + str(knn) + " shrink: " + str(shrink))
-        self.recommender.fit(self.helper.URM_train, knn=knn, shrink=shrink)
-        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
-        elapsed_time = time.time() - start_time
-        print("----------------" + str(elapsed_time) + "----------------")
-        return cumulative
+    #######################################################################################
+    #                                    TEP FOR TUNING                                   #
+    #######################################################################################
 
     def step_weight(self, w1, w2):
         start_time = time.time()
@@ -59,6 +40,10 @@ class Tuner_Singles():
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
+
+    #######################################################################################
+    #                                  GENETIC ALGORITHM                                  #
+    #######################################################################################
 
     def random_pop(self):
         weights = []
@@ -79,8 +64,7 @@ class Tuner_Singles():
         return appo
 
     def evaluate_chromosome(self, chromosome):
-        self.recommender = SLIM_BPR_Cython(epochs=chromosome[0], topK=chromosome[1])
-        return self.step_SlimBPR_Cython(w1=chromosome[0], w2=chromosome[1])
+        return self.step_weight(w1=chromosome[0], w2=chromosome[1])
 
     def my_index(self, l, item):
         for i in range(len(l)):
@@ -138,7 +122,6 @@ class Tuner_Singles():
             offspring += random.randint(0,100)
         return offspring
 
-
     def elitism(self):
         els = self.pop[:]
         score_c = self.pop_scores[:]
@@ -147,6 +130,10 @@ class Tuner_Singles():
             index = np.argmax(score_c)
             score_c.pop(index)
             self.new_pop.append(els.pop(index))
+
+    #######################################################################################
+    #                               RUN GENETIC ALGORITHM                                 #
+    #######################################################################################
 
     def run(self, max=1000, pop_size=10, p_mutation=0.1):
         self.pop_size = pop_size
