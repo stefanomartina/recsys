@@ -145,6 +145,7 @@ class Tuner_Singles():
             print(self.pop)
             print(np.argmax(self.pop_scores))
             print("----------------------------------------")
+            print("----------------------------------------")
 
 
 if __name__ == "__main__":
