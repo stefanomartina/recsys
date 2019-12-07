@@ -6,8 +6,6 @@ from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Recommenders.Combination.ItemCF_ItemCB import ItemCF_ItemCB
 from Recommenders.Combination.ItemCF_TopPop import ItemCF_TopPop
-from Base.BaseFunction import BaseFunction
-from Recommenders.MatrixFactorization.PureSVD.PureSVDRecommender import PureSVDRecommender
 
 import numpy as np
 
@@ -18,11 +16,11 @@ user_cf_param = {
 
 item_cf_param = {
     "knn": 10,
-    "shrink": 10,
+    "shrink": 5,
 }
 
 user_cb_param = {
-    "knn": 700,
+    "knn": 850,
     "shrink": 0,
 }
 
@@ -33,7 +31,7 @@ item_cb_param = {
 
 slim_param = {
     "epochs": 300,
-    "topK": 250,
+    "topK": 200,
 }
 
 cftp_param = {
@@ -108,7 +106,7 @@ class HybridRecommender(object):
 
     # To force a production from hybrid recommender, set manually weights and move it after list_ICM and list_UCM
 
-    def fit(self, URM, weights, list_ICM = None, list_UCM = None,
+    def fit(self, URM, list_ICM = None, list_UCM = None,weights = [0.26,0.02,0.638],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=user_cf_param["shrink"],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercb=user_cb_param["knn"], shrink_usercb=user_cb_param["shrink"],
@@ -158,7 +156,7 @@ class HybridRecommender(object):
         self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
         #self.itemContentBased_ratings = self.itemContentBased.get_expected_ratings(user_id)
         self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
-        #self.userCF_ratings = self.userCF.get_expected_ratings(user_id)
+        # self.userCF_ratings = self.userCF.get_expected_ratings(user_id)
         #self.cf_tp_combo_ratings = self.itemCF_TopPop_Combo.get_expected_ratings(user_id)
         #self.cf_cb_combo_ratings = self.itemCF_itemCB_Combo.get_expected_ratings(user_id)
         self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
@@ -187,7 +185,7 @@ class HybridRecommender(object):
         if self.combination == "Combo3":
             self.hybrid_ratings = self.switch_ratings("Slim") * (self.weights[0])
             self.hybrid_ratings += self.switch_ratings("UserContentBased") * (self.weights[1])
-            self.hybrid_ratings += self.switch_ratings("ItemCF") * self.weights[2]
+            self.hybrid_ratings += self.switch_ratings("ItemCF") * (self.weights[2])
 
         if self.combination == "Combo4":
             self.hybrid_ratings = self.switch_ratings("UserContentBased") * (self.weights[0])
