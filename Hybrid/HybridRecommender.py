@@ -187,7 +187,7 @@ class HybridRecommender(object):
         if self.combination == "Combo3":
             self.hybrid_ratings = self.switch_ratings("Slim") * (self.weights[0])
             self.hybrid_ratings += self.switch_ratings("UserContentBased") * (self.weights[1])
-            self.hybrid_ratings += self.switch_ratings("ItemCF") * (self.weights[2] + self.weights[3])
+            self.hybrid_ratings += self.switch_ratings("ItemCF") * self.weights[2]
 
         if self.combination == "Combo4":
             self.hybrid_ratings = self.switch_ratings("UserContentBased") * (self.weights[0])
