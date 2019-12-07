@@ -29,7 +29,7 @@ class Runner:
         self.recommender = recommender
         self.evaluate = evaluate
         self.name = name
-        self.functionality = None
+        self.functionality = BaseFunction()
 
     #######################################################################################
     #                                     WRITE RESULT                                    #
@@ -66,7 +66,7 @@ class Runner:
             else:
                 self.recommender.fit(self.functionality.URM_all)
         else:
-            self.functionality.split_dataset_loo()
+            self.functionality.split_80_20(0.8)
             if requires_icm and requires_ucm:
                 self.recommender.fit(self.functionality.URM_train, list_ICM, list_UCM)
             elif requires_icm:
@@ -104,7 +104,6 @@ class Runner:
     #######################################################################################
 
     def run(self, requires_ucm=False, requires_icm=False):
-        self.functionality = BaseFunction()
         self.functionality.get_URM()
 
         if requires_icm:
@@ -154,12 +153,12 @@ if __name__ == '__main__':
         requires_icm = True
 
     if args.recommender == 'UserCBF':
-        print("UserKNNCF selected")
+        print("UserCBF selected")
         recommender = UserCBFKNNRecommender.UserCBFKNNRecommender()
         requires_ucm = True
 
     if args.recommender == 'UserCF':
-        print("UserKNNCF selected")
+        print("UserCF selected")
         recommender = UserKNNCFRecommender.UserKNNCFRecommender()
 
     if args.recommender == 'ItemCF':
@@ -189,7 +188,7 @@ if __name__ == '__main__':
 
     if args.recommender == "Hybrid":
         print("Hybrid")
-        recommender = HybridRecommender()
+        recommender = HybridRecommender("Combo3")
         requires_icm = True
         requires_ucm = True
 

@@ -372,7 +372,7 @@ class BaseFunction:
 
         return W_sparse
 
-    def get_cosine_similarity(self, matrix, knn, shrink, similarity, normalize, transpose=False):
+    def get_cosine_similarity(self, matrix, knn, shrink, similarity, normalize, transpose):
         if transpose:
             matrix = matrix.T
 
