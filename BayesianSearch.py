@@ -18,8 +18,8 @@ class Tuner_Singles():
 
     def step(self, weight1=0, weight2=0, weight3=0):
         start_time = time.time()
-        print("----------------------------------------")
-        print("Recommender: " + self.name + " weight1: " + str(weight1) + " weight2: " + str(weight2) + " weight3: " + str(weight3))
+        #print("----------------------------------------")
+        #print("Recommender: " + self.name + " weight1: " + str(weight1) + " weight2: " + str(weight2) + " weight3: " + str(weight3))
         list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
         list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
         self.recommender.fit(self.helper.URM_train, [weight1, weight2, weight3], list_ICM=list_ICM, list_UCM=list_UCM, tuning=True)
@@ -41,6 +41,6 @@ if __name__ == "__main__":
     )
 
     optimizer.maximize(
-        init_points=2,
-        n_iter=3,
+        init_points=10,
+        n_iter=1000,
     )
