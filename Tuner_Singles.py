@@ -1,14 +1,11 @@
 import random
-from _decimal import Decimal
-
 import numpy as np
 import time
-from Recommenders.Combination.ItemCF_ItemCB import ItemCF_ItemCB
-from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
-from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
+
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
-from Hybrid.HybridRecommender import HybridRecommender
+from Hybrid import HybridRecommender
+
 from Base.BaseFunction import BaseFunction
 from Utils import evaluation
 
@@ -20,6 +17,8 @@ class Tuner_Singles():
         self.name = name
         self.helper = BaseFunction()
         self.helper.get_URM()
+        self.helper.get_ICM()
+        self.helper.get_UCM()
         self.helper.split_80_20()
         self.helper.get_target_users()
 
@@ -33,11 +32,33 @@ class Tuner_Singles():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
+    def step_weight(self, w1, w2):
+        start_time = time.time()
+        print("----------------------------------------")
+        print("HybridCombination: " + self.name)
+        print([w1, w2])
+        print("----------------------------------------")
+        list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
+        list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
+        self.recommender.fit(self.helper.URM_train, [w1, w2], list_ICM=list_ICM, list_UCM=list_UCM,  tuning=False)
+        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        elapsed_time = time.time() - start_time
+        print("----------------" + str(elapsed_time) + "----------------")
+        return cumulative
+
     def random_pop(self):
         weights = []
+        one = 1
+        """"
         for i in range(self.pop_size):
             w1 = random.randint(100, 600)
             w2 = random.randint(0, 300)
+            line = [w1, w2]
+            weights.append(np.array(line))
+        """
+        for i in range(self.pop_size):
+            w1 = random.uniform(0, 0.9)
+            w2 = one - w1
             line = [w1, w2]
             weights.append(np.array(line))
 
@@ -51,7 +72,7 @@ class Tuner_Singles():
         return appo
 
     def evaluate_chromosome(self, chromosome):
-        return self.step_User_CB(knn=chromosome[0], shrink=chromosome[1])
+        return self.step_weight(w1=chromosome[0], w2=chromosome[1])
 
     def my_index(self, l, item):
         for i in range(len(l)):
@@ -142,6 +163,5 @@ class Tuner_Singles():
 
 
 if __name__ == "__main__":
-    recommender = ItemKNNCFRecommender()
-    #recommender = UserKNNCFRecommender()
-    Tuner_Singles(recommender, "ItemCF").run()
+    recommender = HybridRecommender.HybridRecommender("Combo5")
+    Tuner_Singles(recommender, "Hybrid").run()
