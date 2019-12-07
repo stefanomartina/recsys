@@ -4,6 +4,7 @@ import time
 
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
+from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from Hybrid import HybridRecommender
 
 from Base.BaseFunction import BaseFunction
@@ -21,6 +22,19 @@ class Tuner_Singles():
         self.helper.get_UCM()
         self.helper.split_80_20()
         self.helper.get_target_users()
+
+    def step_SlimBPR_Cython(self, w1, w2):
+        start_time = time.time()
+        print("----------------------------------------")
+        print("Recommender: " + self.name)
+        print("epoch: " + str(w1) + " topk: " + str(w2))
+
+        self.recommender.fit(self.helper.URM_train)
+        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        elapsed_time = time.time() - start_time
+        print("----------------" + str(elapsed_time) + "----------------")
+        return cumulative
+
 
     def step_User_CB(self, knn, shrink):
         start_time = time.time()
@@ -48,17 +62,10 @@ class Tuner_Singles():
 
     def random_pop(self):
         weights = []
-        one = 1
-        """"
+
         for i in range(self.pop_size):
-            w1 = random.randint(100, 600)
-            w2 = random.randint(0, 300)
-            line = [w1, w2]
-            weights.append(np.array(line))
-        """
-        for i in range(self.pop_size):
-            w1 = random.uniform(0, 0.9)
-            w2 = one - w1
+            w1 = random.randint(250, 600)   # epoch
+            w2 = random.randint(100, 300)   # knn
             line = [w1, w2]
             weights.append(np.array(line))
 
@@ -72,7 +79,8 @@ class Tuner_Singles():
         return appo
 
     def evaluate_chromosome(self, chromosome):
-        return self.step_weight(w1=chromosome[0], w2=chromosome[1])
+        self.recommender = SLIM_BPR_Cython(epochs=chromosome[0], topK=chromosome[1])
+        return self.step_SlimBPR_Cython(w1=chromosome[0], w2=chromosome[1])
 
     def my_index(self, l, item):
         for i in range(len(l)):
@@ -163,5 +171,5 @@ class Tuner_Singles():
 
 
 if __name__ == "__main__":
-    recommender = HybridRecommender.HybridRecommender("Combo5")
-    Tuner_Singles(recommender, "Hybrid").run()
+    recommender = None
+    Tuner_Singles(recommender, "Slim").run()
