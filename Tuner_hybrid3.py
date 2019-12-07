@@ -31,7 +31,7 @@ class Tuner_Singles():
         print("Recommender: " + self.name + " weight[0]: " + str(list_weight[0]) + " weight[1]: " + str(list_weight[1]) + " weight[2]: " + str(list_weight[2]))
         list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
         list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
-        self.recommender.fit(self.helper.URM_train, list_weight, list_ICM = list_ICM, list_UCM=list_UCM,  tuning=True, combination="third")
+        self.recommender.fit(self.helper.URM_train, list_weight, list_ICM = list_ICM, list_UCM=list_UCM,  tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
@@ -40,10 +40,10 @@ class Tuner_Singles():
     def random_pop(self):
         weights = []
         for i in range(self.pop_size):
-            w1 = random.uniform(0.2,0.5)
-            w2 = random.uniform(0,0.3)
-            w3 = 1-w1-w2
-            line = [w1, w2, w3]
+            w1 = random.uniform(0.001, 0.007)
+            w2 = random.uniform(0.5, 3)
+            w3 = random.uniform(0.5, 3)
+            line = [w2, w1, w3]
             weights.append(np.array(line))
 
         return weights
@@ -104,17 +104,17 @@ class Tuner_Singles():
     def crossover(self, parents):
         offspring1 = self.generate_offspring(parents[0], parents[1])
         offspring2 = self.generate_offspring(parents[1], parents[0])
-        offspring1, offspring2 = self.mutation(offspring1, offspring2)
+        offspring1, offspring2 = self.mutation([offspring1, offspring2])
 
         return offspring1, offspring2
 
-    def mutation(self, offspring1, offspring2):
+    def mutation(self, offsprings):
         if np.random.choice([True, False], 1, p=[self.p_mutation, 1-self.p_mutation]):
-            delta = random.uniform(0,0.2)
-            if delta < offspring2:
-                offspring1 += delta
-                offspring2 -= delta
-        return [offspring1, offspring2]
+            index = random.randint(0,1)
+            sub_index = random.randint(0, 2)
+            offsprings[index][sub_index] = random.uniform(0, 0.3)
+
+        return offsprings
 
     def elitism(self):
         els = self.pop[:]
@@ -150,5 +150,5 @@ class Tuner_Singles():
 
 if __name__ == "__main__":
     #recommender = ItemKNNCFRecommender()
-    recommender = HybridRecommender()
+    recommender = HybridRecommender("Combo3")
     Tuner_Singles(recommender, "Hybrid-Third").run()
