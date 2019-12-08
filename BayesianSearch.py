@@ -1,3 +1,5 @@
+import os, shutil
+
 from bayes_opt import BayesianOptimization
 import time
 from Utils import evaluation
@@ -77,25 +79,40 @@ class BayesianSearch():
         return cumulative
 
 if __name__ == "__main__":
-    recommender = HybridRecommender("Combo5")
-    t = BayesianSearch(recommender, "Hybrid: Combo 5")
 
-    pbounds_hybrid5 = {'weight1': (0.05, 0.11), 'weight2': (0.5, 1.2)}
-    pbounds_hybrid3 = {'weight1': (0.5, 3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
-    pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
-    pbounds_itemCB = {'weight1': (600, 900), 'weight2': (0, 50)}
-    pbounds_userCB = {'weight1': (600, 900), 'weight2': (0, 50)}
+    folder = os.getcwd() + "/SimilarityProduct"
+
+    try:
+        recommender = HybridRecommender("Combo5")
+        t = BayesianSearch(recommender, "Hybrid: Combo 5")
+
+        pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0,1)}
+        pbounds_hybrid3 = {'weight1': (0.5, 3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
+        pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
+        pbounds_itemCB = {'weight1': (600, 900), 'weight2': (0, 50)}
+        pbounds_userCB = {'weight1': (600, 900), 'weight2': (0, 50)}
 
 
 
-    optimizer = BayesianOptimization(
-        f=t.step_hybrid5,
-        pbounds=pbounds_hybrid5,
-        verbose=2, # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
-        random_state=1,
-    )
+        optimizer = BayesianOptimization(
+            f=t.step_hybrid5,
+            pbounds=pbounds_hybrid5,
+            verbose=2, # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
+            random_state=1,
+        )
 
-    optimizer.maximize(
-        init_points=10,
-        n_iter=1000,
-    )
+        optimizer.maximize(
+            init_points=10,
+            n_iter=1000,
+        )
+
+    finally:
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))

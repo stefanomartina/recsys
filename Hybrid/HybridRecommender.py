@@ -6,17 +6,18 @@ from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Recommenders.Combination.ItemCF_ItemCB import ItemCF_ItemCB
 from Recommenders.Combination.ItemCF_TopPop import ItemCF_TopPop
+from Recommenders.Combination.UserCF_TopPop import UserCF_TopPop
 
 import numpy as np
 
 user_cf_param = {
-    "knn": 557,
-    "shrink": 19
+    "knn": 646,
+    "shrink": 2
 }
 
 item_cf_param = {
-    "knn": 10,
-    "shrink": 5,
+    "knn": 6,
+    "shrink": 42,
 }
 
 user_cb_param = {
@@ -64,16 +65,19 @@ class HybridRecommender(object):
         # Item Content Based
         self.itemContentBased = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
 
-        # Item Collaborative + TopPopRecommender
+        # Item Collaborative + Item Content Based
         self.itemCF_itemCB_Combo = ItemCF_ItemCB()
 
-        # Item Collaborative + Item Content Based
+        # Item Collaborative + TopPopRecommender
         self.itemCF_TopPop_Combo = ItemCF_TopPop()
+
+        # UserCollaborative + TopPopRecommender
+        self.userCF_TopPop_Combo = UserCF_TopPop()
 
         # User Collaborative
         self.userCF = UserKNNCFRecommender()
 
-        # Item Collavboratice
+        # Item Collaborative
         self.itemCF = ItemKNNCFRecommender()
 
         # Slim
@@ -84,7 +88,8 @@ class HybridRecommender(object):
         self.itemContentBased_ratings = None
         self.itemCF_ratings = None
         self.userCF_ratings = None
-        self.cf_tp_combo_ratings = None
+        self.icf_tp_combo_ratings = None
+        self.ucf_tp_combo_ratings = None
         self.cf_cb_combo_ratings = None
         self.slim_ratings = None
 
@@ -94,7 +99,8 @@ class HybridRecommender(object):
             "ItemContentBased": self.itemContentBased_ratings,
             "ItemCF": self.itemCF_ratings,
             "UserCF": self.userCF_ratings,
-            "ItemCF_TopPop_Combo": self.cf_tp_combo_ratings,
+            "ItemCF_TopPop_Combo": self.icf_tp_combo_ratings,
+            "UserCF_TopPop_Combo": self.ucf_tp_combo_ratings,
             "ItemCF_ItemCB_Combo": self.cf_cb_combo_ratings,
             "Slim": self.slim_ratings,
         }
@@ -140,8 +146,8 @@ class HybridRecommender(object):
             self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF2_similarity.npz")
 
         if self.combination == "Combo5":
-            self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning, similarity_path="/SimilarityProduct/UserCF3_similarity.npz")
-            self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF3_similarity.npz")
+            self.userCF_TopPop_Combo.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning, similarity_path="/SimilarityProduct/UserCF-TopPop2_similarity.npz")
+            self.itemCF_TopPop_Combo.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF-TopPop2_similarity.npz")
 
         if self.combination == "Combo6":
             self.itemContentBased.fit(URM.copy(), list_ICM, knn_usercb, shrink_usercb, tuning=tuning)
@@ -155,9 +161,10 @@ class HybridRecommender(object):
     def sum_score(self, user_id):
         #self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
         #self.itemContentBased_ratings = self.itemContentBased.get_expected_ratings(user_id)
-        self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
-        self.userCF_ratings = self.userCF.get_expected_ratings(user_id)
-        #self.cf_tp_combo_ratings = self.itemCF_TopPop_Combo.get_expected_ratings(user_id)
+        #self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
+        #self.userCF_ratings = self.userCF.get_expected_ratings(user_id)
+        self.icf_tp_combo_ratings = self.itemCF_TopPop_Combo.get_expected_ratings(user_id)
+        self.ucf_tp_combo_ratings = self.userCF_TopPop_Combo.get_expected_ratings(user_id)
         #self.cf_cb_combo_ratings = self.itemCF_itemCB_Combo.get_expected_ratings(user_id)
         #self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
 
@@ -193,8 +200,8 @@ class HybridRecommender(object):
 
 
         if self.combination == "Combo5":
-            self.hybrid_ratings = self.switch_ratings("UserCF") * (self.weights[0])
-            self.hybrid_ratings += self.switch_ratings("ItemCF") * (self.weights[1])
+            self.hybrid_ratings = self.switch_ratings("UserCF_TopPop_Combo") * (self.weights[0])
+            self.hybrid_ratings += self.switch_ratings("ItemCF_TopPop_Combo") * (self.weights[1])
 
         if self.combination == "Combo6":
             self.hybrid_ratings = self.switch_ratings("Slim") * self.weights[0]
