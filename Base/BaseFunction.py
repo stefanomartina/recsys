@@ -185,6 +185,9 @@ class BaseFunction:
         test_mask = np.logical_not(train_mask)
         urm_test = sps.coo_matrix((self.ratinglist_urm[test_mask], (self.userlist_urm[test_mask], self.itemlist_urm[test_mask]))).tocsr()
 
+        urm_test.eliminate_zeros()
+        urm_train.eliminate_zeros()
+
         self.URM_train = urm_train
         self.URM_test = urm_test
 

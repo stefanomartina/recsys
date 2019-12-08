@@ -20,7 +20,7 @@ item_cf_param = {
 }
 
 user_cb_param = {
-    "knn": 850,
+    "knn": 900,
     "shrink": 0,
 }
 
@@ -30,8 +30,8 @@ item_cb_param = {
 }
 
 slim_param = {
-    "epochs": 300,
-    "topK": 200,
+    "epochs": 250,
+    "topK": 100,
 }
 
 cftp_param = {
@@ -106,7 +106,7 @@ class HybridRecommender(object):
 
     # To force a production from hybrid recommender, set manually weights and move it after list_ICM and list_UCM
 
-    def fit(self, URM, list_ICM = None, list_UCM = None,weights = [0.26,0.02,0.638],
+    def fit(self, URM, list_ICM = None, list_UCM = None, weights=[1.898, 0.001113, 1.874],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=user_cf_param["shrink"],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercb=user_cb_param["knn"], shrink_usercb=user_cb_param["shrink"],
@@ -153,13 +153,13 @@ class HybridRecommender(object):
     #######################################################################################
 
     def sum_score(self, user_id):
-        self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
+        #self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
         #self.itemContentBased_ratings = self.itemContentBased.get_expected_ratings(user_id)
         self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
-        # self.userCF_ratings = self.userCF.get_expected_ratings(user_id)
+        self.userCF_ratings = self.userCF.get_expected_ratings(user_id)
         #self.cf_tp_combo_ratings = self.itemCF_TopPop_Combo.get_expected_ratings(user_id)
         #self.cf_cb_combo_ratings = self.itemCF_itemCB_Combo.get_expected_ratings(user_id)
-        self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
+        #self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
 
     #######################################################################################
     #                                    RECOMMENDING                                     #

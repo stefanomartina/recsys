@@ -20,7 +20,7 @@ class SimpleTuner():
 
         self.helper = BaseFunction()
         self.helper.get_URM()
-        self.helper.split_dataset_loo()
+        self.helper.split_80_20()
         self.helper.get_target_users()
         self.helper.get_UCM()
         self.helper.get_ICM()
@@ -67,7 +67,7 @@ class SimpleTuner():
         print("----------------------------------------")
         list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
         list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
-        self.recommender.fit(self.helper.URM_train, list_weight, list_ICM=list_ICM, list_UCM=list_UCM,  tuning=False)
+        self.recommender.fit(self.helper.URM_train, list_ICM=list_ICM, list_UCM=list_UCM,  weights=list_weight, tuning=False)
         evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         print("----------------------------------------")
 
@@ -113,15 +113,9 @@ class SimpleTuner():
 
         for i in range(0, 150):
             weights.clear()
-            #self.step_weight(np.random.dirichlet(np.ones(4), size=1))
-            weights.append(random.uniform(0, 0.1))
+
+            weights.append(random.uniform(0.0015, 0.002))
             one -= weights[0]
-
-            weights.append(random.uniform(0, 0.2))
-            one -= weights[1]
-
-            weights.append(random.uniform(0, 0.3))
-            one -= weights[2]
 
             weights.append(one)
             one = 1
