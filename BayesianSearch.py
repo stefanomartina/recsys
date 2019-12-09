@@ -4,8 +4,9 @@ from bayes_opt import BayesianOptimization
 import time
 from Utils import evaluation
 from Base.BaseFunction import BaseFunction
-from Hybrid.HybridRecommender import HybridRecommender
+from Hybrid.Hybrid_Combo3 import Hybrid_Combo3
 from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
+from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 from Recommenders.ContentBased.ItemCBFKNNRecommender import ItemCBFKNNRecommender
 from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommender
 
@@ -94,12 +95,16 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
     try:
-        recommender = HybridRecommender("Combo6")
-        t = BayesianSearch(recommender, "Hybrid: Combo 6")
+        recommender = Hybrid_Combo3("Combo3", TopPopRecommender())
+        t = BayesianSearch(recommender, "Hybrid: Combo 3")
 
         pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0,1)}
-        pbounds_hybrid3 = {'weight1': (0.5, 3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
-        pbounds_hybrid6 = {'weight1': (0.4, 0.45), 'weight2': (0.004, 0.005), 'weight3': (1.5, 2.5)}
+
+
+        pbounds_hybrid3 = {'weight1': (0.7, 1.3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
+
+
+        pbounds_hybrid6 = {'weight1': (0.4, 0.45), 'weight2': (0.001, 0.005), 'weight3': (0.1, 0.5)}
         pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
         pbounds_itemCB = {'weight1': (600, 900), 'weight2': (0, 50)}
         pbounds_userCB = {'weight1': (600, 900), 'weight2': (0, 50)}
