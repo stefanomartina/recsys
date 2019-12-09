@@ -149,7 +149,6 @@ class SLIM_BPR_Cython(object):
         return np.squeeze(np.asarray(expected_ratings))
 
     def recommend(self, user_id, at=10):
-
         # compute the scores using the dot product
         scores = self.get_expected_ratings(user_id)
         ranking = scores.argsort()[::-1]
