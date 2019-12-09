@@ -51,16 +51,17 @@ class Hybrid_Combo3(BaseHybridRecommender):
 
     def extract_ratings(self, user_id):
         self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
+        self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
+        self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
+
         if self.itemCF_ratings.sum(axis=0) != 0:
             self.n_icf += 1
             self.cumulative_ifc_r += self.itemCF_ratings.sum(axis=0)
 
-        self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
         if self.userContentBased_ratings.sum(axis=0) != 0:
             self.n_ucbf += 1
             self.cumulative_ucbf_r += self.userContentBased_ratings.sum(axis=0)
 
-        self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
         if self.slim_ratings.sum(axis=0) != 0:
             self.n_slim += 1
             self.cumulative_slim_r += self.slim_ratings.sum(axis=0)
