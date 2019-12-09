@@ -119,54 +119,48 @@ class HybridRecommender(object):
         self.weights = np.array(weights)
         self.TP.fit(self.URM)
 
-        # Sub-Fitting
+        # UserContentBased - ItemContentBased - ItemCF - Slim
         if self.combination == "Combo1":
             self.userContentBased.fit(URM.copy(), list_UCM, knn_usercb, shrink_usercb, tuning=tuning)
             self.itemContentBased.fit(URM.copy(), list_ICM, knn_itemcb, shrink_itemcb, tuning=tuning)
             self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
             self.slim_random.fit(URM.copy())
 
+        # ItemCF + ItemCB - ItemCF - Slim
         if self.combination == "Combo2":
             self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
             self.slim_random.fit(URM.copy())
-            self.itemCF_TopPop_Combo.fit(URM.copy(), knn_cftp, shrink_cftp, tuning=tuning)
             self.itemCF_itemCB_Combo.fit(URM.copy(), list_ICM, knn_cfcb, shrink_cfcb, tuning=tuning)
 
+        # UserContentBased - ItemCF - Slim
         if self.combination == "Combo3":
             self.userContentBased.fit(URM.copy(), list_UCM, knn_usercb, shrink_usercb, tuning=tuning, transpose=True)
             self.slim_random.fit(URM.copy())
             self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
 
+        # UserContentBased - ItemCF
         if self.combination == "Combo4":
             self.userContentBased.fit(URM.copy(), list_UCM, knn_usercb, shrink_usercb, tuning=tuning, similarity_path="/SimilarityProduct/UserCB2_similarity.npz")
             self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF2_similarity.npz")
 
+        # ItemCF - UserCF
         if self.combination == "Combo5":
-            self.userCF_TopPop_Combo.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning, similarity_path="/SimilarityProduct/UserCF-TopPop2_similarity.npz")
-            self.itemCF_TopPop_Combo.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF-TopPop2_similarity.npz")
+            self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity.npz")
+            self.userCF.fit(URM.copy(), knn_itemcb, shrink_itemcb, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity.npz")
 
-        if self.combination == "Combo6":
-            self.userContentBased.fit(URM.copy(), list_UCM, knn_usercb, shrink_usercb, tuning=tuning, transpose=True, similarity_path="/SimilarityProduct/UserCB6_similarity.npz")
-            self.slim_random.fit(URM.copy())
-            self.itemCF_TopPop_Combo.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF-TopPop6_similarity.npz")
 
     #######################################################################################
     #                                  EXTRACT RATINGS                                    #
     #######################################################################################
 
     def sum_score(self, user_id):
-        self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
-
+        #self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
         #self.itemContentBased_ratings = self.itemContentBased.get_expected_ratings(user_id)
-        #self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
-        #self.userCF_ratings = self.userCF.get_expected_ratings(user_id)
-
-        self.icf_tp_combo_ratings = self.itemCF_TopPop_Combo.get_expected_ratings(user_id)
-
+        self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
+        self.userCF_ratings = self.userCF.get_expected_ratings(user_id)
         #self.ucf_tp_combo_ratings = self.userCF_TopPop_Combo.get_expected_ratings(user_id)
-
         #self.cf_cb_combo_ratings = self.itemCF_itemCB_Combo.get_expected_ratings(user_id)
-        self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
+        #self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
 
 
     #######################################################################################
@@ -181,9 +175,7 @@ class HybridRecommender(object):
         scores[user_profile] = -np.inf
         return scores
 
-
     def recommend(self, user_id, at=10, exclude_seen=True):
-
         self.sum_score(user_id)
 
         if self.combination == "Combo1":
@@ -198,7 +190,6 @@ class HybridRecommender(object):
             self.hybrid_ratings += self.switch_ratings("ItemCF_TopPop_Combo") * self.weights[2]
             self.hybrid_ratings += self.switch_ratings("ItemCF_ItemCB_Combo") * self.weights[3]
 
-
         if self.combination == "Combo3":
             self.hybrid_ratings = self.switch_ratings("Slim") * (self.weights[0])
             self.hybrid_ratings += self.switch_ratings("UserContentBased") * (self.weights[1])
@@ -207,7 +198,6 @@ class HybridRecommender(object):
         if self.combination == "Combo4":
             self.hybrid_ratings = self.switch_ratings("UserContentBased") * (self.weights[0])
             self.hybrid_ratings += self.switch_ratings("ItemCF") * (self.weights[1])
-
 
         if self.combination == "Combo5":
             self.hybrid_ratings = self.switch_ratings("UserCF_TopPop_Combo") * (self.weights[0])
@@ -220,7 +210,7 @@ class HybridRecommender(object):
 
         summed_score = self.hybrid_ratings.sum(axis=0)
 
-        if (summed_score == 0):
+        if summed_score == 0:
             return self.TP.recommend(user_id)
 
         else:
