@@ -18,8 +18,8 @@ class ItemCF_TopPop():
         print("Fitting Item Collaborative Filtering Recommender...")
         self.URM = URM
 
-        self.TP = TopPopRecommender()
-        self.TP.fit(self.URM)
+        #self.TP = TopPopRecommender()
+        #self.TP.fit(self.URM)
 
         # Compute similarity
         if tuning:
@@ -47,10 +47,10 @@ class ItemCF_TopPop():
     def recommend(self, user_id, at=10, exclude_seen=True):
 
         expected_scores = self.get_expected_ratings(user_id)
-        summed_score = expected_scores.sum(axis=0)
+        #summed_score = expected_scores.sum(axis=0)
 
-        if (summed_score == 0):
-            return self.TP.recommend(user_id)
+        #if (summed_score == 0):
+           # return self.TP.recommend(user_id)
 
         if exclude_seen:
             expected_scores = self.filter_seen(user_id, expected_scores)
