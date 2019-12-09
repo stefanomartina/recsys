@@ -11,8 +11,8 @@ user_cf_param = {
 }
 
 item_cf_param = {
-    "knn": 6,
-    "shrink": 42,
+    "knn": 10,
+    "shrink": 5,
 }
 
 user_cb_param = {

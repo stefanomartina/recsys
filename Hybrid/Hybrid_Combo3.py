@@ -13,7 +13,7 @@ user_cb_param = {
 }
 
 slim_param = {
-    "epochs": 250,
+    "epochs": 200,
     "topK": 100,
 }
 
