@@ -69,12 +69,6 @@ class HybridRecommender(object):
         # Item Collaborative + Item Content Based
         self.itemCF_itemCB_Combo = ItemCF_ItemCB()
 
-        # Item Collaborative + TopPopRecommender
-        self.itemCF_TopPop_Combo = ItemCF_TopPop()
-
-        # UserCollaborative + TopPopRecommender
-        self.userCF_TopPop_Combo = UserCF_TopPop()
-
         # User Collaborative
         self.userCF = UserKNNCFRecommender()
 
