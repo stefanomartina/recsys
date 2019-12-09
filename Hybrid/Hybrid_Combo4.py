@@ -4,23 +4,22 @@ import numpy as np
 
 item_cf_param = {
     "knn": 10,
-    "shrink": 5,
+    "shrink": 30,
 }
-
 
 slim_param = {
     "epochs": 200,
     "topK": 10,
 }
-
+#weights=[0.3362, 0.8046]
 class Hybrid_Combo4(BaseHybridRecommender):
 
     #######################################################################################
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, weights=[0.2, 0.2],
-                   knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
+    def fit(self, URM, list_ICM=None, list_UCM=None, knn_itemcf=item_cf_param["knn"],
+                   shrink_itemcf=item_cf_param["shrink"], weights=[0.1, 0.9],
                    tuning=False):
 
         self.URM = URM
@@ -39,7 +38,6 @@ class Hybrid_Combo4(BaseHybridRecommender):
     def extract_ratings(self, user_id):
         self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
         self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
-
 
     def sum_ratings(self):
         self.hybrid_ratings = self.slim_ratings * (self.weights[0])
