@@ -165,10 +165,6 @@ if __name__ == '__main__':
         print("ItemCF selected")
         recommender = ItemKNNCFRecommender.ItemKNNCFRecommender()
 
-    if args.recommender == "ItemCF_TopPop_Combo":
-        print("ItemCF_TopPop_Combo selected")
-        recommender = ItemCF_TopPop.ItemCF_TopPop()
-
     if args.recommender == "ItemCF_ItemCB_Combo":
         print("ItemCF_ItemCB_Combo selected")
         recommender = ItemCF_ItemCB.ItemCF_ItemCB()
@@ -188,7 +184,7 @@ if __name__ == '__main__':
 
     if args.recommender == "Hybrid":
         print("Hybrid")
-        recommender = HybridRecommender("Combo3")
+        recommender = HybridRecommender("Combo5")
         requires_icm = True
         requires_ucm = True
 

@@ -107,12 +107,10 @@ class HybridRecommender(object):
 
     # To force a production from hybrid recommender, set manually weights and move it after list_ICM and list_UCM
 
-    def fit(self, URM, list_ICM = None, list_UCM = None, weights=[0.01464, 0.992],
-                   knn_usercf=user_cf_param["knn"], shrink_usercf=user_cf_param["shrink"],
+    def fit(self, URM, list_ICM = None, list_UCM = None, weights=[0.1, 0.9],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercb=user_cb_param["knn"], shrink_usercb=user_cb_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],
-                   knn_cftp=cftp_param["knn"], shrink_cftp=cftp_param["shrink"],
                    knn_cfcb=cfcb_param["knn"], shrink_cfcb=cfcb_param["shrink"], tuning=False):
 
         self.URM = URM
