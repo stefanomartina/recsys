@@ -167,6 +167,7 @@ class BaseFunction:
         self.URM_test = urm_test
 
     def split_80_20(self, percentage=0.8):
+        np.random.seed(123)
         urm = self.URM_all.tocsr()
 
         # Count the number of relevant interaction between user and item
