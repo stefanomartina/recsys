@@ -15,8 +15,8 @@ class SLIM_BPR_Cython(object):
     #######################################################################################
 
     def __init__(self, positive_threshold=1, recompile_cython=False, final_model_sparse_weights=True,
-                 train_with_sparse_weights=False, symmetric=True, epochs = 300,
-                batch_size = 100, lambda_i = 0.01, lambda_j = 0.001, learning_rate = 0.01, topK = 200,
+                 train_with_sparse_weights=False, symmetric=True, epochs = 200,
+                batch_size = 1, lambda_i = 0.01, lambda_j = 0.001, learning_rate = 0.01, topK = 10,
                 sgd_mode = 'adagrad', gamma = 0.995, beta_1 = 0.9, beta_2 = 0.999):
 
         #### Retreiving parameters for fitting #######
