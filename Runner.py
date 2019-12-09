@@ -1,7 +1,7 @@
 from tqdm import tqdm
 
 from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
-from Recommenders.Combination import ItemCF_TopPop, ItemCF_ItemCB
+from Recommenders.Combination import ItemCF_ItemCB
 from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
 from Recommenders.Slim.SlimElasticNet import SLIMElasticNetRecommender
 from Recommenders.MatrixFactorization.PureSVD import PureSVDRecommender

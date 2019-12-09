@@ -5,8 +5,6 @@ from Recommenders.ContentBased import UserCBFKNNRecommender, ItemCBFKNNRecommend
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Recommenders.Combination.ItemCF_ItemCB import ItemCF_ItemCB
-from Recommenders.Combination.ItemCF_TopPop import ItemCF_TopPop
-from Recommenders.Combination.UserCF_TopPop import UserCF_TopPop
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 
 import numpy as np
