@@ -29,7 +29,7 @@ class BaseFunction:
         self.URM_train = None
         self.URM_test = None
 
-        # ICM --------------------------
+        # ICM_subclass -----------------
         self.ICM = None
         self.itemlist_icm = None
         self.attributelist_icm = None
@@ -45,6 +45,9 @@ class BaseFunction:
         self.itemlist_icm_price = None
         self.pricelist_icm = None
 
+        # ICM_all ----------------------
+        self.ICM_all = None
+
         # UCM_age ----------------------
         self.UCM_age = None
         self.userlist_ucm_age = None
@@ -56,6 +59,9 @@ class BaseFunction:
         self.userlist_ucm_region = None
         self.regionlist_ucm = None
         self.presencelist_ucm_region = None
+
+        # UCM_all ----------------------
+        self.UCM_all = None
 
     #######################################################################################
     #                         READING AND FORMATTING THE DATASET                          #
@@ -192,54 +198,61 @@ class BaseFunction:
         self.URM_train = urm_train
         self.URM_test = urm_test
 
-    def shaping(self, asRows, asColumns, require_label=False):
-        if not require_label:
-            row_shape = asRows.shape[1]
-            column_shape = max(asColumns) + 1
-            ICM_shape = (row_shape, column_shape)
-
-        else:
-            le = preprocessing.LabelEncoder()
-            le.fit(asColumns)
-            asColumns = le.transform(asColumns)
-            row_shape = self.URM_all.shape[1]
-            column_shape = max(asColumns) + 1
-            ICM_shape = (row_shape, column_shape)
-
-        return ICM_shape
-
     def get_URM(self):
         self.get_list(self.get_tuples(self.get_file(self.switch_source(6))), "URM")
         self.URM_all = sps.coo_matrix((self.ratinglist_urm, (self.userlist_urm, self.itemlist_urm))).tocsr()
 
     def get_ICM(self):
 
-        # ICM_subclass
+        # Get list for all matrix
         self.get_list(self.get_tuples(self.get_file(self.switch_source(3)), False), "ICM", "subclass")
-        ICM_subclass_shape = self.shaping(self.URM_all, self.attributelist_icm)
-        self.ICM = sps.coo_matrix((self.presencelist_icm, (self.itemlist_icm, self.attributelist_icm)), shape=ICM_subclass_shape).tocsr()
-
-        # ICM_price
         self.get_list(self.get_tuples(self.get_file(self.switch_source(2)), False), "ICM", "price")
-        ICM_price_shape = self.shaping(self.URM_all, self.pricelist_icm, True)
-        ones = np.ones(len(self.itemlist_icm_price))
-        self.ICM_price = (sps.coo_matrix((ones, (self.itemlist_icm_price, self.pricelist_icm)), shape=ICM_price_shape)).tocsr()
-
-        # ICM_asset
         self.get_list(self.get_tuples(self.get_file(self.switch_source(1)), False), "ICM", "asset")
-        ICM_asset_shape = self.shaping(self.URM_all, self.assetlist_icm, True)
-        ones = np.ones(len(self.itemlist_icm_asset))
-        self.ICM_asset = (sps.coo_matrix((ones, (self.itemlist_icm_asset, self.assetlist_icm)), shape=ICM_asset_shape)).tocsr()
+
+        # Pre-Processing
+        le_asset = preprocessing.LabelEncoder()
+        le_asset.fit(self.assetlist_icm)
+        self.assetlist_icm = le_asset.transform(self.assetlist_icm)
+
+        le_price = preprocessing.LabelEncoder()
+        le_price.fit(self.pricelist_icm)
+        self.pricelist_icm = le_price.transform(self.pricelist_icm)
+
+        # Shaping
+        n_items = self.URM_all.shape[1]
+        n_features_icm_asset = max(self.assetlist_icm) + 1
+        n_features_icm_price = max(self.pricelist_icm) + 1
+        n_features_icm_sub_class = max(self.attributelist_icm) +1
+
+        icm_asset_shape = (n_items, n_features_icm_asset)
+        icm_price_shape = (n_items, n_features_icm_price)
+        icm_sub_class_shape = (n_items, n_features_icm_sub_class)
+
+        # Get matrix
+        self.ICM_subclass = sps.coo_matrix((self.presencelist_icm, (self.itemlist_icm, self.attributelist_icm)), shape=icm_sub_class_shape)
+
+        ones = np.ones(len(self.pricelist_icm))
+        self.ICM_price = (sps.coo_matrix((ones, (self.itemlist_icm_price, self.pricelist_icm)), shape=icm_price_shape))
+
+        ones = np.ones(len(self.assetlist_icm))
+        self.ICM_asset = (sps.coo_matrix((ones, (self.itemlist_icm_asset, self.assetlist_icm)), shape=icm_asset_shape))
+
+        self.ICM_all = sps.hstack((self.ICM_asset, self.ICM_price))
+        self.ICM_all = sps.hstack(( self.ICM_all, self.ICM_subclass))
+        self.ICM_all = self.ICM_all.tocsr()
 
     def get_UCM(self):
 
         # UCM_region
         self.get_list(self.get_tuples(self.get_file(self.switch_source(5)), False), "UCM", "region")
-        self.UCM_region = sps.coo_matrix((self.presencelist_ucm_region, (self.userlist_ucm_region, self.regionlist_ucm))).tocsr()
+        self.UCM_region = sps.coo_matrix((self.presencelist_ucm_region, (self.userlist_ucm_region, self.regionlist_ucm)))
 
         # UCM_age
         self.get_list(self.get_tuples(self.get_file(self.switch_source(4)), False), "UCM", "age")
-        self.UCM_age = sps.coo_matrix((self.presencelist_ucm_age, (self.userlist_ucm_age, self.agelist_ucm))).tocsr()
+        self.UCM_age = sps.coo_matrix((self.presencelist_ucm_age, (self.userlist_ucm_age, self.agelist_ucm)))
+
+        self.UCM_all = sps.hstack((self.UCM_age, self.UCM_region))
+        self.UCM_all = self.UCM_all.tocsr()
 
     #######################################################################################
     #                                  RECOMMENDER UTILS                                  #
