@@ -11,7 +11,7 @@ class UserKNNCFRecommender(object):
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, knn=500, shrink=100, similarity="tversky", normalize=True, transpose=True, tuning=False, similarity_path=SIMILARITY_PATH):
+    def fit(self, URM, knn=600, shrink=0, similarity="cosine", normalize=True, transpose=True, tuning=False, similarity_path=SIMILARITY_PATH):
         print("Fitting User Collaborative Filerting Recommender...")
         self.URM = URM
 
