@@ -52,27 +52,27 @@ class Runner:
 
     def fit_recommender(self, requires_icm = False, requires_ucm = False):
         print("Fitting model...")
-        list_ICM = [self.functionality.ICM, self.functionality.ICM_asset, self.functionality.ICM_price]
-        list_UCM = [self.functionality.UCM_age, self.functionality.UCM_region]
+        ICM_all = self.functionality.ICM_all
+        UCM_all = self.functionality.UCM_all
 
         if not self.evaluate:
 
             if requires_icm and requires_ucm:
-                self.recommender.fit(self.functionality.URM_all, list_ICM, list_UCM)
+                self.recommender.fit(self.functionality.URM_all, ICM_all, UCM_all)
             elif requires_icm:
-                self.recommender.fit(self.functionality.URM_all, list_ICM)
+                self.recommender.fit(self.functionality.URM_all, ICM_all)
             elif requires_ucm:
-                self.recommender.fit(self.functionality.URM_all, list_UCM)
+                self.recommender.fit(self.functionality.URM_all, UCM_all)
             else:
                 self.recommender.fit(self.functionality.URM_all)
         else:
             self.functionality.split_80_20(0.8)
             if requires_icm and requires_ucm:
-                self.recommender.fit(self.functionality.URM_train, list_ICM, list_UCM)
+                self.recommender.fit(self.functionality.URM_train, ICM_all, UCM_all)
             elif requires_icm:
-                self.recommender.fit(self.functionality.URM_train, list_ICM)
+                self.recommender.fit(self.functionality.URM_train, ICM_all)
             elif requires_ucm:
-                self.recommender.fit(self.functionality.URM_train, list_UCM)
+                self.recommender.fit(self.functionality.URM_train, UCM_all)
             else:
                 self.recommender.fit(self.functionality.URM_train)
         print("Model fitted")

@@ -13,26 +13,16 @@ class UserCBFKNNRecommender():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, list_UCM, knn=800, shrink=5, similarity="tversky", normalize=True, transpose=True, tuning=False, feature_weighting="TF_IDF", similarity_path=SIMILARITY_PATH):
+    def fit(self, URM, UCM_all, knn=800, shrink=5, similarity="tversky", normalize=True, transpose=True, tuning=False, similarity_path=SIMILARITY_PATH):
         print("Fitting User Content Based Recommender Recommender...")
         self.URM = URM
-        self.UCM_age, self.UCM_region = list_UCM
-
-        denseMatrix_region = self.UCM_region.todense()
-        denseMatrix_age = self.UCM_age.todense()
-
-        mergedMatrixDense = np.concatenate((denseMatrix_age, denseMatrix_region), axis=1)
-        self.UCM_merged = sps.csr_matrix(mergedMatrixDense)
-
-        # IR Feature Weighting
-        if feature_weighting is not None:
-            self.UCM_merged = self.helper.feature_weight(self.UCM_merged, feature_weighting)
+        self.UCM_all = UCM_all
 
         # Compute similarity
         if tuning:
-            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.UCM_merged, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
+            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.UCM_all, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         else:
-            self.W_sparse = self.helper.get_cosine_similarity(self.UCM_merged, knn, shrink, similarity, normalize,
+            self.W_sparse = self.helper.get_cosine_similarity(self.UCM_all, knn, shrink, similarity, normalize,
                                                                   transpose=transpose)
         self.similarityProduct = self.W_sparse.dot(self.URM)
 
