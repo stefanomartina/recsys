@@ -371,7 +371,7 @@ class BaseFunction:
             sps.save_npz(filename, matrix)
 
     def import_similarity_matrix(self, filename):
-            sps.load_npz(filename)
+            return sps.load_npz(filename)
 
     def get_cosine_similarity_hybrid(self, matrix, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=False, tuning=False):
 
