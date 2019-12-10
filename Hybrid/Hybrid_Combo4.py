@@ -4,7 +4,7 @@ import numpy as np
 
 item_cf_param = {
     "knn": 10,
-    "shrink": 30,
+    "shrink": 5,
 }
 
 slim_param = {

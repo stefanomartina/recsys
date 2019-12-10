@@ -3,13 +3,13 @@ import numpy as np
 
 
 user_cf_param = {
-    "knn": 646,
-    "shrink": 2
+    "knn": 600,
+    "shrink": 0
 }
 
 item_cf_param = {
-    "knn": 6,
-    "shrink": 42,
+    "knn": 10,
+    "shrink": 5,
 }
 
 class Hybrid_Combo5(BaseHybridRecommender):

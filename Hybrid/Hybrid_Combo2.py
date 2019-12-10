@@ -4,12 +4,12 @@ import numpy as np
 
 
 item_cf_param = {
-    "knn": 6,
-    "shrink": 42,
+    "knn": 10,
+    "shrink": 5,
 }
 
 user_cf_param = {
-    "knn": 900,
+    "knn": 600,
     "shrink": 0,
 }
 
@@ -19,7 +19,7 @@ item_cb_param = {
 }
 
 slim_param = {
-    "epochs": 250,
+    "epochs": 200,
     "topK": 100,
 }
 
@@ -31,7 +31,7 @@ class Hybrid_Combo2(BaseHybridRecommender):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, list_ICM=None, list_UCM=None, weights=[0.2,0.2,0.2,0.2],
+    def fit(self, URM, list_ICM=None, list_UCM=None, weights=[9.945,0.0715,0.1944,0.6588],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=item_cf_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],tuning=False):
