@@ -4,13 +4,14 @@ import numpy as np
 
 item_cf_param = {
     "knn": 10,
-    "shrink": 5,
+    "shrink": 30,
 }
 
 slim_param = {
     "epochs": 200,
     "topK": 10,
 }
+
 #weights=[0.3362, 0.8046]
 class Hybrid_Combo4(BaseHybridRecommender):
 

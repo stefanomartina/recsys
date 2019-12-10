@@ -5,7 +5,7 @@ import numpy as np
 
 item_cf_param = {
     "knn": 10,
-    "shrink": 5,
+    "shrink": 30,
 }
 
 user_cf_param = {
@@ -14,13 +14,13 @@ user_cf_param = {
 }
 
 item_cb_param = {
-    "knn": 700,
-    "shrink": 5,
+    "knn": 5,
+    "shrink": 100,
 }
 
 slim_param = {
     "epochs": 200,
-    "topK": 100,
+    "topK": 10,
 }
 
 # ItemCF + UserCF + ItemCBF + Slim

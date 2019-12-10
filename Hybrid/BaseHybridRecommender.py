@@ -5,43 +5,10 @@ from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 import numpy as np
 
-user_cf_param = {
-    "knn": 646,
-    "shrink": 2
-}
-
-item_cf_param = {
-    "knn": 10,
-    "shrink": 5,
-}
-
-user_cb_param = {
-    "knn": 900,
-    "shrink": 0,
-}
-
-item_cb_param = {
-    "knn": 5,
-    "shrink": 20,
-}
-
 slim_param = {
-    "epochs": 250,
-    "topK": 100,
+    "epochs": 200,
+    "topK": 10,
 }
-
-cftp_param = {
-    "knn": 350,
-    "shrink": 25,
-}
-
-cfcb_param = {
-    "knn": 50,
-    "shrink": 25,
-}
-
-COMBO6 = [0.4, 0.005, 1.5]
-
 
 class BaseHybridRecommender(object):
 

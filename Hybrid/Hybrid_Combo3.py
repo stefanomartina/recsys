@@ -4,7 +4,7 @@ import numpy as np
 
 item_cf_param = {
     "knn": 10,
-    "shrink": 5,
+    "shrink": 30,
 }
 
 user_cb_param = {
@@ -14,7 +14,7 @@ user_cb_param = {
 
 slim_param = {
     "epochs": 200,
-    "topK": 100,
+    "topK": 10,
 }
 
 class Hybrid_Combo3(BaseHybridRecommender):

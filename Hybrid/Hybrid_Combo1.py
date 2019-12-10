@@ -5,22 +5,22 @@ import numpy as np
 
 item_cf_param = {
     "knn": 10,
-    "shrink": 5,
+    "shrink": 30,
 }
 
 user_cb_param = {
-    "knn": 900,
-    "shrink": 0,
-}
-
-item_cb_param = {
-    "knn": 700,
+    "knn": 800,
     "shrink": 5,
 }
 
+item_cb_param = {
+    "knn": 5,
+    "shrink": 100,
+}
+
 slim_param = {
-    "epochs": 250,
-    "topK": 100,
+    "epochs": 200,
+    "topK": 10,
 }
 
 class Hybrid_Combo1(BaseHybridRecommender):

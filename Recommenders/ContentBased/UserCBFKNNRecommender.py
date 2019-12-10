@@ -44,7 +44,7 @@ class UserCBFKNNRecommender():
         expected_scores = self.get_expected_ratings(user_id)
 
         if exclude_seen:
-            scores = self.filter_seen(user_id, expected_scores)
+            expected_scores = self.filter_seen(user_id, expected_scores)
         ranking = expected_scores.argsort()[::-1]
 
         return ranking[:at]
