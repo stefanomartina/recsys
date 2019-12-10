@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
     try:
         recommender = Hybrid_Combo2("Combo2", TopPopRecommender())
-        t = BayesianSearch(recommender, "Hybrid: Combo 4")
+        t = BayesianSearch(recommender, "Hybrid: Combo 2")
 
         pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0,1)}
         pbounds_hybrid3 = {'weight1': (0.7, 1.3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
