@@ -94,7 +94,7 @@ class BayesianSearch():
     def step_Item_CB(self, weight1=0, weight2=0):
         start_time = time.time()
         ICM_all = self.helper.ICM_all
-        self.recommender.fit(self.helper.URM_train, ICM_all, knn=int(weight1), shrink=int(weight2))
+        self.recommender.fit(self.helper.URM_train, ICM_all, knn=int(weight1), shrink=int(weight2), tuning = False)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
