@@ -18,15 +18,15 @@ class Hybrid_Combo5(BaseHybridRecommender):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, list_ICM=None, list_UCM=None, weights=[0.2,0.2],
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[0.2,0.2],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=user_cf_param["shrink"],
                    tuning=False):
 
         self.URM = URM
         self.weights = np.array(weights)
-        self.list_ICM = list_ICM
-        self.list_UCM = list_UCM
+        self.ICM_all = ICM_all
+        self.UCM_all = UCM_all
         self.rec_for_colder.fit(self.URM)
 
 

@@ -23,15 +23,15 @@ class Hybrid_Combo3(BaseHybridRecommender):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, list_ICM=None, list_UCM=None, weights=[0.2,0.2, 0.2],
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[0.2,0.2, 0.2],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercb=user_cb_param["knn"], shrink_usercb=user_cb_param["shrink"],
                    tuning=False):
 
         self.URM = URM
         self.weights = np.array(weights)
-        self.list_ICM = list_ICM
-        self.list_UCM = list_UCM
+        self.ICM_all = ICM_all
+        self.UCM_all = UCM_all
         self.rec_for_colder.fit(self.URM)
         self.cumulative_ifc_r = 0
         self.cumulative_slim_r = 0
@@ -40,7 +40,7 @@ class Hybrid_Combo3(BaseHybridRecommender):
         self.n_slim = 0
         self.n_ucbf = 0
         # Sub-Fitting
-        self.userContentBased.fit(URM.copy(), list_UCM, knn_usercb, shrink_usercb, tuning=tuning, transpose=True)
+        self.userContentBased.fit(URM.copy(), UCM_all, knn_usercb, shrink_usercb, tuning=tuning, transpose=True)
         self.slim_random.fit(URM.copy())
         self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
 
