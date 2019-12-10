@@ -18,7 +18,7 @@ class Hybrid_Combo4(BaseHybridRecommender):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, list_ICM=None, list_UCM=None, knn_itemcf=item_cf_param["knn"],
+    def fit(self, URM, ICM_all=None, UCM_all=None, knn_itemcf=item_cf_param["knn"],
                    shrink_itemcf=item_cf_param["shrink"], weights=[0.1, 0.9],
                    tuning=False):
 

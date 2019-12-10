@@ -14,7 +14,7 @@ class ItemCBFKNNRecommender():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, ICM_all, knn=200, shrink=50, similarity="tversky", normalize=True, transpose=True, tuning=False, similarity_path=SIMILARITY_PATH):
+    def fit(self, URM, ICM_all, knn=5, shrink=100, similarity="cosine", normalize=True, transpose=True, tuning=False, similarity_path=SIMILARITY_PATH):
         print("Fitting Item Content Based Recommender...")
         self.URM = URM
         self.ICM_all = ICM_all

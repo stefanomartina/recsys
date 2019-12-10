@@ -33,9 +33,9 @@ class BayesianSearch():
 
     def step_hybrid3(self, weight1=0, weight2=0, weight3=0):
         start_time = time.time()
-        list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
-        list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
-        self.recommender.fit(self.helper.URM_train, [weight1, weight2, weight3], list_ICM=list_ICM, list_UCM=list_UCM, tuning=True)
+        UCM_all = self.helper.UCM_all
+        ICM_all = self.helper.ICM_all
+        self.recommender.fit(self.helper.URM_train, [weight1, weight2, weight3], ICM_all=ICM_all, UCM_all=UCM_all, tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
@@ -51,9 +51,9 @@ class BayesianSearch():
 
     def step_hybrid5(self, weight1=0, weight2=0):
         start_time = time.time()
-        list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
-        list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
-        self.recommender.fit(self.helper.URM_train,  list_ICM=list_ICM, list_UCM=list_UCM,weights =[weight1, weight2],
+        UCM_all = self.helper.UCM_all
+        ICM_all = self.helper.ICM_all
+        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[weight1, weight2],
                              tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
@@ -62,9 +62,9 @@ class BayesianSearch():
 
     def step_hybrid2(self, weight1=0, weight2=0, weight3=0, weight4=0):
         start_time = time.time()
-        list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
-        list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
-        self.recommender.fit(self.helper.URM_train,  list_ICM=list_ICM, list_UCM=list_UCM,weights =[weight1, weight2, weight3, weight4],
+        UCM_all = self.helper.UCM_all
+        ICM_all = self.helper.ICM_all
+        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[weight1, weight2, weight3, weight4],
                              tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
@@ -73,9 +73,9 @@ class BayesianSearch():
 
     def step_hybrid6(self, weight1=0, weight2=0, weight3=0):
         start_time = time.time()
-        list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
-        list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
-        self.recommender.fit(self.helper.URM_train,  list_ICM=list_ICM, list_UCM=list_UCM,weights =[weight1, weight2, weight3],
+        UCM_all = self.helper.UCM_all
+        ICM_all = self.helper.ICM_all
+        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[weight1, weight2, weight3],
                              tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
@@ -93,8 +93,8 @@ class BayesianSearch():
 
     def step_Item_CB(self, weight1=0, weight2=0):
         start_time = time.time()
-        list_ICM = [self.helper.ICM, self.helper.ICM_price, self.helper.ICM_asset]
-        self.recommender.fit(self.helper.URM_train, list_ICM, knn=weight1, shrink=weight2)
+        ICM_all = self.helper.ICM_all
+        self.recommender.fit(self.helper.URM_train, ICM_all, knn=weight1, shrink=weight2)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
@@ -102,8 +102,8 @@ class BayesianSearch():
 
     def step_User_CB(self, weight1=0, weight2=0):
         start_time = time.time()
-        list_UCM = [self.helper.UCM_age, self.helper.UCM_region]
-        self.recommender.fit(self.helper.URM_train, list_UCM, knn=weight1, shrink=weight2)
+        UCM_all = self.helper.UCM_all
+        self.recommender.fit(self.helper.URM_train, UCM_all, knn=weight1, shrink=weight2)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")

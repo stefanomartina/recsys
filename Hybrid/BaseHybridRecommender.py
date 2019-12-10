@@ -21,8 +21,8 @@ user_cb_param = {
 }
 
 item_cb_param = {
-    "knn": 700,
-    "shrink": 5,
+    "knn": 5,
+    "shrink": 20,
 }
 
 slim_param = {
@@ -92,7 +92,7 @@ class BaseHybridRecommender(object):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, weights, list_ICM, list_UCM):
+    def fit(self, URM, weights, ICM_all, UCM_all):
         pass
 
     #######################################################################################
