@@ -94,7 +94,7 @@ class BayesianSearch():
     def step_Item_CB(self, weight1=0, weight2=0):
         start_time = time.time()
         ICM_all = self.helper.ICM_all
-        self.recommender.fit(self.helper.URM_train, ICM_all, knn=weight1, shrink=weight2)
+        self.recommender.fit(self.helper.URM_train, ICM_all, knn=int(weight1), shrink=int(weight2))
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
@@ -114,8 +114,8 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
     try:
-        recommender = Hybrid_Combo2("Combo2", TopPopRecommender())
-        t = BayesianSearch(recommender, "Hybrid: Combo 2")
+        recommender = ItemCBFKNNRecommender()
+        t = BayesianSearch(recommender, "Item Content Base")
 
         pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0,1)}
         pbounds_hybrid3 = {'weight1': (0.7, 1.3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
@@ -127,14 +127,15 @@ if __name__ == "__main__":
 
         pbounds_hybrid6 = {'weight1': (0.4, 0.45), 'weight2': (0.001, 0.005), 'weight3': (0.1, 0.5)}
         pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
-        pbounds_itemCB = {'weight1': (600, 900), 'weight2': (0, 50)}
+
+        pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
         pbounds_userCB = {'weight1': (600, 900), 'weight2': (0, 50)}
 
 
 
         optimizer = BayesianOptimization(
-            f=t.step_hybrid2,
-            pbounds=pbounds_hybrid2,
+            f=t.step_Item_CB,
+            pbounds=pbounds_itemCB,
             verbose=2, # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
             random_state=1,
         )
@@ -145,7 +146,8 @@ if __name__ == "__main__":
         )
 
     finally:
-        for filename in os.listdir(folder):
+        print("NO")
+        """for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             try:
                 if os.path.isfile(file_path) or os.path.islink(file_path):
@@ -154,3 +156,4 @@ if __name__ == "__main__":
                     shutil.rmtree(file_path)
             except Exception as e:
                 print('Failed to delete %s. Reason: %s' % (file_path, e))
+"""
