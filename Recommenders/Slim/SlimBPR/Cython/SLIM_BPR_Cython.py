@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """ Created on 07/09/17     @author: Maurizio Ferrari Dacrema """
-
+import os
 import sys
 import numpy as np
 from Base.Recommender_utils import similarityMatrixTopK, check_matrix
-
+from Base.BaseFunction import BaseFunction
 
 class SLIM_BPR_Cython(object):
     RECOMMENDER_NAME = "SLIM_BPR_Recommender"
@@ -39,6 +39,8 @@ class SLIM_BPR_Cython(object):
         self.train_with_sparse_weights = train_with_sparse_weights
         self.sparse_weights = final_model_sparse_weights
 
+        self.helper = BaseFunction()
+
         if self.train_with_sparse_weights:
             self.sparse_weights = True
 
@@ -51,7 +53,7 @@ class SLIM_BPR_Cython(object):
     #                                     RUN FITTNG                                      #
     #######################################################################################
 
-    def fit(self, URM_train):
+    def fit(self, URM_train, tuning = False):
         print("Fitting Slim...")
         self.__init__()
         self.URM = URM_train
@@ -99,6 +101,14 @@ class SLIM_BPR_Cython(object):
         self.get_S_incremental_and_set_W()
         self.cythonEpoch._dealloc()
         sys.stdout.flush()
+
+        if tuning:
+            print(os.getcwd() + ("\SimilarityProduct\Slim_similarity.npz"))
+            if not os.path.exists(os.getcwd() + ("\SimilarityProduct\Slim_similarity.npz")):
+                self.helper.export_similarity_matrix(os.getcwd() + ("\SimilarityProduct\Slim_similarity.npz"), self.W_sparse)
+
+
+            self.helper.import_similarity_matrix(os.getcwd() + ("\SimilarityProduct\Slim_similarity.npz"))
 
         self.score = self.URM.dot(self.W_sparse)
 

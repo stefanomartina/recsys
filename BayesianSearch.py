@@ -64,8 +64,7 @@ class BayesianSearch():
         start_time = time.time()
         UCM_all = self.helper.UCM_all
         ICM_all = self.helper.ICM_all
-        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[weight1, weight2, weight3, weight4],
-                             tuning=True)
+        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[weight1, weight2, weight3, weight4], tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
@@ -114,7 +113,7 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
     try:
-        recommender = ItemCBFKNNRecommender()
+        recommender = Hybrid_Combo2("Combo 2", TopPopRecommender())
         t = BayesianSearch(recommender, "Item Content Base")
 
         pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0,1)}
@@ -134,8 +133,8 @@ if __name__ == "__main__":
 
 
         optimizer = BayesianOptimization(
-            f=t.step_Item_CB,
-            pbounds=pbounds_itemCB,
+            f=t.step_hybrid2,
+            pbounds=pbounds_hybrid2,
             verbose=2, # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
             random_state=1,
         )
@@ -146,8 +145,7 @@ if __name__ == "__main__":
         )
 
     finally:
-        print("NO")
-        """for filename in os.listdir(folder):
+        for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             try:
                 if os.path.isfile(file_path) or os.path.islink(file_path):
@@ -156,4 +154,3 @@ if __name__ == "__main__":
                     shutil.rmtree(file_path)
             except Exception as e:
                 print('Failed to delete %s. Reason: %s' % (file_path, e))
-"""

@@ -15,7 +15,7 @@ user_cf_param = {
 
 item_cb_param = {
     "knn": 5,
-    "shrink": 100,
+    "shrink": 0,
 }
 
 slim_param = {
@@ -31,7 +31,7 @@ class Hybrid_Combo2(BaseHybridRecommender):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[9.945,0.0715,0.1944,0.6588],
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[6.815,0.08235,0.1052,0.4841],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=item_cf_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],tuning=False):
@@ -47,7 +47,7 @@ class Hybrid_Combo2(BaseHybridRecommender):
         self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
         self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning)
         self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning)
-        self.slim_random.fit(URM.copy())
+        self.slim_random.fit(URM.copy(), tuning=tuning)
 
 
     #######################################################################################
