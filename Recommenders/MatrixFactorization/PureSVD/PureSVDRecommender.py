@@ -22,12 +22,10 @@ class PureSVDRecommender(object):
         if library == "svds":
             self.URM_SVD = self.get_URM_SVDS()
 
-    def get_expected_ratings(self, user_id):
-        expected_ratings = self.U[user_id].dot(self.Sigma_Vt)
-        return expected_ratings
+        self.similarityProduct = self.U.dot(self.Sigma_Vt)
 
     def recommend(self, user_id, at=10):
-        expected_ratings = self.get_expected_ratings(user_id)
+        expected_ratings = self.similarityProduct[user_id]
         recommended_items = np.flip(np.argsort(expected_ratings), 0)
 
         unseen_items_mask = np.in1d(recommended_items, self.URM[user_id].indices, assume_unique=True, invert=True)
