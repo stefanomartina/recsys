@@ -42,7 +42,7 @@ class Hybrid_Combo6(BaseHybridRecommender):
         self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
         self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning)
         self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning)
-        self.elasticNet.fit(URM.copy())
+        self.elasticNet.fit(URM.copy(), tuning=tuning)
 
     #######################################################################################
     #                                  EXTRACT RATINGS                                    #

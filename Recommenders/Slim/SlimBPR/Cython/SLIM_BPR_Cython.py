@@ -7,8 +7,11 @@ import numpy as np
 from Base.Recommender_utils import similarityMatrixTopK, check_matrix
 from Base.BaseFunction import BaseFunction
 
+
+RECOMMENDER_NAME = "SLIMRecommender"
+SIMILARITY_PATH = "/SimilarityProduct/Slim_similarity.npz"
+
 class SLIM_BPR_Cython(object):
-    RECOMMENDER_NAME = "SLIM_BPR_Recommender"
 
     #######################################################################################
     #                                   INIT SLIM_BPR                                     #
@@ -57,7 +60,7 @@ class SLIM_BPR_Cython(object):
         print("Fitting Slim...")
         self.__init__()
         self.URM = URM_train
-
+        self.tuning = tuning
         self.n_users = URM_train.shape[0]
         self.n_items = URM_train.shape[1]
 
@@ -102,13 +105,6 @@ class SLIM_BPR_Cython(object):
         self.cythonEpoch._dealloc()
         sys.stdout.flush()
 
-        if tuning:
-            if not os.path.exists(os.getcwd() + ("\SimilarityProduct\Slim_similarity.npz")):
-                self.helper.export_similarity_matrix(os.getcwd() + ("\SimilarityProduct\Slim_similarity.npz"), self.W_sparse)
-
-
-            self.helper.import_similarity_matrix(os.getcwd() + ("\SimilarityProduct\Slim_similarity.npz"))
-
         self.score = self.URM.dot(self.W_sparse)
 
     def _initialize_incremental_model(self):
@@ -129,10 +125,24 @@ class SLIM_BPR_Cython(object):
         self.S_incremental = self.cythonEpoch.get_S()
 
         if self.train_with_sparse_weights:
-            self.W_sparse = self.S_incremental
+
+            if self.tuning:
+                if not os.path.exists(os.getcwd() + SIMILARITY_PATH):
+                    self.W_sparse = self.S_incremental
+                    self.helper.export_similarity_matrix(os.getcwd() + SIMILARITY_PATH, self.W_sparse)
+
+                self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + SIMILARITY_PATH)
+            else:
+                self.W_sparse = self.S_incremental
 
         else:
-            self.W_sparse = similarityMatrixTopK(self.S_incremental, k=self.topK)
+            if self.tuning:
+                if not os.path.exists(os.getcwd() + SIMILARITY_PATH):
+                    self.W_sparse = similarityMatrixTopK(self.S_incremental, k=self.topK)
+                    self.helper.export_similarity_matrix(os.getcwd() + SIMILARITY_PATH, self.W_sparse)
+                self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + SIMILARITY_PATH)
+            else:
+                self.W_sparse = similarityMatrixTopK(self.S_incremental, k=self.topK)
 
     def runCompilationScript(self):
 

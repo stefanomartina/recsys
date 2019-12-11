@@ -120,7 +120,6 @@ if __name__ == "__main__":
         pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0,1)}
         pbounds_hybrid3 = {'weight1': (0.7, 1.3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
         pbounds_hybrid4 = {'weight1': (0.05, 2)}
-        pbounds_hybrid6 = {'weight1': (0.4, 0.45), 'weight2': (0.001, 0.005), 'weight3': (0.1, 0.5)}
         pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
         pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
         pbounds_userCB = {'weight1': (600, 900), 'weight2': (0, 50)}
@@ -128,8 +127,7 @@ if __name__ == "__main__":
 
         # pbounds_hybrid2 = {'weight1': (9, 10), 'weight2': (0.01, 0.04), 'weight3': (0, 0.4), 'weight4': (1.5, 1.7)}
         pbounds_hybrid2 = {'weight1': (0, 1), 'weight2': (0, 1), 'weight3': (0, 1), 'weight4': (0, 1)}
-
-        pbounds_hybrid6 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
+        pbounds_hybrid6 = {'weight1': (0.8, 0.95), 'weight2': (0.35, 0.45), 'weight3': (0.05, 0.06), 'weight4': (0,3)}
 
 
         optimizer = BayesianOptimization(
