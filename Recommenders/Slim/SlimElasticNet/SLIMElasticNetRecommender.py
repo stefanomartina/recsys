@@ -15,6 +15,7 @@ SIMILARITY_PATH = "/SimilarityProduct/SlimElastic_similarity.npz"
 class SLIMElasticNetRecommender():
 
     def fit(self, URM, verbose = True, l1_ratio=0.1, alpha = 1.0, positive_only=True, topK = 100, tuning=False):
+        print("Fitting SlimElasticNet Recommender...")
         self.URM = URM
         self.l1_ratio = l1_ratio
         self.positive_only = positive_only
