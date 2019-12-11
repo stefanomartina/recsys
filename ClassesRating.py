@@ -1,5 +1,8 @@
 from Base.BaseFunction import BaseFunction
 import numpy as np
+
+from Hybrid.Hybrid_Combo7 import Hybrid_Combo7
+from Hybrid.Hybrid_Combo8 import Hybrid_Combo8
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
@@ -36,6 +39,8 @@ class ClassesRating:
         MAP_Slim_per_group = []
         MAP_Hybrid2_per_group = []
         MAP_PureSVD_per_group = []
+        MAP_Hybrid7_per_group = []
+        MAP_Hybrid8_per_group = []
 
 
         self.profile_length = np.ediff1d(self.URM_train.indptr)
@@ -50,6 +55,8 @@ class ClassesRating:
         self.Slim = SLIM_BPR_Cython()
         self.Hybrid2 = Hybrid_Combo2("HybridCombo2", TopPopRecommender())
         self.PureSVD = PureSVDRecommender()
+        self.Hybrid7 = Hybrid_Combo7("HybridCombo7", TopPopRecommender())
+        self.Hybrid8 = Hybrid_Combo8("HybridCombo8", TopPopRecommender())
 
 
         self.TopPop.fit(self.URM_train)
@@ -60,6 +67,8 @@ class ClassesRating:
         self.Slim.fit(self.URM_train)
         self.Hybrid2.fit(self.URM_train,  self.ICM_all,  self.UCM_all)
         self.PureSVD.fit(self.URM_train)
+        self.Hybrid7.fit(self.URM_train,  self.ICM_all,  self.UCM_all)
+        self.Hybrid8.fit(self.URM_train, self.ICM_all, self.UCM_all)
 
         for group_id in range(0, 20):
             start_pos = group_id * self.blocksize
@@ -102,6 +111,14 @@ class ClassesRating:
             results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.PureSVD, at=10)
             MAP_PureSVD_per_group.append(results)
 
+            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.Hybrid7, at=10)
+            MAP_Hybrid7_per_group.append(results)
+
+            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.Hybrid8, at=10)
+            MAP_Hybrid8_per_group.append(results)
+
+
+
         pyplot.plot(MAP_TopPop_per_group, label="TopPop")
         pyplot.plot(MAP_ItemCF_per_group, label="ItemCF")
         pyplot.plot(MAP_UserCF_per_group, label="UserCF")
@@ -110,6 +127,8 @@ class ClassesRating:
         pyplot.plot(MAP_Slim_per_group, label="Slim")
         pyplot.plot(MAP_Hybrid2_per_group, label="Hybrid2")
         pyplot.plot(MAP_PureSVD_per_group, label="PureSVD")
+        pyplot.plot(MAP_Hybrid7_per_group, label="Hybrid7")
+        pyplot.plot(MAP_Hybrid8_per_group, label="Hybrid8")
         pyplot.ylabel('MAP')
         pyplot.xlabel('User Group')
         pyplot.legend()

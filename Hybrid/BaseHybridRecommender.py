@@ -3,7 +3,7 @@ from Recommenders.ContentBased import UserCBFKNNRecommender, ItemCBFKNNRecommend
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Recommenders.Slim.SlimElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
-from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
+from Recommenders.MatrixFactorization.PureSVD.PureSVDRecommender import PureSVDRecommender
 import numpy as np
 
 slim_param = {
@@ -47,15 +47,18 @@ class BaseHybridRecommender(object):
         # ElasticNet
         self.elasticNet = SLIMElasticNetRecommender()
 
+        # PureSVD Recommender
+        self.pureSVD = PureSVDRecommender()
+
         # Ratings from each available algorithm
         self.userContentBased_ratings = None
         self.itemContentBased_ratings = None
         self.itemCF_ratings = None
         self.userCF_ratings = None
-        self.icf_tp_combo_ratings = None
-        self.ucf_tp_combo_ratings = None
         self.cf_cb_combo_ratings = None
         self.slim_ratings = None
+        self.elasticNet_ratings = None
+        self.pureSVD_ratings = None
 
 
     #######################################################################################
