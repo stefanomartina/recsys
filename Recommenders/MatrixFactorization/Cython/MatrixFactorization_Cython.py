@@ -12,13 +12,9 @@ from Utils.seconds_to_biggest_unit import seconds_to_biggest_unit
 class BaseMatrixFactorization():
     RECOMMENDER_NAME = "AbstractMatrixRecommender"
 
-    def __init__(self, URM_train, verbose=True, algorithm_name = "MF_BPR"):
+    def __init__(self, verbose=True, algorithm_name = None):
 
-        self.URM_train = check_matrix(URM_train.copy(), 'csr', dtype=np.float32)
-        self.URM_train.eliminate_zeros()
         self.verbose = verbose
-
-        self.n_users, self.n_items = self.URM_train.shape
         self.normalize = False
         self.algorithm_name = algorithm_name
 
@@ -29,11 +25,6 @@ class BaseMatrixFactorization():
         self.items_to_ignore_ID = np.array([], dtype=np.int)
 
         self.use_bias = False
-
-        self._cold_user_mask = np.ediff1d(self.URM_train.indptr) == 0
-
-        self._cold_item_mask = np.ediff1d(self.URM_train.tocsc().indptr) == 0
-
 
     def get_early_stopping_final_epochs_dict(self):
         """
@@ -188,12 +179,14 @@ class BaseMatrixFactorization():
         # Command to generate html report
         # cython -a MatrixFactorization_Cython_Epoch.pyx
 
-    def fit(self, URM_train, verbose=True, recompile_cython=False, algorithm_name="MF_BPR", epochs=600, batch_size=1000,
+    def fit(self, URM_train, recompile_cython=False, algorithm_name="MF_BPR", epochs=600, batch_size=1000,
             num_factors=30, positive_threshold_BPR=None, learning_rate=0.002, use_bias=True, sgd_mode='adagrad',
             negative_interactions_quota=0.0, init_mean=0.0, init_std_dev=0.1,
             user_reg=0.71, item_reg=0.2, bias_reg=0.5, positive_reg=0.0, negative_reg=0.0, random_seed=None,
             **earlystopping_kwargs):
 
+        self.URM = URM_train
+        self.n_users, self.n_items = self.URM.shape
         self.num_factors = num_factors
         self.use_bias = use_bias
         self.sgd_mode = sgd_mode
@@ -266,6 +259,7 @@ class BaseMatrixFactorization():
             self.ITEM_bias = self.ITEM_bias_best
             self.GLOBAL_bias = self.GLOBAL_bias_best
 
+        self.matrix_scores = np.dot(self.USER_factors, self.ITEM_factors.T)
         sys.stdout.flush()
 
 
@@ -286,41 +280,18 @@ class BaseMatrixFactorization():
         scores[seen] = -np.inf
         return scores
 
-    def _compute_item_score(self, user_id_array, items_to_compute = None):
-        """
-        USER_factors is n_users x n_factors
-        ITEM_factors is n_items x n_factors
-        The prediction for cold users will always be -inf for ALL items
-        :param user_id_array:
-        :param items_to_compute:
-        :return:
-        """
-
-        assert self.USER_factors.shape[1] == self.ITEM_factors.shape[1], \
-            "{}: User and Item factors have inconsistent shape".format(self.RECOMMENDER_NAME)
-
-        assert self.USER_factors.shape[0] > np.max(user_id_array),\
-                "{}: Cold users not allowed. Users in trained model are {}, requested prediction for users up to {}".format(
-                self.RECOMMENDER_NAME, self.USER_factors.shape[0], np.max(user_id_array))
-
-        if items_to_compute is not None:
-            item_scores = - np.ones((len(user_id_array), self.ITEM_factors.shape[0]), dtype=np.float32)*np.inf
-            item_scores[:, items_to_compute] = np.dot(self.USER_factors[user_id_array], self.ITEM_factors[items_to_compute,:].T)
-
-        else:
-            item_scores = np.dot(self.USER_factors[user_id_array], self.ITEM_factors.T)
-
-
-        # No need to select only the specific negative items or warm users because the -inf score will not change
-        if self.use_bias:
-            item_scores += self.ITEM_bias + self.GLOBAL_bias
-            item_scores = (item_scores.T + self.USER_bias[user_id_array]).T
-
-        return item_scores
-
     def get_expected_ratings(self, user_id):
-        expected_scores = (self.similarityProduct[user_id]).toarray().ravel()
+        expected_scores = (self.matrix_scores[user_id]).toarray().ravel()
         return expected_scores
+
+    def filter_seen(self, user_id, scores):
+        start_pos = self.URM_train.indptr[user_id]
+        end_pos = self.URM_train.indptr[user_id + 1]
+
+        user_profile = self.URM_train.indices[start_pos:end_pos]
+        scores[user_profile] -= np.inf
+
+        return scores
 
     def recommend(self, user_id, at=10, exclude_seen=True):
         expected_scores = self.get_expected_ratings(user_id)
@@ -345,7 +316,7 @@ class MatrixFactorization_BPR_Cython(BaseMatrixFactorization):
     RECOMMENDER_NAME = "MatrixFactorization_BPR_Cython_Recommender"
 
     def __init__(self, *pos_args, **key_args):
-        super(MatrixFactorization_BPR_Cython, self).__init__(*pos_args, algorithm_name="MF_BPR", **key_args)
+        super(MatrixFactorization_BPR_Cython, self).__init__(algorithm_name="MF_BPR")
 
     def fit(self, **key_args):
 

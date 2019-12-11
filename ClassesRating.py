@@ -6,6 +6,7 @@ from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Recommenders.ContentBased.ItemCBFKNNRecommender import ItemCBFKNNRecommender
 from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommender
 from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
+from Recommenders.MatrixFactorization.PureSVD.PureSVDRecommender import PureSVDRecommender
 from Hybrid.Hybrid_Combo2 import Hybrid_Combo2
 from Utils.evaluation import evaluate_algorithm_classes
 import matplotlib.pyplot as pyplot
@@ -34,6 +35,8 @@ class ClassesRating:
         MAP_UserCBF_per_group = []
         MAP_Slim_per_group = []
         MAP_Hybrid2_per_group = []
+        MAP_PureSVD_per_group = []
+
 
         self.profile_length = np.ediff1d(self.URM_train.indptr)
         self.blocksize = int(len(self.profile_length) * 0.05)
@@ -46,6 +49,8 @@ class ClassesRating:
         self.UserCBF = UserCBFKNNRecommender()
         self.Slim = SLIM_BPR_Cython()
         self.Hybrid2 = Hybrid_Combo2("HybridCombo2", TopPopRecommender())
+        self.PureSVD = PureSVDRecommender()
+
 
         self.TopPop.fit(self.URM_train)
         self.ItemCF.fit(self.URM_train)
@@ -54,6 +59,7 @@ class ClassesRating:
         self.UserCBF.fit(self.URM_train, self.UCM_all)
         self.Slim.fit(self.URM_train)
         self.Hybrid2.fit(self.URM_train,  self.ICM_all,  self.UCM_all)
+        self.PureSVD.fit(self.URM_train)
 
         for group_id in range(0, 20):
             start_pos = group_id * self.blocksize
@@ -93,6 +99,9 @@ class ClassesRating:
             results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.Hybrid2, at=10)
             MAP_Hybrid2_per_group.append(results)
 
+            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.PureSVD, at=10)
+            MAP_PureSVD_per_group.append(results)
+
         pyplot.plot(MAP_TopPop_per_group, label="TopPop")
         pyplot.plot(MAP_ItemCF_per_group, label="ItemCF")
         pyplot.plot(MAP_UserCF_per_group, label="UserCF")
@@ -100,6 +109,7 @@ class ClassesRating:
         pyplot.plot(MAP_UserCBF_per_group, label="UserCBF")
         pyplot.plot(MAP_Slim_per_group, label="Slim")
         pyplot.plot(MAP_Hybrid2_per_group, label="Hybrid2")
+        pyplot.plot(MAP_PureSVD_per_group, label="PureSVD")
         pyplot.ylabel('MAP')
         pyplot.xlabel('User Group')
         pyplot.legend()

@@ -2,6 +2,7 @@ from tqdm import tqdm
 
 from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
 from Recommenders.Combination import ItemCF_ItemCB
+from Recommenders.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython
 from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
 from Recommenders.Slim.SlimElasticNet import SLIMElasticNetRecommender
 from Recommenders.MatrixFactorization.PureSVD import PureSVDRecommender
@@ -190,7 +191,7 @@ if __name__ == '__main__':
 
     if args.recommender == 'MF_BPR_Cython':
         print("MF_BPR_Cython selected")
-        #recommender = MatrixFactorization_BPR_Cython()
+        recommender = MatrixFactorization_BPR_Cython()
 
     print(args)
     Runner(recommender, args.recommender, evaluate=args.eval).run(requires_ucm, requires_icm)
