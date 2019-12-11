@@ -1,9 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@author: Massimo Quadrana
-"""
-
+import os
 
 import numpy as np
 import scipy.sparse as sps
@@ -12,18 +7,19 @@ from sklearn.linear_model import ElasticNet
 from sklearn.exceptions import ConvergenceWarning
 from Utils.seconds_to_biggest_unit import seconds_to_biggest_unit
 import time, sys, warnings
+from Base.BaseFunction import BaseFunction
 
-
+RECOMMENDER_NAME = "SLIMElasticNetRecommender"
+SIMILARITY_PATH = "/SimilarityProduct/SlimElastic_similarity.npz"
 
 class SLIMElasticNetRecommender():
 
-    RECOMMENDER_NAME = "SLIMElasticNetRecommender"
-
-    def fit(self, URM, verbose = True, l1_ratio=0.1, alpha = 1.0, positive_only=True, topK = 100):
+    def fit(self, URM, verbose = True, l1_ratio=0.1, alpha = 1.0, positive_only=True, topK = 100, tuning=False):
         self.URM = URM
         self.l1_ratio = l1_ratio
         self.positive_only = positive_only
         self.topK = topK
+        self.helper = BaseFunction()
 
         # Display ConvergenceWarning only once and not for every item it occurs
         warnings.simplefilter("once", category = ConvergenceWarning)
@@ -118,8 +114,16 @@ class SLIMElasticNetRecommender():
                 start_time_printBatch = time.time()
 
         # generate the sparse weight matrix
-        self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])),
-                                       shape=(n_items, n_items), dtype=np.float32)
+
+        if tuning:
+            if not os.path.exists(os.getcwd() + SIMILARITY_PATH):
+                self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])),shape=(n_items, n_items), dtype=np.float32)
+                self.helper.export_similarity_matrix(os.getcwd() + SIMILARITY_PATH, self.W_sparse)
+            self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + SIMILARITY_PATH)
+
+        else:
+            self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])), shape=(n_items, n_items), dtype=np.float32)
+
         self.similarityProduct = self.URM.dot(self.W_sparse)
 
     def get_expected_ratings(self, user_id):
