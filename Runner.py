@@ -7,7 +7,7 @@ from Recommenders.Slim.SlimElasticNet import SLIMElasticNetRecommender
 from Recommenders.MatrixFactorization.PureSVD import PureSVDRecommender
 from Recommenders.Collaborative import UserKNNCFRecommender, ItemKNNCFRecommender
 from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRecommender
-from Hybrid import Hybrid_Combo1, Hybrid_Combo5, Hybrid_Combo2
+from Hybrid import Hybrid_Combo1, Hybrid_Combo5, Hybrid_Combo2, Hybrid_Combo6
 from Utils import evaluation
 
 
@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     if args.recommender == "Hybrid":
         print("Hybrid")
-        recommender = Hybrid_Combo2.Hybrid_Combo2("Combo2", TopPopRecommender.TopPopRecommender())
+        recommender = Hybrid_Combo6.Hybrid_Combo6("Combo6", TopPopRecommender.TopPopRecommender())
         requires_icm = True
         requires_ucm = True
 

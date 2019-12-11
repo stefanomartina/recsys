@@ -1,106 +1,144 @@
-""" @author: Massimo Quadrana """
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@author: Massimo Quadrana
+"""
 
 
 import numpy as np
 import scipy.sparse as sps
-
+from Base.Recommender_utils import check_matrix
 from sklearn.linear_model import ElasticNet
-from Base.BaseFunction import BaseFunction
-
-import multiprocessing
-from multiprocessing import Pool
-from functools import partial
+from sklearn.exceptions import ConvergenceWarning
+from Utils.seconds_to_biggest_unit import seconds_to_biggest_unit
+import time, sys, warnings
 
 
 
 class SLIMElasticNetRecommender():
 
-    def __init__(self, alpha=1e-4, l1_ratio=0.1, fit_intercept=False, copy_X=False, precompute=False,
-                 selection='random',
-                 max_iter=100, tol=1e-4, topK=100, positive_only=True, workers=multiprocessing.cpu_count(),
-                 use_tail_boost=False):
+    RECOMMENDER_NAME = "SLIMElasticNetRecommender"
 
-        self.analyzed_items = 0
-        self.alpha = alpha
+    def fit(self, URM, verbose = True, l1_ratio=0.1, alpha = 1.0, positive_only=True, topK = 100):
+        self.URM = URM
         self.l1_ratio = l1_ratio
-        self.fit_intercept = fit_intercept
-        self.copy_X = copy_X
-        self.precompute = precompute
-        self.selection = selection
-        self.max_iter = max_iter
-        self.tol = tol
-        self.topK = topK
         self.positive_only = positive_only
-        self.workers = workers
-        self.helper = BaseFunction()
+        self.topK = topK
 
-    def _partial_fit(self, currentItem, X):
-        model = ElasticNet(alpha=self.alpha,
-                            l1_ratio=self.l1_ratio,
-                            positive=self.positive_only,
-                            fit_intercept=self.fit_intercept,
-                            copy_X=self.copy_X,
-                            precompute=self.precompute,
-                            selection=self.selection,
-                            max_iter=self.max_iter,
-                            tol=self.tol)
+        # Display ConvergenceWarning only once and not for every item it occurs
+        warnings.simplefilter("once", category = ConvergenceWarning)
 
-        X_j = X.copy()
-        y = X_j[:, currentItem].toarray()
-        X_j.data[X_j.indptr[currentItem]:X_j.indptr[currentItem + 1]] = 0.0
+        # initialize the ElasticNet model
+        self.model = ElasticNet(alpha=1e-4,
+                                l1_ratio=self.l1_ratio,
+                                positive=self.positive_only,
+                                fit_intercept=False,
+                                copy_X=False,
+                                precompute=True,
+                                selection='random',
+                                max_iter=100,
+                                tol=1e-4)
 
-        model.fit(X_j, y)
-        local_topK = min(len(model.sparse_coef_.data) - 1, self.topK)
+        URM_train = check_matrix(self.URM, 'csc', dtype=np.float32)
 
-        relevant_items_partition = (-model.coef_).argpartition(local_topK)[0:local_topK]
-        relevant_items_partition_sorting = np.argsort(-model.coef_[relevant_items_partition])
-        ranking = relevant_items_partition[relevant_items_partition_sorting]
+        n_items = URM_train.shape[1]
 
-        not_zero_mask = model.coef_[ranking] > 0.0
-        ranking = ranking[not_zero_mask]
+        # Use array as it reduces memory requirements compared to lists
+        dataBlock = 10000000
 
-        values = model.coef_[ranking]
-        rows = ranking
-        cols = [currentItem] * len(ranking)
+        rows = np.zeros(dataBlock, dtype=np.int32)
+        cols = np.zeros(dataBlock, dtype=np.int32)
+        values = np.zeros(dataBlock, dtype=np.float32)
 
-        return values, rows, cols
+        numCells = 0
 
-    def fit(self, URM):
+        start_time = time.time()
+        start_time_printBatch = start_time
 
-        self.URM_train = sps.csc_matrix(URM)
+        # fit each item's factors sequentially (not in parallel)
+        for currentItem in range(n_items):
 
-        n_items = self.URM_train.shape[1]
-        print("Iterating for " + str(n_items) + " times")
+            # get the target column
+            y = URM_train[:, currentItem].toarray()
 
-        # create a copy of the URM since each _pfit will modify it
-        copy_urm = self.URM_train.copy()
+            if y.sum() == 0.0:
+                continue
 
-        _pfit = partial(self._partial_fit, X=self.URM_train, topK=self.topK)
-        pool = Pool(processes=self.workers)
-        res = pool.map(_pfit, np.arange(n_items))
+            # set the j-th column of X to zero
+            start_pos = URM_train.indptr[currentItem]
+            end_pos = URM_train.indptr[currentItem + 1]
 
-        # res contains a vector of (values, rows, cols) tuples
-        values, rows, cols = [], [], []
-        for values_, rows_, cols_ in res:
-            values.extend(values_)
-            rows.extend(rows_)
-            cols.extend(cols_)
+            current_item_data_backup = URM_train.data[start_pos: end_pos].copy()
+            URM_train.data[start_pos: end_pos] = 0.0
 
-        self.W_sparse = sps.csc_matrix((values, (rows, cols)), shape=(n_items, n_items), dtype=np.float32)
+            # fit one ElasticNet model per column
+            self.model.fit(URM_train, y)
+
+            nonzero_model_coef_index = self.model.sparse_coef_.indices
+            nonzero_model_coef_value = self.model.sparse_coef_.data
+
+            local_topK = min(len(nonzero_model_coef_value)-1, self.topK)
+
+            relevant_items_partition = (-nonzero_model_coef_value).argpartition(local_topK)[0:local_topK]
+            relevant_items_partition_sorting = np.argsort(-nonzero_model_coef_value[relevant_items_partition])
+            ranking = relevant_items_partition[relevant_items_partition_sorting]
+
+            for index in range(len(ranking)):
+
+                if numCells == len(rows):
+                    rows = np.concatenate((rows, np.zeros(dataBlock, dtype=np.int32)))
+                    cols = np.concatenate((cols, np.zeros(dataBlock, dtype=np.int32)))
+                    values = np.concatenate((values, np.zeros(dataBlock, dtype=np.float32)))
+
+
+                rows[numCells] = nonzero_model_coef_index[ranking[index]]
+                cols[numCells] = currentItem
+                values[numCells] = nonzero_model_coef_value[ranking[index]]
+
+                numCells += 1
+
+            # finally, replace the original values of the j-th column
+            URM_train.data[start_pos:end_pos] = current_item_data_backup
+
+            elapsed_time = time.time() - start_time
+            new_time_value, new_time_unit = seconds_to_biggest_unit(elapsed_time)
+
+
+            if time.time() - start_time_printBatch > 300 or currentItem == n_items-1:
+                print("Processed {} ( {:.2f}% ) in {:.2f} {}. Items per second: {:.2f}".format(
+                    currentItem+1,
+                    100.0* float(currentItem+1)/n_items,
+                    new_time_value,
+                    new_time_unit,
+                    float(currentItem)/elapsed_time))
+
+                sys.stdout.flush()
+                sys.stderr.flush()
+
+                start_time_printBatch = time.time()
+
+        # generate the sparse weight matrix
+        self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])),
+                                       shape=(n_items, n_items), dtype=np.float32)
+        self.similarityProduct = self.URM.dot(self.W_sparse)
 
     def get_expected_ratings(self, user_id):
-        user_profile = self.URM_train[user_id]
-        expected_ratings = user_profile.dot(self.W_sparse).toarray().ravel()
-        return expected_ratings
+        expected_scores = (self.similarityProduct[user_id]).toarray().ravel()
+        return expected_scores
 
-    def recommend(self, user_id, at=10):
+    def filter_seen(self, user_id, scores):
+        start_pos = self.URM.indptr[user_id]
+        end_pos = self.URM.indptr[user_id + 1]
 
-        # compute the scores using the dot product
-        scores = self.get_expected_ratings(user_id)
-        user_profile = self.URM_train[user_id].indices
-        scores[user_profile] = 0
+        user_profile = self.URM.indices[start_pos:end_pos]
+        scores[user_profile] = -np.inf
+        return scores
 
-        # rank items
-        recommended_items = np.flip(np.argsort(scores), 0)
+    def recommend(self, user_id, at=10, exclude_seen=True):
 
-        return recommended_items[:at]
+        expected_scores = self.get_expected_ratings(user_id)
+
+        if exclude_seen:
+            expected_scores = self.filter_seen(user_id, expected_scores)
+        ranking = expected_scores.argsort()[::-1]
+        return ranking[:at]

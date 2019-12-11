@@ -2,6 +2,7 @@ from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from Recommenders.ContentBased import UserCBFKNNRecommender, ItemCBFKNNRecommender
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
+from Recommenders.Slim.SlimElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 import numpy as np
 
@@ -15,7 +16,6 @@ class BaseHybridRecommender(object):
     #######################################################################################
     #                                  INIT ALGORITHM                                     #
     #######################################################################################
-
 
 
     def __init__(self, combination, rec_for_colder):
@@ -43,6 +43,9 @@ class BaseHybridRecommender(object):
 
         # Slim Recommender
         self.slim_random = SLIM_BPR_Cython(epochs=slim_param["epochs"], topK=slim_param["topK"])
+
+        # ElasticNet
+        self.elasticNet = SLIMElasticNetRecommender()
 
         # Ratings from each available algorithm
         self.userContentBased_ratings = None
