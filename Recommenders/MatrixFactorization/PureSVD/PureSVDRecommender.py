@@ -45,7 +45,7 @@ class PureSVDRecommender(object):
 
         return URM_SVDS
 
-    def get_URM_Random_SVD(self, n_components =2000, n_iter=5, random_seed=None):
+    def get_URM_Random_SVD(self, n_components =200, n_iter=5, random_seed=None):
         print("Computing SVD decomposition...")
 
         # U: 30911x2000
