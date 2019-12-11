@@ -114,8 +114,11 @@ class SimpleTuner():
         for i in range(0, 150):
             weights.clear()
 
-            weights.append(random.uniform(0.0015, 0.002))
+            weights.append(random.uniform(0.2, 0.4))
             one -= weights[0]
+
+            weights.append(random.uniform(0.0015, 0.002))
+            one -= weights[1]
 
             weights.append(one)
             one = 1

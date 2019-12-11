@@ -103,7 +103,6 @@ class SLIM_BPR_Cython(object):
         sys.stdout.flush()
 
         if tuning:
-            print(os.getcwd() + ("\SimilarityProduct\Slim_similarity.npz"))
             if not os.path.exists(os.getcwd() + ("\SimilarityProduct\Slim_similarity.npz")):
                 self.helper.export_similarity_matrix(os.getcwd() + ("\SimilarityProduct\Slim_similarity.npz"), self.W_sparse)
 
