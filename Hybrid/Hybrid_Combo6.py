@@ -24,8 +24,10 @@ class Hybrid_Combo6(BaseHybridRecommender):
     #######################################################################################
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
-
-    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[1.222,2.422,0.02966,0.4425],
+    # |  82       |  0.04825  |  2.28     |  0.07372  |  0.002197 |  0.6802   | --> PUBLIC: 0.03430
+    # |  78       |  0.0482   |  2.407    |  0.0563   |  0.003071 |  0.674    | -- NON PROVATO
+    # |  91       |  0.04822  |  2.475    |  0.07787  |  0.001966 |  0.5208   | --> PUBLIC: 0.03419
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[2.28,0.07372,0.002197,0.6802],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=item_cf_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],tuning=False):
