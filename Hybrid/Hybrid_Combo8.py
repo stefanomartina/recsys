@@ -32,10 +32,10 @@ class Hybrid_Combo8(BaseHybridRecommender):
         self.rec_for_colder.fit(self.URM)
 
         # Sub-Fitting
-        self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
-        self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning)
+        self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity8.npz")
+        self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning,similarity_path="/SimilarityProduct/UserCF_similarity8.npz")
         self.pureSVD.fit(URM.copy())
-        self.elasticNet.fit(URM.copy(), tuning=tuning)
+        self.elasticNet.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/ElasticNet_similarity8.npz")
 
     #######################################################################################
     #                                  EXTRACT RATINGS                                    #
