@@ -9,6 +9,7 @@ from Utils import evaluation
 from Base.BaseFunction import BaseFunction
 from Hybrid.Hybrid_Combo2 import Hybrid_Combo2
 from Hybrid.Hybrid_Combo6 import Hybrid_Combo6
+from Hybrid.Hybrid_Combo6_bis import Hybrid_Combo6_bis
 from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
@@ -66,11 +67,11 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
-    def step_hybrid_6_bis(self, ItemCF=0, UserCF=0, ItemCB=0, ElasticNet=0, RP3Beta=0):
+    def step_hybrid_6_bis(self, weight1=0, weight2=0, weight3=0, weight4=0, weight5=0):
         start_time = time.time()
         UCM_all = self.helper.UCM_all
         ICM_all = self.helper.ICM_all
-        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[ItemCF, UserCF, ItemCB, ElasticNet, RP3Beta], tuning=True)
+        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights=[weight1, weight2, weight3, weight4, weight5], tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
@@ -126,8 +127,8 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
     try:
-        recommender = UserCBFKNNRecommender()
-        t = BayesianSearch(recommender, "User Content Base")
+        recommender = Hybrid_Combo6_bis("Combo 6bis", UserCBFKNNRecommender())
+        t = BayesianSearch(recommender, "Hybrid Combo 6_bis")
 
         pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
         pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
@@ -144,11 +145,11 @@ if __name__ == "__main__":
         pbounds_hybrid8 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
 
         # 2.65, 0.1702, 0.002764, 0.7887
-        pbounds_hybrid6_bis = {'ItemCF': (2.58, 2.72), 'UserCF': (0.1695, 0.1709), 'ItemCB': (0.002757, 0.002771), 'ElasticNet': (0.7880, 0.7894), 'RP3Beta': (0,3)}
+        pbounds_hybrid6_bis = {'weight1': (2.58, 2.72), 'weight2': (0.1695, 0.1709), 'weight3': (0.002757, 0.002771), 'weight4': (0.7880, 0.7894), 'weight5': (0,3)}
 
 
         optimizer = BayesianOptimization(
-            f=t.step_hybrid_6_bis(),
+            f=t.step_hybrid_6_bis,
             pbounds=pbounds_hybrid6_bis,
             verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
             random_state=1,
