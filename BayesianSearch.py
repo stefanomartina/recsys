@@ -2,6 +2,9 @@ import os, shutil
 
 from bayes_opt import BayesianOptimization
 import time
+
+from Hybrid.Hybrid_Combo7 import Hybrid_Combo7
+from Hybrid.Hybrid_Combo8 import Hybrid_Combo8
 from Utils import evaluation
 from Base.BaseFunction import BaseFunction
 from Hybrid.Hybrid_Combo2 import Hybrid_Combo2
@@ -32,7 +35,17 @@ class BayesianSearch():
     #                                   STEP TO MAXIMAXE                                  #
     #######################################################################################
 
-    def step_hybrid3(self, weight1=0, weight2=0, weight3=0):
+    def step_hybrid_two(self, weight1=0, weight2=0):
+        start_time = time.time()
+        UCM_all = self.helper.UCM_all
+        ICM_all = self.helper.ICM_all
+        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[weight1, weight2],tuning=True)
+        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        elapsed_time = time.time() - start_time
+        print("----------------" + str(elapsed_time) + "----------------")
+        return cumulative
+
+    def step_hybrid_three(self, weight1=0, weight2=0, weight3=0):
         start_time = time.time()
         UCM_all = self.helper.UCM_all
         ICM_all = self.helper.ICM_all
@@ -42,41 +55,11 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
-    def step_hybrid4(self, weight1=0):
-        start_time = time.time()
-        self.recommender.fit(self.helper.URM_train, weights=[weight1, 1], tuning=True)
-        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
-        elapsed_time = time.time() - start_time
-        print("----------------" + str(elapsed_time) + "----------------")
-        return cumulative
-
-    def step_hybrid5(self, weight1=0, weight2=0):
-        start_time = time.time()
-        UCM_all = self.helper.UCM_all
-        ICM_all = self.helper.ICM_all
-        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[weight1, weight2],
-                             tuning=True)
-        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
-        elapsed_time = time.time() - start_time
-        print("----------------" + str(elapsed_time) + "----------------")
-        return cumulative
-
-    def step_hybrid2(self, weight1=0, weight2=0, weight3=0, weight4=0):
+    def step_hybrid_four(self, weight1=0, weight2=0, weight3=0, weight4=0):
         start_time = time.time()
         UCM_all = self.helper.UCM_all
         ICM_all = self.helper.ICM_all
         self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[weight1, weight2, weight3, weight4], tuning=True)
-        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
-        elapsed_time = time.time() - start_time
-        print("----------------" + str(elapsed_time) + "----------------")
-        return cumulative
-
-    def step_hybrid6(self, weight1=0, weight2=0, weight3=0):
-        start_time = time.time()
-        UCM_all = self.helper.UCM_all
-        ICM_all = self.helper.ICM_all
-        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[weight1, weight2, weight3],
-                             tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
@@ -109,30 +92,30 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
+
+
 if __name__ == "__main__":
 
     folder = os.getcwd() + "/SimilarityProduct"
 
     try:
-        recommender = Hybrid_Combo6("Combo 6", TopPopRecommender())
+        recommender = Hybrid_Combo8("Combo 8", TopPopRecommender())
         t = BayesianSearch(recommender, "Item Content Base")
 
-        pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0,1)}
-        pbounds_hybrid3 = {'weight1': (0.7, 1.3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
-        pbounds_hybrid4 = {'weight1': (0.05, 2)}
         pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
         pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
         pbounds_userCB = {'weight1': (600, 900), 'weight2': (0, 50)}
-
-
-        # pbounds_hybrid2 = {'weight1': (9, 10), 'weight2': (0.01, 0.04), 'weight3': (0, 0.4), 'weight4': (1.5, 1.7)}
         pbounds_hybrid2 = {'weight1': (0, 1), 'weight2': (0, 1), 'weight3': (0, 1), 'weight4': (0, 1)}
-        pbounds_hybrid6 = {'weight1': (0.8, 0.95), 'weight2': (0.35, 0.45), 'weight3': (0.05, 0.06), 'weight4': (0,3)}
-
+        pbounds_hybrid3 = {'weight1': (0.7, 1.3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
+        pbounds_hybrid4 = {'weight1': (0.05, 2)}
+        pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0, 1)}
+        pbounds_hybrid6 = {'weight1': (0.8, 0.95), 'weight2': (0.3, 0.45), 'weight3': (0.05, 0.065), 'weight4': (0,3)}
+        pbounds_hybrid7 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
+        pbounds_hybrid8 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
 
         optimizer = BayesianOptimization(
-            f=t.step_hybrid2,
-            pbounds=pbounds_hybrid6,
+            f=t.step_hybrid_four,
+            pbounds=pbounds_hybrid8,
             verbose=2, # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
             random_state=1,
         )
