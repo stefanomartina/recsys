@@ -74,9 +74,12 @@ class ClassesRating:
         self.PureSVD.fit(self.URM_train)
         self.P3Alpha.fit(self.URM_train)
         self.RP3Beta.fit(self.URM_train)
+
+        """
         self.Hybrid2.fit(self.URM_train, self.ICM_all, self.UCM_all)
         self.Hybrid7.fit(self.URM_train,  self.ICM_all,  self.UCM_all)
         self.Hybrid8.fit(self.URM_train, self.ICM_all, self.UCM_all)
+        """
 
         for group_id in range(0, 20):
             start_pos = group_id * self.blocksize
