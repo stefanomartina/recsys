@@ -8,8 +8,8 @@ from Recommenders.Slim.SlimElasticNet import SLIMElasticNetRecommender
 from Recommenders.MatrixFactorization.PureSVD import PureSVDRecommender
 from Recommenders.Collaborative import UserKNNCFRecommender, ItemKNNCFRecommender
 from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRecommender
-from Recommenders.GraphBased.P3AlphaRecommender import P3alphaRecommender
-from Recommenders.GraphBased.RP3betaRecommender import RP3betaRecommender
+from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
+from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
 from Hybrid import Hybrid_Combo1, Hybrid_Combo5, Hybrid_Combo2, Hybrid_Combo6
 from Utils import evaluation
 
@@ -199,11 +199,11 @@ if __name__ == '__main__':
 
     if args.recommender == 'P3Alpha':
         print("P3Alpha selected")
-        recommender = P3alphaRecommender()
+        recommender = P3AlphaRecommender()
 
     if args.recommender == 'RP3Beta':
         print("RP3Beta selected")
-        recommender = RP3betaRecommender()
+        recommender = RP3BetaRecommender()
 
     print(args)
     Runner(recommender, args.recommender, evaluate=args.eval).run(requires_ucm, requires_icm)

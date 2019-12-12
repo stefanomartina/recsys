@@ -9,7 +9,7 @@ from Base.Recommender_utils import check_matrix, similarityMatrixTopK
 
 RECOMMENDER_NAME = "RP3betaRecommender"
 
-class RP3betaRecommender(object):
+class RP3BetaRecommender(object):
 
     #######################################################################################
     #                                       INIT CLASS                                    #
@@ -51,7 +51,7 @@ class RP3betaRecommender(object):
     #                                     FIT RECOMMENDER                                 #
     #######################################################################################
 
-    def fit(self, URM_train, alpha=1., beta=0.6, min_rating=0, topK=100, implicit=False, normalize_similarity=True):
+    def fit(self, URM_train, alpha=1., beta=0.6, min_rating=0, topK=100, implicit=False, normalize_similarity=True, tuning=False):
 
         self.URM_train = check_matrix(URM_train.copy(), 'csr', dtype=np.float32)
         self.URM_train.eliminate_zeros()

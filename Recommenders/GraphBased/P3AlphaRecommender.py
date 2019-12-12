@@ -8,7 +8,7 @@ import scipy.sparse as sps
 RECOMMENDER_NAME = "P3alphaRecommender"
 
 
-class P3alphaRecommender(object):
+class P3AlphaRecommender(object):
 
     #######################################################################################
     #                                       INIT CLASS                                    #
@@ -49,7 +49,7 @@ class P3alphaRecommender(object):
     #                                     FIT RECOMMENDER                                 #
     #######################################################################################
 
-    def fit(self, URM_train, topK=500, alpha=1., min_rating=0, implicit=False, normalize_similarity=False):
+    def fit(self, URM_train, topK=500, alpha=1., min_rating=0, implicit=False, normalize_similarity=False, tuning=False):
 
         self.URM_train = check_matrix(URM_train.copy(), 'csr', dtype=np.float32)
         self.URM_train.eliminate_zeros()
