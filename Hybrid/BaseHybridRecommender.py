@@ -4,6 +4,8 @@ from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Recommenders.Slim.SlimElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
 from Recommenders.MatrixFactorization.PureSVD.PureSVDRecommender import PureSVDRecommender
+from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
+from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
 import numpy as np
 
 slim_param = {
@@ -50,6 +52,12 @@ class BaseHybridRecommender(object):
         # PureSVD Recommender
         self.pureSVD = PureSVDRecommender()
 
+        # P3Alpha Recommender
+        self.P3Alpha = P3AlphaRecommender()
+
+        # RP3Beta Recommender
+        self.RP3Beta = RP3BetaRecommender()
+
         # Ratings from each available algorithm
         self.userContentBased_ratings = None
         self.itemContentBased_ratings = None
@@ -59,6 +67,8 @@ class BaseHybridRecommender(object):
         self.slim_ratings = None
         self.elasticNet_ratings = None
         self.pureSVD_ratings = None
+        self.P3Alpha_ratings = None
+        self.RP3Beta_ratings = None
 
 
     #######################################################################################

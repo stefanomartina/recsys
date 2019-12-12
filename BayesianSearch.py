@@ -66,6 +66,16 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
+    def step_hybrid_6_bis(self, ItemCF=0, UserCF=0, ItemCB=0, ElasticNet=0, RP3Beta=0):
+        start_time = time.time()
+        UCM_all = self.helper.UCM_all
+        ICM_all = self.helper.ICM_all
+        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[ItemCF, UserCF, ItemCB, ElasticNet, RP3Beta], tuning=True)
+        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        elapsed_time = time.time() - start_time
+        print("----------------" + str(elapsed_time) + "----------------")
+        return cumulative
+
     def step_slim(self, weight1=0, weight2=0):
         start_time = time.time()
         self.recommender = SLIM_BPR_Cython(epochs=int(weight1), topK=int(weight2))
@@ -133,9 +143,13 @@ if __name__ == "__main__":
         pbounds_hybrid7 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
         pbounds_hybrid8 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
 
+        # 2.65, 0.1702, 0.002764, 0.7887
+        pbounds_hybrid6_bis = {'ItemCF': (2.58, 2.72), 'UserCF': (0.1695, 0.1709), 'ItemCB': (0.002757, 0.002771), 'ElasticNet': (0.7880, 0.7894), 'RP3Beta': (0,3)}
+
+
         optimizer = BayesianOptimization(
-            f=t.step_p3beta,
-            pbounds=pbounds_p3beta,
+            f=t.step_hybrid_6_bis(),
+            pbounds=pbounds_hybrid6_bis,
             verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
             random_state=1,
         )
