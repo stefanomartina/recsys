@@ -8,6 +8,8 @@ from Recommenders.Slim.SlimElasticNet import SLIMElasticNetRecommender
 from Recommenders.MatrixFactorization.PureSVD import PureSVDRecommender
 from Recommenders.Collaborative import UserKNNCFRecommender, ItemKNNCFRecommender
 from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRecommender
+from Recommenders.GraphBased.P3AlphaRecommender import P3alphaRecommender
+from Recommenders.GraphBased.RP3betaRecommender import RP3betaRecommender
 from Hybrid import Hybrid_Combo1, Hybrid_Combo5, Hybrid_Combo2, Hybrid_Combo6
 from Utils import evaluation
 
@@ -131,7 +133,9 @@ if __name__ == '__main__':
                                                 'ItemCF_TopPop_Combo', 'ItemCF_ItemCB_Combo',
                                                 'Slim', 'SlimElasticNet',
                                                 'SlimBPRCython_Hybrid',
-                                                'PureSVD', 'MF_BPR_Cython',
+                                                'PureSVD',
+                                                'MF_BPR_Cython',
+                                                'P3Alpha', 'RP3Beta',
                                                 'Hybrid'])
 
     parser.add_argument('--eval', action="store_true")
@@ -192,6 +196,14 @@ if __name__ == '__main__':
     if args.recommender == 'MF_BPR_Cython':
         print("MF_BPR_Cython selected")
         recommender = MatrixFactorization_BPR_Cython()
+
+    if args.recommender == 'P3Alpha':
+        print("P3Alpha selected")
+        recommender = P3alphaRecommender()
+
+    if args.recommender == 'RP3Beta':
+        print("RP3Beta selected")
+        recommender = RP3betaRecommender()
 
     print(args)
     Runner(recommender, args.recommender, evaluate=args.eval).run(requires_ucm, requires_icm)
