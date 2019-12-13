@@ -129,8 +129,8 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
     try:
-        recommender = Hybrid_Combo4("Combo4", UserCBFKNNRecommender())
-        t = BayesianSearch(recommender, "P3Alpha")
+        recommender = Hybrid_Combo1("Combo1", UserCBFKNNRecommender())
+        t = BayesianSearch(recommender, "Hybrid Combo 1")
 
         pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
         pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
@@ -155,16 +155,14 @@ if __name__ == "__main__":
 
         optimizer = BayesianOptimization(
             f=t.step_hybrid_three,
-            pbounds=pbounds_hybrid4,
+            pbounds=pbounds_hybrid1,
             verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
             random_state=1,
         )
 
         optimizer.maximize(
             init_points=10,
-            n_iter=1000,
-            kappa=10.0,
-            acq="ucb"
+            n_iter=1000
         )
 
     finally:
