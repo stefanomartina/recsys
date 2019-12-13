@@ -21,7 +21,7 @@ class Hybrid_Combo4(BaseHybridRecommender):
         self.URM = URM
         self.weights = np.array(weights)
         self.UCM_all = UCM_all
-        self.rec_for_colder.fit(self.URM, self.UCM_all)
+        self.rec_for_colder.fit(self.URM, self.UCM_all, tuning=tuning, similarity_path="/SimilarityProduct/UserCBF_similarity4.npz")
 
         # Sub-Fitting
         self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity4.npz")
