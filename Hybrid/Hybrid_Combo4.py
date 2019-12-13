@@ -7,11 +7,6 @@ item_cf_param = {
     "shrink": 30,
 }
 
-slim_param = {
-    "epochs": 200,
-    "topK": 10,
-}
-
 #weights=[0.3362, 0.8046]
 class Hybrid_Combo4(BaseHybridRecommender):
 
@@ -25,11 +20,13 @@ class Hybrid_Combo4(BaseHybridRecommender):
 
         self.URM = URM
         self.weights = np.array(weights)
-        self.rec_for_colder.fit(self.URM)
+        self.UCM_all = UCM_all
+        self.rec_for_colder.fit(self.URM, self.UCM_all)
 
         # Sub-Fitting
-        self.slim_random.fit(URM.copy())
-        self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
+        self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity4.npz")
+        self.RP3Beta.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/RP3Beta_similarity4.npz")
+        self.pureSVD.fit(URM.copy())
 
 
     #######################################################################################
@@ -38,9 +35,11 @@ class Hybrid_Combo4(BaseHybridRecommender):
 
     def extract_ratings(self, user_id):
         self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
-        self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
+        self.RP3Beta_ratings = self.RP3Beta.get_expected_ratings(user_id)
+        self.pureSVD_ratings = self.pureSVD.get_expected_ratings(user_id)
 
     def sum_ratings(self):
-        self.hybrid_ratings = self.slim_ratings * (self.weights[0])
-        self.hybrid_ratings += self.itemCF_ratings * (self.weights[1])
+        self.hybrid_ratings = self.itemCF_ratings * (self.weights[0])
+        self.hybrid_ratings += self.RP3Beta_ratings * (self.weights[1])
+        self.hybrid_ratings += self.pureSVD_ratings * (self.weights[2])
 

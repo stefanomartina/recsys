@@ -3,6 +3,7 @@ import os, shutil
 from bayes_opt import BayesianOptimization
 import time
 
+from Hybrid.Hybrid_Combo4 import Hybrid_Combo4
 from Hybrid.Hybrid_Combo7 import Hybrid_Combo7
 from Hybrid.Hybrid_Combo8 import Hybrid_Combo8
 from Hybrid.Hybrid_Combo1 import Hybrid_Combo1
@@ -128,7 +129,7 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
     try:
-        recommender = Hybrid_Combo1("Combo1", UserCBFKNNRecommender())
+        recommender = Hybrid_Combo4("Combo4", UserCBFKNNRecommender())
         t = BayesianSearch(recommender, "P3Alpha")
 
         pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
@@ -142,7 +143,7 @@ if __name__ == "__main__":
 
         pbounds_hybrid2 = {'weight1': (0, 1), 'weight2': (0, 1), 'weight3': (0, 1), 'weight4': (0, 1)}
         pbounds_hybrid3 = {'weight1': (0.7, 1.3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
-        pbounds_hybrid4 = {'weight1': (0.05, 2)}
+        pbounds_hybrid4 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3)}
         pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0, 1)}
         pbounds_hybrid6 = {'weight1': (0.8, 0.95), 'weight2': (0.3, 0.45), 'weight3': (0.05, 0.065), 'weight4': (0,3)}
         pbounds_hybrid7 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
@@ -154,7 +155,7 @@ if __name__ == "__main__":
 
         optimizer = BayesianOptimization(
             f=t.step_hybrid_three,
-            pbounds=pbounds_hybrid1,
+            pbounds=pbounds_hybrid4,
             verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
             random_state=1,
         )
