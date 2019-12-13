@@ -1,13 +1,16 @@
+import os
 import sys
 import time
 
 import numpy as np
 import scipy.sparse as sps
 from sklearn.preprocessing import normalize
+from Base.BaseFunction import BaseFunction
 
 from Base.Recommender_utils import check_matrix, similarityMatrixTopK
 
 RECOMMENDER_NAME = "RP3betaRecommender"
+SIMILARITY_PATH = "/SimilarityProduct/RP3beta_similarity.npz"
 
 class RP3BetaRecommender(object):
 
@@ -17,6 +20,7 @@ class RP3BetaRecommender(object):
 
     def __init__(self):
         self.verbose = True
+        self.helper = BaseFunction()
 
     def __str__(self):
         return "RP3beta(alpha={}, beta={}, min_rating={}, topk={}, implicit={}, normalize_similarity={})".format(self.alpha,
@@ -51,20 +55,7 @@ class RP3BetaRecommender(object):
     #                                     FIT RECOMMENDER                                 #
     #######################################################################################
 
-    def fit(self, URM_train, alpha=0.3694, beta=0.129, min_rating=0, topK=90, implicit=False, normalize_similarity=True, tuning=False):
-
-        self.URM_train = check_matrix(URM_train.copy(), 'csr', dtype=np.float32)
-        self.URM_train.eliminate_zeros()
-        self.n_users, self.n_items = self.URM_train.shape
-
-        self.alpha = alpha
-        self.beta = beta
-        self.min_rating = min_rating
-        self.topK = topK
-        self.implicit = implicit
-        self.normalize_similarity = normalize_similarity
-
-        
+    def run_fit(self):
         # if X.dtype != np.float32:
         #     print("RP3beta fit: For memory usage reasons, we suggest to use np.float32 as dtype for the dataset")
 
@@ -74,10 +65,10 @@ class RP3BetaRecommender(object):
             if self.implicit:
                 self.URM_train.data = np.ones(self.URM_train.data.size, dtype=np.float32)
 
-        #Pui is the row-normalized urm
+        # Pui is the row-normalized urm
         Pui = normalize(self.URM_train, norm='l1', axis=1)
 
-        #Piu is the column-normalized, "boolean" urm transposed
+        # Piu is the column-normalized, "boolean" urm transposed
         X_bool = self.URM_train.transpose(copy=True)
         X_bool.data = np.ones(X_bool.data.size, np.float32)
 
@@ -87,13 +78,13 @@ class RP3BetaRecommender(object):
 
         degree = np.zeros(self.URM_train.shape[1])
 
-        nonZeroMask = X_bool_sum!=0.0
+        nonZeroMask = X_bool_sum != 0.0
 
         degree[nonZeroMask] = np.power(X_bool_sum[nonZeroMask], -self.beta)
 
-        #ATTENTION: axis is still 1 because i transposed before the normalization
+        # ATTENTION: axis is still 1 because i transposed before the normalization
         Piu = normalize(X_bool, norm='l1', axis=1)
-        del(X_bool)
+        del (X_bool)
 
         # Alfa power
         if self.alpha != 1.:
@@ -105,7 +96,6 @@ class RP3BetaRecommender(object):
         block_dim = 200
         d_t = Piu
 
-
         # Use array as it reduces memory requirements compared to lists
         dataBlock = 10000000
 
@@ -114,7 +104,6 @@ class RP3BetaRecommender(object):
         values = np.zeros(dataBlock, dtype=np.float32)
 
         numCells = 0
-
 
         start_time = time.time()
         start_time_printBatch = start_time
@@ -145,13 +134,11 @@ class RP3BetaRecommender(object):
                         cols = np.concatenate((cols, np.zeros(dataBlock, dtype=np.int32)))
                         values = np.concatenate((values, np.zeros(dataBlock, dtype=np.float32)))
 
-
                     rows[numCells] = current_block_start_row + row_in_block
                     cols[numCells] = cols_to_add[index]
                     values[numCells] = values_to_add[index]
 
                     numCells += 1
-
 
             if time.time() - start_time_printBatch > 60:
                 self._print("Processed {} ( {:.2f}% ) in {:.2f} minutes. Rows per second: {:.0f}".format(
@@ -165,18 +152,38 @@ class RP3BetaRecommender(object):
 
                 start_time_printBatch = time.time()
 
-
-        self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])), shape=(Pui.shape[1], Pui.shape[1]))
+        self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])),
+                                       shape=(Pui.shape[1], Pui.shape[1]))
 
         if self.normalize_similarity:
             self.W_sparse = normalize(self.W_sparse, norm='l1', axis=1)
 
-
         if self.topK != False:
             self.W_sparse = similarityMatrixTopK(self.W_sparse, k=self.topK)
 
-
         self.W_sparse = check_matrix(self.W_sparse, format='csr')
+
+    def fit(self, URM_train, alpha=0.3694, beta=0.129, min_rating=0, topK=90, implicit=False, normalize_similarity=True, tuning=False, similarity_path = SIMILARITY_PATH):
+
+        self.URM_train = check_matrix(URM_train.copy(), 'csr', dtype=np.float32)
+        self.URM_train.eliminate_zeros()
+        self.n_users, self.n_items = self.URM_train.shape
+
+        self.alpha = alpha
+        self.beta = beta
+        self.min_rating = min_rating
+        self.topK = topK
+        self.implicit = implicit
+        self.normalize_similarity = normalize_similarity
+
+        if tuning:
+            if not os.path.exists(os.getcwd() + similarity_path):
+                self.run_fit()
+                self.helper.export_similarity_matrix(os.getcwd() + similarity_path, self.W_sparse)
+            self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + similarity_path)
+
+        else:
+            self.run_fit()
         self.similarityProduct = self.URM_train.dot(self.W_sparse)
 
     #######################################################################################

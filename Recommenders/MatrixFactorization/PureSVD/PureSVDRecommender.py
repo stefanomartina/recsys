@@ -1,4 +1,6 @@
 """ Created on 14/06/18 @author: Maurizio Ferrari Dacrema """
+import os
+
 import numpy as np
 import scipy.sparse as sps
 from scipy import sparse
@@ -14,7 +16,6 @@ class PureSVDRecommender(object):
     def fit(self, URM_train, verbose=True, library="random_svd"):
         self.URM = URM_train
         self.vebose = verbose
-
 
         if library == "random_svd":
             self.URM_SVD = self.get_URM_Random_SVD()

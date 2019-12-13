@@ -19,8 +19,8 @@ item_cb_param = {
 }
 
 rp3beta_param = {
-    "alpha":0.3694,
-    "beta":0.129,
+    "alpha":0.3515,
+    "beta":0.1003,
     "topK":90,
 }
 

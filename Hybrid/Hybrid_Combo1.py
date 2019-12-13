@@ -29,7 +29,7 @@ class Hybrid_Combo1(BaseHybridRecommender):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[0.2,0.2,0.2,0.2],
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[0.2,0.2,0.2],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercb=user_cb_param["knn"], shrink_usercb=user_cb_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],
@@ -39,14 +39,13 @@ class Hybrid_Combo1(BaseHybridRecommender):
         self.weights = np.array(weights)
         self.ICM_all = ICM_all
         self.UCM_all = UCM_all
-        self.rec_for_colder.fit(self.URM)
+        self.rec_for_colder.fit(self.URM, self.UCM_all, tuning=tuning, similarity_path="/SimilarityProduct/UserCBF_similarity1.npz")
 
 
         # Sub-Fitting
-        self.userContentBased.fit(URM.copy(), UCM_all, knn_usercb, shrink_usercb, tuning=tuning)
-        self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning)
-        self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
-        self.slim_random.fit(URM.copy())
+        self.RP3Beta.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/RP3Beta_similarity1.npz")
+        self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning, similarity_path="/SimilarityProduct/ItemCB_similarity1.npz")
+        self.pureSVD.fit(URM.copy())
 
 
     #######################################################################################
@@ -54,13 +53,12 @@ class Hybrid_Combo1(BaseHybridRecommender):
     #######################################################################################
 
     def extract_ratings(self, user_id):
-        self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
+        self.RP3Beta_ratings = self.RP3Beta.get_expected_ratings(user_id)
         self.itemContentBased_ratings = self.itemContentBased.get_expected_ratings(user_id)
-        self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
-        self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
+        self.pureSVD_ratings = self.pureSVD.get_expected_ratings(user_id)
 
     def sum_ratings(self):
-        self.hybrid_ratings = self.userContentBased_ratings * self.weights[0]
+        self.hybrid_ratings = self.RP3Beta_ratings * self.weights[0]
         self.hybrid_ratings += self.itemContentBased_ratings * self.weights[1]
-        self.hybrid_ratings += self.itemCF_ratings * self.weights[2]
-        self.hybrid_ratings += self.slim_ratings * self.weights[3]
+        self.hybrid_ratings += self.pureSVD_ratings * self.weights[2]
+

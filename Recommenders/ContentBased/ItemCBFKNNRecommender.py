@@ -15,12 +15,13 @@ class ItemCBFKNNRecommender():
         self.helper = BaseFunction()
 
     def fit(self, URM, ICM_all, knn=5, shrink=100, similarity="cosine", normalize=True, transpose=True, tuning=False, similarity_path=SIMILARITY_PATH):
-        print("Fitting Item Content Based Recommender...")
+
         self.URM = URM
         self.ICM_all = ICM_all
 
         # Compute similarity
         if tuning:
+            print("Fitting Item Content Based Recommender...")
             self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.ICM_all, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         else:
             self.W_sparse = self.helper.get_cosine_similarity(self.ICM_all, knn, shrink, similarity, normalize, transpose=transpose)

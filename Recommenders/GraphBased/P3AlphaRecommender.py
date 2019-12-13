@@ -1,11 +1,15 @@
+import os
+
 import numpy as np
 from sklearn.preprocessing import normalize
 from Base.Recommender_utils import check_matrix, similarityMatrixTopK
+from Base.BaseFunction import BaseFunction
 import time
 import sys
 import scipy.sparse as sps
 
 RECOMMENDER_NAME = "P3alphaRecommender"
+SIMILARITY_PATH = "/SimilarityProduct/PureSVD_similarity.npz"
 
 
 class P3AlphaRecommender(object):
@@ -16,6 +20,7 @@ class P3AlphaRecommender(object):
 
     def __init__(self):
         self.verbose = True
+        self.helper = BaseFunction()
 
         self._URM_train_format_checked = False
         self._W_sparse_format_checked = False
@@ -49,19 +54,7 @@ class P3AlphaRecommender(object):
     #                                     FIT RECOMMENDER                                 #
     #######################################################################################
 
-    def fit(self, URM_train, topK=500, alpha=1., min_rating=0, implicit=False, normalize_similarity=False, tuning=False):
-
-        self.URM_train = check_matrix(URM_train.copy(), 'csr', dtype=np.float32)
-        self.URM_train.eliminate_zeros()
-        self.n_users, self.n_items = self.URM_train.shape
-
-
-        self.topK = topK
-        self.alpha = alpha
-        self.min_rating = min_rating
-        self.implicit = implicit
-        self.normalize_similarity = normalize_similarity
-
+    def run_fit(self):
         if self.min_rating > 0:
             self.URM_train.data[self.URM_train.data < self.min_rating] = 0
             self.URM_train.eliminate_zeros()
@@ -154,6 +147,28 @@ class P3AlphaRecommender(object):
             self.W_sparse = similarityMatrixTopK(self.W_sparse, k=self.topK)
 
         self.W_sparse = check_matrix(self.W_sparse, format='csr')
+
+    def fit(self, URM_train, topK=500, alpha=1., min_rating=0, implicit=False, normalize_similarity=False, tuning=False, similarity_path=SIMILARITY_PATH):
+
+        self.URM_train = check_matrix(URM_train.copy(), 'csr', dtype=np.float32)
+        self.URM_train.eliminate_zeros()
+        self.n_users, self.n_items = self.URM_train.shape
+
+
+        self.topK = topK
+        self.alpha = alpha
+        self.min_rating = min_rating
+        self.implicit = implicit
+        self.normalize_similarity = normalize_similarity
+
+        if tuning:
+            if not os.path.exists(os.getcwd() + similarity_path):
+                self.run_fit()
+                self.helper.export_similarity_matrix(os.getcwd() + similarity_path, self.W_sparse)
+            self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + similarity_path)
+
+        else:
+            self.run_fit()
         self.similarityProduct = self.URM_train.dot(self.W_sparse)
 
     #######################################################################################
