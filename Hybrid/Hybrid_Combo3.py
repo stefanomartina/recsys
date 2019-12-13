@@ -2,47 +2,53 @@ from Hybrid.BaseHybridRecommender import BaseHybridRecommender
 import numpy as np
 
 
+
 item_cf_param = {
     "knn": 10,
     "shrink": 30,
 }
 
-user_cb_param = {
-    "knn": 800,
-    "shrink": 5,
+user_cf_param = {
+    "knn": 600,
+    "shrink": 0,
 }
 
-slim_param = {
-    "epochs": 200,
-    "topK": 10,
+item_cb_param = {
+    "knn": 5,
+    "shrink": 0,
 }
+
+rp3beta_param = {
+    "alpha":0.3515,
+    "beta":0.1003,
+    "topK":90,
+}
+
 
 class Hybrid_Combo3(BaseHybridRecommender):
 
     #######################################################################################
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
-
-    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[0.2,0.2, 0.2],
+    # |  6        |  0.0493   |  2.895    |  0.08504  |  0.03905  |  0.6359   |  2.634    |
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[2.895, 0.08504, 0.03905, 2.634],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
-                   knn_usercb=user_cb_param["knn"], shrink_usercb=user_cb_param["shrink"],
+                   knn_usercf=user_cf_param["knn"], shrink_usercf=item_cf_param["shrink"],
+                   knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],
+                   alpha_rp3beta=rp3beta_param["alpha"], beta_rp3beta=rp3beta_param["beta"], topk_rp3beta=rp3beta_param["topK"],
                    tuning=False):
 
         self.URM = URM
         self.weights = np.array(weights)
         self.ICM_all = ICM_all
         self.UCM_all = UCM_all
-        self.rec_for_colder.fit(self.URM)
-        self.cumulative_ifc_r = 0
-        self.cumulative_slim_r = 0
-        self.cumulative_ucbf_r = 0
-        self.n_icf = 0
-        self.n_slim = 0
-        self.n_ucbf = 0
+        self.rec_for_colder.fit(self.URM, self.UCM_all)
+
         # Sub-Fitting
-        self.userContentBased.fit(URM.copy(), UCM_all, knn_usercb, shrink_usercb, tuning=tuning, transpose=True)
-        self.slim_random.fit(URM.copy())
         self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
+        self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning)
+        self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning)
+        self.RP3Beta.fit(URM.copy())
 
 
     #######################################################################################
@@ -51,34 +57,12 @@ class Hybrid_Combo3(BaseHybridRecommender):
 
     def extract_ratings(self, user_id):
         self.itemCF_ratings = self.itemCF.get_expected_ratings(user_id)
-        self.userContentBased_ratings = self.userContentBased.get_expected_ratings(user_id)
-        self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
-
-        if self.itemCF_ratings.sum(axis=0) != 0:
-            self.n_icf += 1
-            self.cumulative_ifc_r += self.itemCF_ratings.sum(axis=0)
-
-        if self.userContentBased_ratings.sum(axis=0) != 0:
-            self.n_ucbf += 1
-            self.cumulative_ucbf_r += self.userContentBased_ratings.sum(axis=0)
-
-        if self.slim_ratings.sum(axis=0) != 0:
-            self.n_slim += 1
-            self.cumulative_slim_r += self.slim_ratings.sum(axis=0)
+        self.userCF_ratings = self.userCF.get_expected_ratings(user_id)
+        self.itemContentBased_ratings = self.itemContentBased.get_expected_ratings(user_id)
+        self.RP3Beta_ratings = self.RP3Beta.get_expected_ratings(user_id)
 
     def sum_ratings(self):
-        self.hybrid_ratings = self.slim_ratings * (self.weights[0])
-        self.hybrid_ratings += self.userContentBased_ratings * (self.weights[1])
-        self.hybrid_ratings += self.itemCF_ratings * (self.weights[2])
-
-    def stats(self):
-        print("self.cumulative_ifc_r/n")
-        print(self.cumulative_ifc_r / self.n_icf)
-
-        print("self.userContentBased_ratings/n")
-        print(self.cumulative_ucbf_r/self.n_ucbf)
-        print(self.n_ucbf)
-        print(self.cumulative_ucbf_r)
-
-        print("self.cumulative_slim_r/n")
-        print(self.cumulative_slim_r / self.n_slim)
+        self.hybrid_ratings = self.itemCF_ratings * self.weights[0]
+        self.hybrid_ratings += self.userCF_ratings * self.weights[1]
+        self.hybrid_ratings += self.itemContentBased_ratings * self.weights[2]
+        self.hybrid_ratings += self.RP3Beta_ratings * self.weights[3]
