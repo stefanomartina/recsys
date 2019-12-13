@@ -51,7 +51,7 @@ class RP3BetaRecommender(object):
     #                                     FIT RECOMMENDER                                 #
     #######################################################################################
 
-    def fit(self, URM_train, alpha=1., beta=0.6, min_rating=0, topK=100, implicit=False, normalize_similarity=True, tuning=False):
+    def fit(self, URM_train, alpha=0.3694, beta=0.129, min_rating=0, topK=90, implicit=False, normalize_similarity=True, tuning=False):
 
         self.URM_train = check_matrix(URM_train.copy(), 'csr', dtype=np.float32)
         self.URM_train.eliminate_zeros()

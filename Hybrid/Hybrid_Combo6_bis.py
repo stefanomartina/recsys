@@ -30,7 +30,7 @@ class Hybrid_Combo6_bis(BaseHybridRecommender):
     #######################################################################################
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
-    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[2.65,0.1702,0.002764,0.7887],
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[2.913,0.1939,0.05573,0.9807, 0.3165],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=item_cf_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],
