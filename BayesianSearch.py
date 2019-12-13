@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
         pbounds_hybrid2 = {'weight1': (0, 1), 'weight2': (0, 1), 'weight3': (0, 1), 'weight4': (0, 1)}
         pbounds_hybrid3 = {'weight1': (0.7, 1.3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
-        pbounds_hybrid4 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3)}
+        pbounds_hybrid4 = {'weight1': (1.4, 2.7), 'weight2': (1.5, 3), 'weight3': (0.0005, 0.009)}
         pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0, 1)}
         pbounds_hybrid6 = {'weight1': (0.8, 0.95), 'weight2': (0.3, 0.45), 'weight3': (0.05, 0.065), 'weight4': (0,3)}
         pbounds_hybrid7 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
@@ -163,8 +163,6 @@ if __name__ == "__main__":
         optimizer.maximize(
             init_points=10,
             n_iter=1000,
-            kappa=10.0,
-            acq="ucb"
         )
 
     finally:

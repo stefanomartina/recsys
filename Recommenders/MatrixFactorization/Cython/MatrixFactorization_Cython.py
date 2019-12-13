@@ -1,5 +1,4 @@
 from datetime import time
-from Base.Recommender_utils import check_matrix
 from CythonCompiler.run_compile_subprocess import run_compile_subprocess
 import numpy as np
 import time
@@ -8,9 +7,9 @@ from Base.BaseTempFolder import BaseTempFolder
 from Utils.seconds_to_biggest_unit import seconds_to_biggest_unit
 
 
+RECOMMENDER_NAME = "AbstractMatrixRecommender"
 
 class BaseMatrixFactorization():
-    RECOMMENDER_NAME = "AbstractMatrixRecommender"
 
     def __init__(self, verbose=True, algorithm_name = None):
 
@@ -27,20 +26,12 @@ class BaseMatrixFactorization():
         self.use_bias = False
 
     def get_early_stopping_final_epochs_dict(self):
-        """
-        This function returns a dictionary to be used as optimal parameters in the .fit() function
-        It provides the flexibility to deal with multiple early-stopping in a single algorithm
-        e.g. in NeuMF there are three model components each with its own optimal number of epochs
-        the return dict would be {"epochs": epochs_best_neumf, "epochs_gmf": epochs_best_gmf, "epochs_mlp": epochs_best_mlp}
-        :return:
-        """
-
         return {"epochs": self.epochs_best}
 
     def _train_with_early_stopping(self, epochs_max, epochs_min = 0,
-                                   validation_every_n = None, stop_on_validation = False,
-                                   validation_metric = None, lower_validations_allowed = None, evaluator_object = None,
-                                   algorithm_name = "Incremental_Training_Early_Stopping"):
+                                   validation_every_n=None, stop_on_validation=False,
+                                   validation_metric=None, lower_validations_allowed=None, evaluator_object=None,
+                                   algorithm_name="Incremental_Training_Early_Stopping"):
 
         start_time = time.time()
 
@@ -82,7 +73,7 @@ class BaseMatrixFactorization():
                         # If the recommender uses BaseTempFolder, clean the temp folder
                         self._clean_temp_folder(temp_file_folder=self.temp_file_folder)
 
-                    assert False, "{}: metric value is not a finite number, terminating!".format(self.RECOMMENDER_NAME)
+                    assert False, "{}: metric value is not a finite number, terminating!".format(RECOMMENDER_NAME)
 
 
                 if self.best_validation_metric is None or self.best_validation_metric < current_metric_value:
@@ -171,7 +162,7 @@ class BaseMatrixFactorization():
 
         run_compile_subprocess(file_subfolder, file_to_compile_list)
 
-        print("{}: Compiled module {} in subfolder: {}".format(self.RECOMMENDER_NAME, file_to_compile_list, file_subfolder))
+        print("{}: Compiled module {} in subfolder: {}".format(RECOMMENDER_NAME, file_to_compile_list, file_subfolder))
 
         # Command to run compilation script
         # python compile_script.py MatrixFactorization_Cython_Epoch.pyx build_ext --inplace
@@ -179,7 +170,7 @@ class BaseMatrixFactorization():
         # Command to generate html report
         # cython -a MatrixFactorization_Cython_Epoch.pyx
 
-    def fit(self, URM_train, recompile_cython=False, algorithm_name="MF_BPR", epochs=600, batch_size=1000,
+    def fit(self, URM_train, recompile_cython=False, algorithm_name="MF_BPR", epochs=100, batch_size=1000,
             num_factors=30, positive_threshold_BPR=None, learning_rate=0.002, use_bias=True, sgd_mode='adagrad',
             negative_interactions_quota=0.0, init_mean=0.0, init_std_dev=0.1,
             user_reg=0.71, item_reg=0.2, bias_reg=0.5, positive_reg=0.0, negative_reg=0.0, random_seed=None,
@@ -195,7 +186,7 @@ class BaseMatrixFactorization():
 
         assert negative_interactions_quota >= 0.0 and negative_interactions_quota < 1.0, \
             "{}: negative_interactions_quota must be a float value >=0 and < 1.0, provided was '{}'".format(
-                self.RECOMMENDER_NAME, negative_interactions_quota)
+                RECOMMENDER_NAME, negative_interactions_quota)
         self.negative_interactions_quota = negative_interactions_quota
 
         # Import compiled module
@@ -203,7 +194,7 @@ class BaseMatrixFactorization():
 
         if self.algorithm_name in ["FUNK_SVD", "ASY_SVD"]:
 
-            self.cythonEpoch = MatrixFactorization_Cython_Epoch(self.URM_train,
+            self.cythonEpoch = MatrixFactorization_Cython_Epoch(self.URM,
                                                                 algorithm_name=self.algorithm_name,
                                                                 n_factors=self.num_factors,
                                                                 learning_rate=learning_rate,
@@ -222,7 +213,7 @@ class BaseMatrixFactorization():
         elif self.algorithm_name == "MF_BPR":
 
             # Select only positive interactions
-            URM_train_positive = self.URM_train.copy()
+            URM_train_positive = self.URM.copy()
 
             if self.positive_threshold_BPR is not None:
                 URM_train_positive.data = URM_train_positive.data >= self.positive_threshold_BPR
@@ -273,22 +264,22 @@ class BaseMatrixFactorization():
 
     def _remove_seen_on_scores(self, user_id, scores):
 
-        assert self.URM_train.getformat() == "csr", "Recommender_Base_Class: URM_train is not CSR, this will cause errors in filtering seen items"
+        assert self.URM.getformat() == "csr", "Recommender_Base_Class: URM_train is not CSR, this will cause errors in filtering seen items"
 
-        seen = self.URM_train.indices[self.URM_train.indptr[user_id]:self.URM_train.indptr[user_id + 1]]
+        seen = self.URM.indices[self.URM.indptr[user_id]:self.URM.indptr[user_id + 1]]
 
         scores[seen] = -np.inf
         return scores
 
     def get_expected_ratings(self, user_id):
-        expected_scores = (self.matrix_scores[user_id]).toarray().ravel()
+        expected_scores = (self.matrix_scores[user_id]).ravel()
         return expected_scores
 
     def filter_seen(self, user_id, scores):
-        start_pos = self.URM_train.indptr[user_id]
-        end_pos = self.URM_train.indptr[user_id + 1]
+        start_pos = self.URM.indptr[user_id]
+        end_pos = self.URM.indptr[user_id + 1]
 
-        user_profile = self.URM_train.indices[start_pos:end_pos]
+        user_profile = self.URM.indices[start_pos:end_pos]
         scores[user_profile] -= np.inf
 
         return scores
@@ -305,51 +296,48 @@ class BaseMatrixFactorization():
 
 
 
-
-
-
-
-
-
 class MatrixFactorization_BPR_Cython(BaseMatrixFactorization):
 
     RECOMMENDER_NAME = "MatrixFactorization_BPR_Cython_Recommender"
 
-    def __init__(self, *pos_args, **key_args):
+    def __init__(self):
         super(MatrixFactorization_BPR_Cython, self).__init__(algorithm_name="MF_BPR")
 
-    def fit(self, **key_args):
+    def fit(self, URM_train, recompile_cython=False, algorithm_name="MF_BPR", epochs=600, batch_size=1000,
+            num_factors=30, positive_threshold_BPR=None, learning_rate=0.002, use_bias=True, sgd_mode='adagrad',
+            negative_interactions_quota=0.0, init_mean=0.0, init_std_dev=0.1,
+            user_reg=0.71, item_reg=0.2, bias_reg=0.5, positive_reg=0.0, negative_reg=0.0, random_seed=None,
+            **earlystopping_kwargs):
 
-        key_args["use_bias"] = False
-        key_args["negative_interactions_quota"] = 0.0
-
-        super(MatrixFactorization_BPR_Cython, self).fit(**key_args)
+        super(MatrixFactorization_BPR_Cython, self).fit(URM_train, use_bias=False, negative_interactions_quota=0.0)
 
 class MatrixFactorization_FunkSVD_Cython(BaseMatrixFactorization):
     RECOMMENDER_NAME = "MatrixFactorization_FunkSVD_Cython_Recommender"
 
-    def __init__(self, *pos_args, **key_args):
-        super(MatrixFactorization_FunkSVD_Cython, self).__init__(*pos_args, algorithm_name="FUNK_SVD", **key_args)
+    def __init__(self):
+        super(MatrixFactorization_FunkSVD_Cython, self).__init__(algorithm_name="FUNK_SVD")
 
-    def fit(self, **key_args):
-        super(MatrixFactorization_FunkSVD_Cython, self).fit(**key_args)
+    def fit(self, URM_train, recompile_cython=False, algorithm_name="MF_BPR", epochs=600, batch_size=1000,
+            num_factors=30, positive_threshold_BPR=None, learning_rate=0.002, use_bias=True, sgd_mode='adagrad',
+            negative_interactions_quota=0.0, init_mean=0.0, init_std_dev=0.1,
+            user_reg=0.71, item_reg=0.2, bias_reg=0.5, positive_reg=0.0, negative_reg=0.0, random_seed=None,
+            **earlystopping_kwargs):
+
+        super(MatrixFactorization_FunkSVD_Cython, self).fit(URM_train)
 
 class MatrixFactorization_AsySVD_Cython(BaseMatrixFactorization):
-
-
     RECOMMENDER_NAME = "MatrixFactorization_AsySVD_Cython_Recommender"
 
-    def __init__(self, *pos_args, **key_args):
-        super(MatrixFactorization_AsySVD_Cython, self).__init__(*pos_args, algorithm_name="ASY_SVD", **key_args)
+    def __init__(self):
+        super(MatrixFactorization_AsySVD_Cython, self).__init__(algorithm_name="ASY_SVD")
 
-    def fit(self,URM_train, verbose =  True, *pos_args, algorithm_name="ASY_SVD", **key_args):
+    def fit(self, URM_train, recompile_cython=False, algorithm_name="ASY_SVD", epochs=600, batch_size=1000,
+            num_factors=30, positive_threshold_BPR=None, learning_rate=0.002, use_bias=True, sgd_mode='adagrad',
+            negative_interactions_quota=0.0, init_mean=0.0, init_std_dev=0.1,
+            user_reg=0.71, item_reg=0.2, bias_reg=0.5, positive_reg=0.0, negative_reg=0.0, random_seed=None,
+            **earlystopping_kwargs):
 
-        if "batch_size" in key_args and key_args["batch_size"] > 1:
-            print("{}: batch_size not supported for this recommender, setting to default value 1.".format(self.RECOMMENDER_NAME))
-
-        key_args["batch_size"] = 1
-
-        super(MatrixFactorization_AsySVD_Cython, self).fit(**key_args)
+        super(MatrixFactorization_AsySVD_Cython, self).fit(URM_train, batch_size=1, algorithm_name="ASY_SVD")
 
     def _prepare_model_for_validation(self):
         """
@@ -381,14 +369,14 @@ class MatrixFactorization_AsySVD_Cython(BaseMatrixFactorization):
 
     def _estimate_user_factors(self, ITEM_factors_Y):
 
-        profile_length = np.ediff1d(self.URM_train.indptr)
+        profile_length = np.ediff1d(self.URM.indptr)
         profile_length_sqrt = np.sqrt(profile_length)
 
         # Estimating the USER_factors using ITEM_factors_Y
         if self.verbose:
             print("{}: Estimating user factors... ".format(self.algorithm_name))
 
-        USER_factors = self.URM_train.dot(ITEM_factors_Y)
+        USER_factors = self.URM.dot(ITEM_factors_Y)
 
         #Divide every row for the sqrt of the profile length
         for user_index in range(self.n_users):
