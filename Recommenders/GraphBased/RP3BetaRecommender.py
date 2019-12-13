@@ -162,7 +162,7 @@ class RP3BetaRecommender(object):
             self.W_sparse = similarityMatrixTopK(self.W_sparse, k=self.topK)
 
         self.W_sparse = check_matrix(self.W_sparse, format='csr')
-
+#0.41417 0.04995 topk=54
     def fit(self, URM_train, alpha=0.3694, beta=0.129, min_rating=0, topK=90, implicit=False, normalize_similarity=True, tuning=False, similarity_path = SIMILARITY_PATH):
 
         self.URM_train = check_matrix(URM_train.copy(), 'csr', dtype=np.float32)

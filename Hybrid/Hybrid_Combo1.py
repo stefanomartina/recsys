@@ -29,7 +29,7 @@ class Hybrid_Combo1(BaseHybridRecommender):
         # Sub-Fitting
         self.RP3Beta.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/RP3Beta_similarity1.npz")
         self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning, similarity_path="/SimilarityProduct/ItemCB_similarity1.npz")
-        self.pureSVD.fit(URM.copy())
+        self.P3Alpha.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/P3Alpha_similarity1.npz")
 
 
     #######################################################################################
