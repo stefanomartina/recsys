@@ -2,6 +2,7 @@
 
 from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
 from Base.BaseFunction import BaseFunction
+from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 import scipy.sparse as sps
 import numpy as np
 
@@ -17,7 +18,8 @@ class UserCBFKNNRecommender():
 
         self.URM = URM
         self.UCM_all = UCM_all
-
+        self.TopPop = TopPopRecommender()
+        self.TopPop.fit(URM)
         if feature_weighting is not None:
             self.UCM_merged = self.helper.feature_weight(self.UCM_all, feature_weighting)
 
@@ -46,6 +48,9 @@ class UserCBFKNNRecommender():
     def recommend(self, user_id, at=10, exclude_seen=True):
 
         expected_scores = self.get_expected_ratings(user_id)
+
+        if expected_scores.sum(axis=0) == 0:
+            return self.TopPop.recommend(user_id)
 
         if exclude_seen:
             expected_scores = self.filter_seen(user_id, expected_scores)

@@ -103,22 +103,8 @@ class BaseHybridRecommender(object):
         self.sum_ratings()
         summed_score = self.hybrid_ratings.sum(axis=0)
 
-        rec_TopPop = self.TopPop.recommend(user_id)
-        rec_UserCBF = self.UserCBF.recommend(user_id)
-
-        if user_id in self.cold_users:
-            cont = 0
-
-            for elem in rec_TopPop[0:10 - self.merge_index]:
-                if elem not in rec_UserCBF:
-                    # Add element in ItemCF
-                    rec_UserCBF[self.merge_index + cont] = elem
-                cont += 1
-
-            return rec_UserCBF
-
-        if summed_score < 1:
-            return rec_UserCBF
+        if summed_score == 0:
+            return self.UserCBF.recommend(user_id)
 
         else:
 
