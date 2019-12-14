@@ -122,6 +122,13 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
+    def step_PureSVD_randomSVD(self, n_components, n_iter):
+        start_time = time.time()
+        self.recommender.fit(self.helper.URM_train, n_components=int(n_components), n_iter=int(n_iter))
+        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        elapsed_time = time.time() - start_time
+        print("----------------" + str(elapsed_time) + "----------------")
+        return cumulative
 
 
 if __name__ == "__main__":
@@ -152,10 +159,11 @@ if __name__ == "__main__":
         # 2.65, 0.1702, 0.002764, 0.7887
         pbounds_hybrid6_bis = {'weight1': (2.58, 2.72), 'weight2': (0.1695, 0.1709), 'weight3': (0.002757, 0.002771), 'weight4': (0.7880, 0.7894), 'weight5': (0,3)}
 
+        pbound_random_svd = {'n_components':(100, 3000), 'n_iter':(1, 100)}
 
         optimizer = BayesianOptimization(
-            f=t.step_hybrid_three,
-            pbounds=pbounds_hybrid4,
+            f=t.step_PureSVD_randomSVD,
+            pbounds=pbound_random_svd,
             verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
             random_state=1,
         )

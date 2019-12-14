@@ -134,7 +134,7 @@ if __name__ == '__main__':
                                                 'Slim', 'SlimElasticNet',
                                                 'SlimBPRCython_Hybrid',
                                                 'PureSVD',
-                                                'MF_BPR_Cython', 'Funk_SVD', 'Asy_SVD'
+                                                'MF_BPR_Cython', 'Funk_SVD', 'Asy_SVD',
                                                 'P3Alpha', 'RP3Beta',
                                                 'Hybrid'])
 

@@ -13,15 +13,15 @@ SVD_LIBRARY = ["svd", "svds", "randomized_svd", "Trunked_svd"]
 
 class PureSVDRecommender(object):
 
-    def fit(self, URM_train, verbose=True, library="random_svd"):
+    def fit(self, URM_train, verbose=True, library="random_svd",  n_components =200, n_iter=5, num_factors=2000):
         self.URM = URM_train
         self.vebose = verbose
 
         if library == "random_svd":
-            self.URM_SVD = self.get_URM_Random_SVD()
+            self.get_URM_Random_SVD(n_components=n_components, n_iter=n_iter)
 
         if library == "svds":
-            self.URM_SVD = self.get_URM_SVDS()
+            self.get_URM_SVDS(num_factors=num_factors)
 
         self.similarityProduct = self.U.dot(self.Sigma_Vt)
 
