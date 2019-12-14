@@ -6,6 +6,9 @@ from Recommenders.Slim.SlimElasticNet.SLIMElasticNetRecommender import SLIMElast
 from Recommenders.MatrixFactorization.PureSVD.PureSVDRecommender import PureSVDRecommender
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
+from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
+from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommender
+
 import numpy as np
 
 slim_param = {
@@ -27,12 +30,15 @@ class BaseHybridRecommender(object):
         self.list_UCM = None
         self.list_ICM = None
         self.combination = combination
+        self.merge_index = 2
+        self.TopPop = TopPopRecommender()
+        self.UserCBF = UserCBFKNNRecommender()
 
         # TopPopRecommender (for the cold user)
         self.rec_for_colder = rec_for_colder
 
         # User Content Based Recommender
-        self.userContentBased = UserCBFKNNRecommender.UserCBFKNNRecommender()
+        #self.userContentBased = UserCBFKNNRecommender.UserCBFKNNRecommender()
 
         # Item Content Based Recommender
         self.itemContentBased = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
@@ -97,8 +103,22 @@ class BaseHybridRecommender(object):
         self.sum_ratings()
         summed_score = self.hybrid_ratings.sum(axis=0)
 
-        if summed_score == 0:
-            return self.rec_for_colder.recommend(user_id)
+        rec_TopPop = self.TopPop.recommend(user_id)
+        rec_UserCBF = self.UserCBF.recommend(user_id)
+
+        if user_id in self.cold_users:
+            cont = 0
+
+            for elem in rec_TopPop[0:10 - self.merge_index]:
+                if elem not in rec_UserCBF:
+                    # Add element in ItemCF
+                    rec_UserCBF[self.merge_index + cont] = elem
+                cont += 1
+
+            return rec_UserCBF
+
+        if summed_score < 1:
+            return rec_UserCBF
 
         else:
 
@@ -110,8 +130,8 @@ class BaseHybridRecommender(object):
 
             return recommended_items[0:at]
 
+    def get_cold_users(self, URM):
+        cold_users_mask = np.ediff1d(URM.tocsr().indptr) == 0
+        cold_users = np.arange(URM.shape[0])[cold_users_mask]
 
-
-
-
-
+        self.cold_users = cold_users

@@ -39,6 +39,9 @@ class Hybrid_Combo6_bis(BaseHybridRecommender):
                    alpha_rp3beta=rp3beta_param["alpha"], beta_rp3beta=rp3beta_param["beta"], topk_rp3beta=rp3beta_param["topK"],
                    tuning=False):
 
+        self.TopPop.fit(URM)
+        self.UserCBF.fit(URM, UCM_all)
+        self.get_cold_users(URM)
         self.URM = URM
         self.weights = np.array(weights)
         self.ICM_all = ICM_all
