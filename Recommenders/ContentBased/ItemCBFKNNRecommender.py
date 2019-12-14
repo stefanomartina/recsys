@@ -20,7 +20,7 @@ class ItemCBFKNNRecommender():
         self.ICM_all = ICM_all
 
         if feature_weighting is not None:
-            self.UCM_merged = self.helper.feature_weight(self.ICM_all, feature_weighting)
+            self.ICM_all = self.helper.feature_weight(self.ICM_all, feature_weighting)
 
         # Compute similarity
         if tuning:
