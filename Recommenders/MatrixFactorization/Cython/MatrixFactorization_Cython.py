@@ -52,7 +52,7 @@ class BaseMatrixFactorization():
 
     def _train_with_early_stopping(self, epochs_max, epochs_min=0,
                                    validation_every_n=None, stop_on_validation=False,
-                                   validation_metric="MAP", lower_validations_allowed=None, evaluator_object=evaluator,
+                                   validation_metric=None, lower_validations_allowed=None, evaluator_object=None,
                                    algorithm_name="Incremental_Training_Early_Stopping"):
 
         start_time = time.time()
@@ -126,8 +126,10 @@ class BaseMatrixFactorization():
             elapsed_time = time.time() - start_time
             new_time_value, new_time_unit = seconds_to_biggest_unit(elapsed_time)
 
+            """
             print("{}: Epoch {} of {}. Elapsed time {:.2f} {}".format(
                 algorithm_name, epochs_current+1, epochs_max, new_time_value, new_time_unit))
+            """
 
             epochs_current += 1
 
@@ -313,8 +315,9 @@ class MatrixFactorization_FunkSVD_Cython(BaseMatrixFactorization):
                                                                  user_reg=user_reg, item_reg=item_reg)
 
     def fit(self, URM_train, **earlystopping_kwargs):
-
+        print("Fitting Funk_SVD...")
         super(MatrixFactorization_FunkSVD_Cython, self).fit(URM_train)
+        print("Done!")
 
 class MatrixFactorization_AsySVD_Cython(BaseMatrixFactorization):
     RECOMMENDER_NAME = "MatrixFactorization_AsySVD_Cython_Recommender"
