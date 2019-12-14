@@ -14,10 +14,13 @@ class ItemCBFKNNRecommender():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, ICM_all, knn=5, shrink=100, similarity="cosine", normalize=True, transpose=True, tuning=False, similarity_path=SIMILARITY_PATH):
+    def fit(self, URM, ICM_all, knn=5, shrink=100, similarity="cosine", normalize=True, transpose=True, feature_weighting = "BM25", tuning=False, similarity_path=SIMILARITY_PATH):
 
         self.URM = URM
         self.ICM_all = ICM_all
+
+        if feature_weighting is not None:
+            self.UCM_merged = self.helper.feature_weight(self.ICM_all, feature_weighting)
 
         # Compute similarity
         if tuning:

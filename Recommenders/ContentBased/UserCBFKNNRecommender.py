@@ -13,10 +13,13 @@ class UserCBFKNNRecommender():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, UCM_all, knn=1300, shrink=4.172, similarity="tversky", normalize=True, transpose=True, tuning=False, similarity_path=SIMILARITY_PATH):
+    def fit(self, URM, UCM_all, knn=1300, shrink=4.172, similarity="tversky", normalize=True, transpose=True, feature_weighting = "BM25", tuning=False, similarity_path=SIMILARITY_PATH):
 
         self.URM = URM
         self.UCM_all = UCM_all
+
+        if feature_weighting is not None:
+            self.UCM_merged = self.helper.feature_weight(self.UCM_all, feature_weighting)
 
         # Compute similarity
         if tuning:

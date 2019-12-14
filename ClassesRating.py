@@ -41,6 +41,10 @@ class ClassesRating:
         MAP_UserCF_per_group = []
         MAP_ItemCBF_per_group = []
         MAP_UserCBF_per_group = []
+        MAP_ItemCBF_BM25_per_group = []
+        MAP_UserCBF_BM25_per_group = []
+        MAP_ItemCBF_TFIDF_per_group = []
+        MAP_UserCBF_TFIDF_per_group = []
         MAP_Slim_per_group = []
         MAP_Elastic_per_group = []
         MAP_PureSVD_per_group = []
@@ -62,6 +66,10 @@ class ClassesRating:
         self.UserCF = UserKNNCFRecommender()
         self.ItemCBF = ItemCBFKNNRecommender()
         self.UserCBF = UserCBFKNNRecommender()
+        self.ItemCBF_BM25 = ItemCBFKNNRecommender()
+        self.UserCBF_BM25 = UserCBFKNNRecommender()
+        self.ItemCBF_TFIDF = ItemCBFKNNRecommender()
+        self.UserCBF_TFIDF = UserCBFKNNRecommender()
         self.Slim = SLIM_BPR_Cython()
         self.Elastic = SLIMElasticNetRecommender()
         self.PureSVD = PureSVDRecommender()
@@ -74,18 +82,23 @@ class ClassesRating:
         self.Hybrid8 = Hybrid_Combo8("HybridCombo8", TopPopRecommender())
 
 
-        self.TopPop.fit(self.URM_train)
+
         self.UserCBF.fit(self.URM_train, self.UCM_all)
+        self.ItemCBF.fit(self.URM_train, self.ICM_all)
+        self.UserCBF_BM25.fit(self.URM_train, self.UCM_all, feature_weighting="BM25")
+        self.ItemCBF_BM25.fit(self.URM_train, self.ICM_all, feature_weighting="BM25")
+        self.UserCBF_TFIDF.fit(self.URM_train, self.UCM_all, feature_weighting="TF-IDF")
+        self.ItemCBF_TFIDF.fit(self.URM_train, self.ICM_all, feature_weighting="TF-IDF")
+
+        """
+        self.TopPop.fit(self.URM_train)
         self.ItemCF.fit(self.URM_train)
         self.UserCF.fit(self.URM_train)
-        self.ItemCBF.fit(self.URM_train, self.ICM_all)
         self.Slim.fit(self.URM_train)
         self.Elastic.fit(self.URM_train)
         self.PureSVD.fit(self.URM_train)
         self.P3Alpha.fit(self.URM_train)
         self.RP3Beta.fit(self.URM_train)
-
-        """
         self.Hybrid2.fit(self.URM_train, self.ICM_all, self.UCM_all)
         self.Hybrid7.fit(self.URM_train,  self.ICM_all,  self.UCM_all)
         self.Hybrid8.fit(self.URM_train, self.ICM_all, self.UCM_all)
@@ -110,21 +123,35 @@ class ClassesRating:
 
             users_in_group = list(set(self.initial_target_user) - set(list(users_not_in_group)))
 
-            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.TopPop, at=10)
-            MAP_TopPop_per_group.append(results)
 
             results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.UserCBF, at=10)
             MAP_UserCBF_per_group.append(results)
 
+            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.ItemCBF, at=10)
+            MAP_ItemCBF_per_group.append(results)
+
+            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.UserCBF_BM25, at=10)
+            MAP_UserCBF_BM25_per_group.append(results)
+
+            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.ItemCBF_BM25, at=10)
+            MAP_ItemCBF_BM25_per_group.append(results)
+
+            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.UserCBF_TFIDF, at=10)
+            MAP_UserCBF_TFIDF_per_group.append(results)
+
+            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.ItemCBF_TFIDF, at=10)
+            MAP_ItemCBF_TFIDF_per_group.append(results)
+
+            """
+            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.TopPop, at=10)
+            MAP_TopPop_per_group.append(results)
+            
             results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.ItemCF, at=10)
             MAP_ItemCF_per_group.append(results)
 
             results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.UserCF, at=10)
             MAP_UserCF_per_group.append(results)
 
-            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.ItemCBF, at=10)
-            MAP_ItemCBF_per_group.append(results)
-            
             results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.Slim, at=10)
             MAP_Slim_per_group.append(results)
 
@@ -139,8 +166,6 @@ class ClassesRating:
 
             results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.RP3Beta, at=10)
             MAP_RP3Beta_per_group.append(results)
-
-            """
             
             results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.Hybrid2, at=10)
             MAP_Hybrid2_per_group.append(results)
@@ -159,18 +184,23 @@ class ClassesRating:
             """
 
 
-        pyplot.plot(MAP_TopPop_per_group, label="TopPop")
+
         pyplot.plot(MAP_UserCBF_per_group, label="UserCBF")
+        pyplot.plot(MAP_ItemCBF_per_group, label="ItemCBF")
+        pyplot.plot(MAP_UserCBF_BM25_per_group, label="UserCBF_BM25")
+        pyplot.plot(MAP_ItemCBF_BM25_per_group, label="ItemCBF_BM25")
+        pyplot.plot(MAP_UserCBF_TFIDF_per_group, label="UserCBF_TFIDF")
+        pyplot.plot(MAP_ItemCBF_TFIDF_per_group, label="ItemCBF_TFIDF")
+
+        """
         pyplot.plot(MAP_ItemCF_per_group, label="ItemCF")
         pyplot.plot(MAP_UserCF_per_group, label="UserCF")
-        pyplot.plot(MAP_ItemCBF_per_group, label="ItemCBF")
         pyplot.plot(MAP_Slim_per_group, label="Slim")
         pyplot.plot(MAP_Elastic_per_group, label="Elastic")
         pyplot.plot(MAP_P3Alpha_per_group, label="P3Alpha")
         pyplot.plot(MAP_RP3Beta_per_group, label="RP3Beta")
         pyplot.plot(MAP_PureSVD_per_group, label="PureSVD")
-
-        """
+        pyplot.plot(MAP_TopPop_per_group, label="TopPop")       
         pyplot.plot(MAP_Hybrid2_per_group, label="Hybrid2")
         pyplot.plot(MAP_Hybrid7_per_group, label="Hybrid7")
         pyplot.plot(MAP_Hybrid8_per_group, label="Hybrid8")
