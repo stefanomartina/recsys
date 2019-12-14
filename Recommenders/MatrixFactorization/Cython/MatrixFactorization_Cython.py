@@ -1,4 +1,7 @@
 from datetime import time
+
+import scipy.sparse as sps
+
 from CythonCompiler.run_compile_subprocess import run_compile_subprocess
 import numpy as np
 import time
@@ -11,7 +14,7 @@ RECOMMENDER_NAME = "AbstractMatrixRecommender"
 
 class BaseMatrixFactorization():
 
-    def __init__(self, verbose=True, algorithm_name=None, recompile_cython=False, epochs=10, batch_size=1000,
+    def __init__(self, verbose=False, algorithm_name=None, recompile_cython=False, epochs=600, batch_size=1000,
             num_factors=30, positive_threshold_BPR=None, learning_rate=0.002, use_bias=True, sgd_mode='adagrad',
             negative_interactions_quota=0.0, init_mean=0.0, init_std_dev=0.1,
             user_reg=0.71, item_reg=0.2, bias_reg=0.5, positive_reg=0.0, negative_reg=0.0, random_seed=None,
@@ -49,7 +52,7 @@ class BaseMatrixFactorization():
 
     def _train_with_early_stopping(self, epochs_max, epochs_min=0,
                                    validation_every_n=None, stop_on_validation=False,
-                                   validation_metric=None, lower_validations_allowed=None, evaluator_object=None,
+                                   validation_metric="MAP", lower_validations_allowed=None, evaluator_object=evaluator,
                                    algorithm_name="Incremental_Training_Early_Stopping"):
 
         start_time = time.time()
@@ -254,12 +257,19 @@ class BaseMatrixFactorization():
             self.ITEM_bias = self.ITEM_bias_best
             self.GLOBAL_bias = self.GLOBAL_bias_best
 
-        self.matrix_scores = np.dot(self.USER_factors, self.ITEM_factors.T)
+
+        self.item_scores = np.dot(self.USER_factors, self.ITEM_factors.T)
+
+        # No need to select only the specific negative items or warm users because the -inf score will not change
+        if self.use_bias:
+            self.item_scores += self.ITEM_bias + self.GLOBAL_bias
+            self.item_scores = (self.item_scores.T + self.USER_bias).T
+
         sys.stdout.flush()
 
 
     def get_expected_ratings(self, user_id):
-        expected_scores = (self.matrix_scores[user_id]).ravel()
+        expected_scores = (self.item_scores[user_id]).ravel()
         return expected_scores
 
     def filter_seen(self, user_id, scores):
@@ -297,8 +307,10 @@ class MatrixFactorization_BPR_Cython(BaseMatrixFactorization):
 class MatrixFactorization_FunkSVD_Cython(BaseMatrixFactorization):
     RECOMMENDER_NAME = "MatrixFactorization_FunkSVD_Cython_Recommender"
 
-    def __init__(self):
-        super(MatrixFactorization_FunkSVD_Cython, self).__init__(algorithm_name="FUNK_SVD")
+    def __init__(self, epoch=600, num_factors=30, learning_rate=0.002, user_reg=0.71, item_reg=0.2):
+        super(MatrixFactorization_FunkSVD_Cython, self).__init__(algorithm_name="FUNK_SVD", epochs=epoch,
+                                                                 num_factors=num_factors, learning_rate=learning_rate,
+                                                                 user_reg=user_reg, item_reg=item_reg)
 
     def fit(self, URM_train, **earlystopping_kwargs):
 

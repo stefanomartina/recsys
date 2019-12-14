@@ -17,6 +17,7 @@ from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 from Recommenders.ContentBased.ItemCBFKNNRecommender import ItemCBFKNNRecommender
 from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommender
+from Recommenders.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_FunkSVD_Cython
 
 
 class BayesianSearch():
@@ -130,13 +131,22 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
+    def step_FunkSVD(self, epoch, num_factors, learning_rate, user_reg, item_reg):
+        start_time = time.time()
+        self.recommender = MatrixFactorization_FunkSVD_Cython(int(epoch), int(num_factors), learning_rate, user_reg, item_reg)
+        self.recommender.fit(self.helper.URM_train)
+        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        elapsed_time = time.time() - start_time
+        print("----------------" + str(elapsed_time) + "----------------")
+        return cumulative
+
 
 if __name__ == "__main__":
 
     folder = os.getcwd() + "/SimilarityProduct"
 
     try:
-        recommender = Hybrid_Combo4("Combo4", UserCBFKNNRecommender())
+        recommender = MatrixFactorization_FunkSVD_Cython()
         t = BayesianSearch(recommender, "P3Alpha")
 
         pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
@@ -158,12 +168,12 @@ if __name__ == "__main__":
 
         # 2.65, 0.1702, 0.002764, 0.7887
         pbounds_hybrid6_bis = {'weight1': (2.58, 2.72), 'weight2': (0.1695, 0.1709), 'weight3': (0.002757, 0.002771), 'weight4': (0.7880, 0.7894), 'weight5': (0,3)}
-
         pbound_random_svd = {'n_components':(100, 3000), 'n_iter':(1, 100)}
+        pbound_funk_svd = {'epoch': (450,600), 'num_factors':(20,40), 'learning_rate':(0.001, 0.005), 'user_reg':(0.5, 0.9), 'item_reg':(0.1, 0.6)}
 
         optimizer = BayesianOptimization(
-            f=t.step_PureSVD_randomSVD,
-            pbounds=pbound_random_svd,
+            f=t.step_FunkSVD,
+            pbounds=pbound_funk_svd,
             verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
             random_state=1,
         )
