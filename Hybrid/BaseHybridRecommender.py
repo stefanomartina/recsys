@@ -81,7 +81,7 @@ class BaseHybridRecommender(object):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, weights, ICM_all, UCM_all):
+    def fit(self, URM, weights, weights1, weights2, ICM_all, UCM_all):
         pass
 
     #######################################################################################
