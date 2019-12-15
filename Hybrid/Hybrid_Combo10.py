@@ -38,7 +38,7 @@ class Hybrid_Combo10(BaseHybridRecommender):
         self.Hybrid6.sum_ratings()
 
         self.Hybrid6_bis.extract_ratings(user_id)
-        self.Hybrid6.sum_ratings()
+        self.Hybrid6_bis.sum_ratings()
 
         self.hybrid6_ratings = self.Hybrid6.extract_rating_hybrid()
         self.hybrid6_bis_ratings = self.Hybrid6_bis.extract_rating_hybrid()

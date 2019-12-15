@@ -37,13 +37,13 @@ class Hybrid_Combo6(BaseHybridRecommender):
         self.weights = np.array(weights)
         self.ICM_all = ICM_all
         self.UCM_all = UCM_all
-        self.rec_for_colder.fit(self.URM)
+        self.rec_for_colder.fit(self.URM, self.UCM_all, tuning=tuning, similarity_path="/SimilarityProduct/UserCBFCold_similarity6.npz")
 
         # Sub-Fitting
         self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity6.npz")
         self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning, similarity_path="/SimilarityProduct/UserCF_similarity6.npz")
         self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning, similarity_path="/SimilarityProduct/UserCB_similarity6.npz")
-        self.elasticNet.fit(URM.copy(), tuning=tuning)
+        self.elasticNet.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/ElasticNet_similarity6.npz")
 
     #######################################################################################
     #                                  EXTRACT RATINGS                                    #

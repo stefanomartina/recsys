@@ -3,6 +3,7 @@ import os, shutil
 from bayes_opt import BayesianOptimization
 import time
 
+from Hybrid.Hybrid_Combo10 import Hybrid_Combo10
 from Hybrid.Hybrid_Combo4 import Hybrid_Combo4
 from Hybrid.Hybrid_Combo7 import Hybrid_Combo7
 from Hybrid.Hybrid_Combo8 import Hybrid_Combo8
@@ -86,8 +87,8 @@ class BayesianSearch():
         UCM_all = self.helper.UCM_all
         ICM_all = self.helper.ICM_all
         self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights=[weight1, weight2],
-                                                                                       weight1=[2.28,0.07372,0.002197,0.6802],
-                                                                                       weight2=[2.846, 0.0935, 0.075505, 0.6001, 2.819], tuning=True)
+                                                                                       weights1=[2.28,0.07372,0.002197,0.6802],
+                                                                                       weights2=[2.846, 0.0935, 0.075505, 0.6001, 2.819], tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
@@ -158,54 +159,45 @@ if __name__ == "__main__":
 
     folder = os.getcwd() + "/SimilarityProduct"
 
-    try:
-        recommender = Hybrid_Combo9("Combo9", UserCBFKNNRecommender())
-        t = BayesianSearch(recommender, "Combo9")
 
-        pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
-        pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
-        pbounds_userCB = {'weight1': (1100,1300), 'weight2': (0, 50)}
+    recommender = Hybrid_Combo10("Combo10", UserCBFKNNRecommender())
+    t = BayesianSearch(recommender, "Combo9")
 
-        pbounds_P3Alpha = {'weight1': (500, 1000), 'weight2': (0.5, 1.5)}
-        pbounds_p3beta = {'alpha': (0, 3), 'beta': (0, 3), 'min_rating': (0, 3), 'topK': (10, 300)}
+    pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
+    pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
+    pbounds_userCB = {'weight1': (1100,1300), 'weight2': (0, 50)}
 
-        pbounds_hybrid1 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3)}
+    pbounds_P3Alpha = {'weight1': (500, 1000), 'weight2': (0.5, 1.5)}
+    pbounds_p3beta = {'alpha': (0, 3), 'beta': (0, 3), 'min_rating': (0, 3), 'topK': (10, 300)}
 
-        pbounds_hybrid2 = {'weight1': (0, 1), 'weight2': (0, 1), 'weight3': (0, 1), 'weight4': (0, 1)}
-        pbounds_hybrid3 = {'weight1': (0.7, 1.3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
-        pbounds_hybrid4 = {'weight1': (1.4, 2.7), 'weight2': (1.5, 3), 'weight3': (0.0005, 0.009)}
-        pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0, 1)}
-        pbounds_hybrid6 = {'weight1': (0.8, 0.95), 'weight2': (0.3, 0.45), 'weight3': (0.05, 0.065), 'weight4': (0,3)}
-        pbounds_hybrid7 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
-        pbounds_hybrid8 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
+    pbounds_hybrid1 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3)}
 
-        pbounds_hybrid9_expl = {'weight1': (1.94, 1.97), 'weight2': (0.007, 0.009), 'weight3': (2.5, 3), 'weight4': (0.016, 0.019)}
-        pbounds_hybrid9 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
+    pbounds_hybrid2 = {'weight1': (0, 1), 'weight2': (0, 1), 'weight3': (0, 1), 'weight4': (0, 1)}
+    pbounds_hybrid3 = {'weight1': (0.7, 1.3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
+    pbounds_hybrid4 = {'weight1': (1.4, 2.7), 'weight2': (1.5, 3), 'weight3': (0.0005, 0.009)}
+    pbounds_hybrid5 = {'weight1': (0.005, 0.03), 'weight2': (0, 1)}
+    pbounds_hybrid6 = {'weight1': (0.8, 0.95), 'weight2': (0.3, 0.45), 'weight3': (0.05, 0.065), 'weight4': (0,3)}
+    pbounds_hybrid7 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
+    pbounds_hybrid8 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
 
-        # 2.65, 0.1702, 0.002764, 0.7887
-        pbounds_hybrid6_bis = {'weight1': (2.58, 2.72), 'weight2': (0.1695, 0.1709), 'weight3': (0.002757, 0.002771), 'weight4': (0.7880, 0.7894), 'weight5': (0,3)}
-        pbound_random_svd = {'n_components':(100, 3000), 'n_iter':(1, 100)}
-        pbound_funk_svd = {'epoch': (450,600), 'num_factors':(20,40), 'learning_rate':(0.001, 0.005), 'user_reg':(0.5, 0.9), 'item_reg':(0.1, 0.6)}
+    pbounds_hybrid9_expl = {'weight1': (1.94, 1.97), 'weight2': (0.007, 0.009), 'weight3': (2.5, 3), 'weight4': (0.016, 0.019)}
+    pbounds_hybrid9 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
 
-        optimizer = BayesianOptimization(
-            f=t.step_hybrid_four,
-            pbounds=pbounds_hybrid9,
-            verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
-            random_state=1,
-        )
+    pbounds_hybrid10 = {'weight1': (0, 3), 'weight2': (0, 3)}
 
-        optimizer.maximize(
-            init_points=10,
-            n_iter=1000,
-        )
+    # 2.65, 0.1702, 0.002764, 0.7887
+    pbounds_hybrid6_bis = {'weight1': (2.58, 2.72), 'weight2': (0.1695, 0.1709), 'weight3': (0.002757, 0.002771), 'weight4': (0.7880, 0.7894), 'weight5': (0,3)}
+    pbound_random_svd = {'n_components':(100, 3000), 'n_iter':(1, 100)}
+    pbound_funk_svd = {'epoch': (450,600), 'num_factors':(20,40), 'learning_rate':(0.001, 0.005), 'user_reg':(0.5, 0.9), 'item_reg':(0.1, 0.6)}
 
-    finally:
-        for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
+    optimizer = BayesianOptimization(
+        f=t.step_hybrid_hybrid,
+        pbounds=pbounds_hybrid10,
+        verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
+        random_state=1,
+    )
+
+    optimizer.maximize(
+        init_points=10,
+        n_iter=1000,
+    )
