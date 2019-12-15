@@ -81,6 +81,18 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
+    def step_hybrid_hybrid(self, weight1=0, weight2=0):
+        start_time = time.time()
+        UCM_all = self.helper.UCM_all
+        ICM_all = self.helper.ICM_all
+        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights=[weight1, weight2],
+                                                                                       weight1=[2.28,0.07372,0.002197,0.6802],
+                                                                                       weight2=[2.846, 0.0935, 0.075505, 0.6001, 2.819], tuning=True)
+        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        elapsed_time = time.time() - start_time
+        print("----------------" + str(elapsed_time) + "----------------")
+        return cumulative
+
     def step_slim(self, weight1=0, weight2=0):
         start_time = time.time()
         self.recommender = SLIM_BPR_Cython(epochs=int(weight1), topK=int(weight2))

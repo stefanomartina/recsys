@@ -40,9 +40,9 @@ class Hybrid_Combo6(BaseHybridRecommender):
         self.rec_for_colder.fit(self.URM)
 
         # Sub-Fitting
-        self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)
-        self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning)
-        self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning)
+        self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity6.npz")
+        self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning, similarity_path="/SimilarityProduct/UserCF_similarity6.npz")
+        self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning, similarity_path="/SimilarityProduct/UserCB_similarity6.npz")
         self.elasticNet.fit(URM.copy(), tuning=tuning)
 
     #######################################################################################
@@ -60,3 +60,6 @@ class Hybrid_Combo6(BaseHybridRecommender):
         self.hybrid_ratings += self.userCF_ratings * self.weights[1]
         self.hybrid_ratings += self.itemContentBased_ratings * self.weights[2]
         self.hybrid_ratings += self.elasticNet_ratings * self.weights[3]
+
+    def extract_rating_hybrid(self):
+        return self.hybrid_ratings
