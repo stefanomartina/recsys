@@ -31,14 +31,12 @@ class BaseHybridRecommender(object):
         self.list_ICM = None
         self.combination = combination
         self.merge_index = 2
-        self.TopPop = TopPopRecommender()
-        self.UserCBF = UserCBFKNNRecommender()
 
-        # TopPopRecommender (for the cold user)
+        # Recommender for the cold user
         self.rec_for_colder = rec_for_colder
 
         # User Content Based Recommender
-        #self.userContentBased = UserCBFKNNRecommender.UserCBFKNNRecommender()
+        self.userContentBased = UserCBFKNNRecommender()
 
         # Item Content Based Recommender
         self.itemContentBased = ItemCBFKNNRecommender.ItemCBFKNNRecommender()
