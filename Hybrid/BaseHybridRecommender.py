@@ -104,7 +104,7 @@ class BaseHybridRecommender(object):
         summed_score = self.hybrid_ratings.sum(axis=0)
 
         if summed_score == 0:
-            return self.UserCBF.recommend(user_id)
+            return self.rec_for_colder.recommend(user_id)
 
         else:
 

@@ -7,6 +7,7 @@ from Hybrid.Hybrid_Combo4 import Hybrid_Combo4
 from Hybrid.Hybrid_Combo7 import Hybrid_Combo7
 from Hybrid.Hybrid_Combo8 import Hybrid_Combo8
 from Hybrid.Hybrid_Combo1 import Hybrid_Combo1
+from Hybrid.Hybrid_Combo9 import Hybrid_Combo9
 from Utils import evaluation
 from Base.BaseFunction import BaseFunction
 from Hybrid.Hybrid_Combo2 import Hybrid_Combo2
@@ -146,8 +147,8 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
     try:
-        recommender = MatrixFactorization_FunkSVD_Cython()
-        t = BayesianSearch(recommender, "P3Alpha")
+        recommender = Hybrid_Combo9("Combo9", UserCBFKNNRecommender())
+        t = BayesianSearch(recommender, "Combo9")
 
         pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
         pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
@@ -166,14 +167,17 @@ if __name__ == "__main__":
         pbounds_hybrid7 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
         pbounds_hybrid8 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
 
+        pbounds_hybrid9_expl = {'weight1': (1.94, 1.97), 'weight2': (0.007, 0.009), 'weight3': (2.5, 3), 'weight4': (0.016, 0.019)}
+        pbounds_hybrid9 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
+
         # 2.65, 0.1702, 0.002764, 0.7887
         pbounds_hybrid6_bis = {'weight1': (2.58, 2.72), 'weight2': (0.1695, 0.1709), 'weight3': (0.002757, 0.002771), 'weight4': (0.7880, 0.7894), 'weight5': (0,3)}
         pbound_random_svd = {'n_components':(100, 3000), 'n_iter':(1, 100)}
         pbound_funk_svd = {'epoch': (450,600), 'num_factors':(20,40), 'learning_rate':(0.001, 0.005), 'user_reg':(0.5, 0.9), 'item_reg':(0.1, 0.6)}
 
         optimizer = BayesianOptimization(
-            f=t.step_FunkSVD,
-            pbounds=pbound_funk_svd,
+            f=t.step_hybrid_four,
+            pbounds=pbounds_hybrid9,
             verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
             random_state=1,
         )
