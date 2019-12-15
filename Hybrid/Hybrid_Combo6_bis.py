@@ -33,7 +33,13 @@ class Hybrid_Combo6_bis(BaseHybridRecommender):
     # |  6        |  0.0493   |  2.895    |  0.08504  |  0.03905  |  0.6359   |  2.634    |
     # |  23       |  0.04933  |  2.844    |  0.08422  |  0.0414   |  0.6129   |  2.644    |
     # |  6        |  0.04956  |  2.689    |  0.2085   |  0.1039   |  0.467    |  2.688    |
-    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[2.689,0.2085,0.1039,0.467 , 2.688],
+
+    '''
+
+    Hybrid6_bis MAP : 0.04933  |  2.844    |  0.08422  |  0.0414   |  0.6129   |  2.644
+    '''
+
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[2.844 ,0.08422,0.0414,0.6129 , 2.644, 5],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=item_cf_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],
@@ -55,6 +61,7 @@ class Hybrid_Combo6_bis(BaseHybridRecommender):
         self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning, similarity_path="/SimilarityProduct/ItemCB_similarity6.npz")
         self.elasticNet.fit(URM.copy(), tuning=tuning)
         self.RP3Beta.fit(URM.copy())
+        self.slim_random.fit(URM.copy())
 
 
     #######################################################################################
@@ -67,6 +74,7 @@ class Hybrid_Combo6_bis(BaseHybridRecommender):
         self.itemContentBased_ratings = self.itemContentBased.get_expected_ratings(user_id)
         self.elasticNet_ratings = self.elasticNet.get_expected_ratings(user_id)
         self.RP3Beta_ratings = self.RP3Beta.get_expected_ratings(user_id)
+        self.slim_ratings = self.RP3Beta.get_expected_ratings(user_id)
 
     def sum_ratings(self):
         self.hybrid_ratings = self.itemCF_ratings * self.weights[0]
@@ -74,6 +82,7 @@ class Hybrid_Combo6_bis(BaseHybridRecommender):
         self.hybrid_ratings += self.itemContentBased_ratings * self.weights[2]
         self.hybrid_ratings += self.elasticNet_ratings * self.weights[3]
         self.hybrid_ratings += self.RP3Beta_ratings * self.weights[4]
+        self.hybrid_ratings += self.slim_ratings * self.weights[5]
 
     def extract_rating_hybrid(self):
         return self.hybrid_ratings

@@ -966,7 +966,7 @@ static int __pyx_pf_6recsys_4Base_10Similarity_6Cython_25Compute_Similarity_Cyth
 </pre><pre class="cython line score-0" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">141</span>:         self.this_item_weights_counter = 0</pre>
 <pre class='cython code score-0 '>  __pyx_v_self-&gt;this_item_weights_counter = 0;
 </pre><pre class="cython line score-0">&#xA0;<span class="">142</span>: </pre>
-<pre class="cython line score-0">&#xA0;<span class="">143</span>:         # Copy data to avoid altering the original object</pre>
+<pre class="cython line score-0">&#xA0;<span class="">143</span>:         # Copy Data to avoid altering the original object</pre>
 <pre class="cython line score-19" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">144</span>:         dataMatrix = dataMatrix.copy()</pre>
 <pre class='cython code score-19 '>  __pyx_t_3 = <span class='pyx_c_api'>__Pyx_PyObject_GetAttrStr</span>(__pyx_v_dataMatrix, __pyx_n_s_copy);<span class='error_goto'> if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 144, __pyx_L1_error)</span>
   <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_t_3);
@@ -1310,7 +1310,7 @@ static int __pyx_pf_6recsys_4Base_10Similarity_6Cython_25Compute_Similarity_Cyth
 </pre><pre class="cython line score-0">&#xA0;<span class="">169</span>: </pre>
 <pre class="cython line score-0">&#xA0;<span class="">170</span>: </pre>
 <pre class="cython line score-0">&#xA0;<span class="">171</span>:         # Apply weight after sumOfSquared has been computed but before the matrix is</pre>
-<pre class="cython line score-0">&#xA0;<span class="">172</span>:         # split in its inner data structures</pre>
+<pre class="cython line score-0">&#xA0;<span class="">172</span>:         # split in its inner Data structures</pre>
 <pre class="cython line score-0" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">173</span>:         self.use_row_weights = False</pre>
 <pre class='cython code score-0 '>  __pyx_v_self-&gt;use_row_weights = 0;
 </pre><pre class="cython line score-0">&#xA0;<span class="">174</span>: </pre>
@@ -1721,7 +1721,7 @@ static int __pyx_pf_6recsys_4Base_10Similarity_6Cython_25Compute_Similarity_Cyth
   return __pyx_r;
 }
 </pre><pre class="cython line score-0">&#xA0;<span class="">211</span>:         """</pre>
-<pre class="cython line score-0">&#xA0;<span class="">212</span>:         Set to 1 all data points</pre>
+<pre class="cython line score-0">&#xA0;<span class="">212</span>:         Set to 1 all Data points</pre>
 <pre class="cython line score-0">&#xA0;<span class="">213</span>:         :return:</pre>
 <pre class="cython line score-0">&#xA0;<span class="">214</span>:         """</pre>
 <pre class="cython line score-0">&#xA0;<span class="">215</span>: </pre>
@@ -1785,7 +1785,7 @@ static int __pyx_pf_6recsys_4Base_10Similarity_6Cython_25Compute_Similarity_Cyth
   return __pyx_r;
 }
 </pre><pre class="cython line score-0">&#xA0;<span class="">226</span>:         """</pre>
-<pre class="cython line score-0">&#xA0;<span class="">227</span>:         Remove from every data point the average for the corresponding column</pre>
+<pre class="cython line score-0">&#xA0;<span class="">227</span>:         Remove from every Data point the average for the corresponding column</pre>
 <pre class="cython line score-0">&#xA0;<span class="">228</span>:         :return:</pre>
 <pre class="cython line score-0">&#xA0;<span class="">229</span>:         """</pre>
 <pre class="cython line score-0">&#xA0;<span class="">230</span>: </pre>
@@ -2046,7 +2046,7 @@ static int __pyx_pf_6recsys_4Base_10Similarity_6Cython_25Compute_Similarity_Cyth
   return __pyx_r;
 }
 </pre><pre class="cython line score-0">&#xA0;<span class="">267</span>:         """</pre>
-<pre class="cython line score-0">&#xA0;<span class="">268</span>:         Remove from every data point the average for the corresponding row</pre>
+<pre class="cython line score-0">&#xA0;<span class="">268</span>:         Remove from every Data point the average for the corresponding row</pre>
 <pre class="cython line score-0">&#xA0;<span class="">269</span>:         :return:</pre>
 <pre class="cython line score-0">&#xA0;<span class="">270</span>:         """</pre>
 <pre class="cython line score-0">&#xA0;<span class="">271</span>: </pre>
@@ -2415,9 +2415,9 @@ __pyx_r = __pyx_t_3;
 <pre class="cython line score-0">&#xA0;<span class="">324</span>:         -- Given the two items, get the users they have in common</pre>
 <pre class="cython line score-0">&#xA0;<span class="">325</span>:         -- Update the similarity for all common users</pre>
 <pre class="cython line score-0">&#xA0;<span class="">326</span>: </pre>
-<pre class="cython line score-0">&#xA0;<span class="">327</span>:         That is VERY slow due to the common user part, in which a long data structure is looped multiple times.</pre>
+<pre class="cython line score-0">&#xA0;<span class="">327</span>:         That is VERY slow due to the common user part, in which a long Data structure is looped multiple times.</pre>
 <pre class="cython line score-0">&#xA0;<span class="">328</span>: </pre>
-<pre class="cython line score-0">&#xA0;<span class="">329</span>:         A better way is to use the data structure in a different way skipping the search part, getting directly the</pre>
+<pre class="cython line score-0">&#xA0;<span class="">329</span>:         A better way is to use the Data structure in a different way skipping the search part, getting directly the</pre>
 <pre class="cython line score-0">&#xA0;<span class="">330</span>:         information we need.</pre>
 <pre class="cython line score-0">&#xA0;<span class="">331</span>: </pre>
 <pre class="cython line score-0">&#xA0;<span class="">332</span>:         The implementation here used is:</pre>
@@ -2538,7 +2538,7 @@ __pyx_r = __pyx_t_3;
         *((double *) ( /* dim=0 */ (__pyx_v_self-&gt;this_item_weights.data + __pyx_t_21 * __pyx_v_self-&gt;this_item_weights.strides[0]) )) += ((__pyx_v_rating_item_input * __pyx_v_rating_item_second) * __pyx_v_row_weight);
 </pre><pre class="cython line score-0">&#xA0;<span class="">390</span>: </pre>
 <pre class="cython line score-0">&#xA0;<span class="">391</span>: </pre>
-<pre class="cython line score-0">&#xA0;<span class="">392</span>:                     # Update global data structure</pre>
+<pre class="cython line score-0">&#xA0;<span class="">392</span>:                     # Update global Data structure</pre>
 <pre class="cython line score-0" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">393</span>:                     if not self.this_item_weights_mask[item_id_second]:</pre>
 <pre class='cython code score-0 '>        __pyx_t_22 = __pyx_v_item_id_second;
         __pyx_t_13 = ((!((*((int *) ( /* dim=0 */ (__pyx_v_self-&gt;this_item_weights_mask.data + __pyx_t_22 * __pyx_v_self-&gt;this_item_weights_mask.strides[0]) ))) != 0)) != 0);
@@ -2744,7 +2744,7 @@ static PyObject *__pyx_pf_6recsys_4Base_10Similarity_6Cython_25Compute_Similarit
 <pre class="cython line score-0">&#xA0;<span class="">415</span>: </pre>
 <pre class="cython line score-0">&#xA0;<span class="">416</span>:         cdef long long[:] top_k_idx</pre>
 <pre class="cython line score-0">&#xA0;<span class="">417</span>: </pre>
-<pre class="cython line score-0">&#xA0;<span class="">418</span>:         # Declare numpy data type to use vetor indexing and simplify the topK selection code</pre>
+<pre class="cython line score-0">&#xA0;<span class="">418</span>:         # Declare numpy Data type to use vetor indexing and simplify the topK selection code</pre>
 <pre class="cython line score-0">&#xA0;<span class="">419</span>:         cdef np.ndarray[LONG_t, ndim=1] top_k_partition, top_k_partition_sorting</pre>
 <pre class="cython line score-36" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">420</span>:         cdef np.ndarray[np.float64_t, ndim=1] this_item_weights_np = np.zeros(self.n_columns, dtype=np.float64)</pre>
 <pre class='cython code score-36 '>  <span class='pyx_c_api'>__Pyx_GetModuleGlobalName</span>(__pyx_t_1, __pyx_n_s_np);<span class='error_goto'> if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 420, __pyx_L1_error)</span>
@@ -3191,7 +3191,7 @@ static PyObject *__pyx_pf_6recsys_4Base_10Similarity_6Cython_25Compute_Similarit
 <pre class="cython line score-0">&#xA0;<span class="">508</span>: </pre>
 <pre class="cython line score-0">&#xA0;<span class="">509</span>:                 # Sorting is done in three steps. Faster then plain np.argsort for higher number of items</pre>
 <pre class="cython line score-0">&#xA0;<span class="">510</span>:                 # because we avoid sorting elements we already know we don't care about</pre>
-<pre class="cython line score-0">&#xA0;<span class="">511</span>:                 # - Partition the data to extract the set of TopK items, this set is unsorted</pre>
+<pre class="cython line score-0">&#xA0;<span class="">511</span>:                 # - Partition the Data to extract the set of TopK items, this set is unsorted</pre>
 <pre class="cython line score-0">&#xA0;<span class="">512</span>:                 # - Sort only the TopK items, discarding the rest</pre>
 <pre class="cython line score-0">&#xA0;<span class="">513</span>:                 # - Get the original item index</pre>
 <pre class="cython line score-0">&#xA0;<span class="">514</span>:                 #</pre>
@@ -3211,7 +3211,7 @@ static PyObject *__pyx_pf_6recsys_4Base_10Similarity_6Cython_25Compute_Similarit
       }
 </pre><pre class="cython line score-0">&#xA0;<span class="">521</span>: </pre>
 <pre class="cython line score-0">&#xA0;<span class="">522</span>: </pre>
-<pre class="cython line score-0">&#xA0;<span class="">523</span>:                 # Add weights in the same ordering as the self.this_item_weights_id data structure</pre>
+<pre class="cython line score-0">&#xA0;<span class="">523</span>:                 # Add weights in the same ordering as the self.this_item_weights_id Data structure</pre>
 <pre class="cython line score-0" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">524</span>:                 for innerItemIndex in range(self.this_item_weights_counter):</pre>
 <pre class='cython code score-0 '>      __pyx_t_13 = __pyx_v_self-&gt;this_item_weights_counter;
       __pyx_t_39 = __pyx_t_13;
