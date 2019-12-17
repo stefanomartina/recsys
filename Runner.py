@@ -117,14 +117,11 @@ class Runner:
 
         self.functionality.get_target_users()
         self.fit_recommender(requires_icm, requires_ucm)
-        self.run_recommendations()
+        if not self.evaluate:
+            # Recommendations on target users are necessary only during file printing
+            self.run_recommendations()
         if self.evaluate:
             evaluation.evaluate_algorithm(self.functionality.URM_test, self.recommender, at=10)
-
-
-
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
