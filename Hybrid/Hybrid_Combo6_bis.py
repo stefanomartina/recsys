@@ -24,6 +24,11 @@ rp3beta_param = {
     "topK":90,
 }
 
+slim_param = {
+    "epochs": 200,
+    "topK": 10,
+}
+
 
 class Hybrid_Combo6_bis(BaseHybridRecommender):
 
@@ -37,7 +42,7 @@ class Hybrid_Combo6_bis(BaseHybridRecommender):
     '''
 
     Hybrid6_bis MAP : 0.04933  |  2.844    |  0.08422  |  0.0414   |  0.6129   |  2.644
-     9.217    |  0.5445   |  0.1198   |  1.535    |  8.642    |  0.4123   |
+                      9.217    |  0.5445   |  0.1198   |  1.535    |  8.642    |  0.4123   |
     '''
 
     def fit(self, URM, ICM_all=None, UCM_all=None, weights=[9.217 ,0.5445,0.1198,1.535 , 8.642 , 0.4123],
