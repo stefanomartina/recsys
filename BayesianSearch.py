@@ -72,11 +72,11 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
-    def step_hybrid_6_bis(self, weight1=0, weight2=0, weight3=0, weight4=0, weight5=0):
+    def step_hybrid_6_bis(self, weight1=0, weight2=0, weight3=0, weight4=0, weight5=0, weight6=0):
         start_time = time.time()
         UCM_all = self.helper.UCM_all
         ICM_all = self.helper.ICM_all
-        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights=[weight1, weight2, weight3, weight4, weight5], tuning=True)
+        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights=[weight1, weight2, weight3, weight4, weight5, weight6], tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
@@ -160,8 +160,8 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
 
-    recommender = Hybrid_Combo10("Combo10", UserCBFKNNRecommender())
-    t = BayesianSearch(recommender, "Combo9")
+    recommender = Hybrid_Combo6_bis("Combo6", UserCBFKNNRecommender())
+    t = BayesianSearch(recommender, "Combo6")
 
     pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
     pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
@@ -184,20 +184,20 @@ if __name__ == "__main__":
     pbounds_hybrid9 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
 
     pbounds_hybrid10 = {'weight1': (0, 3), 'weight2': (0, 3)}
+    pbounds_hybrid10_expl = {'weight1': (0.065, 0.080), 'weight2': (2.7, 2.9)}
 
     # 2.65, 0.1702, 0.002764, 0.7887
-    pbounds_hybrid6_bis = {'weight1': (2.58, 2.72), 'weight2': (0.1695, 0.1709), 'weight3': (0.002757, 0.002771), 'weight4': (0.7880, 0.7894), 'weight5': (0,3)}
+    pbounds_hybrid6_bis = {'weight1': (0, 10), 'weight2': (0, 10), 'weight3': (0, 10), 'weight4': (0, 10), 'weight5': (0,10), 'weight6': (0,10)}
     pbound_random_svd = {'n_components':(100, 3000), 'n_iter':(1, 100)}
     pbound_funk_svd = {'epoch': (450,600), 'num_factors':(20,40), 'learning_rate':(0.001, 0.005), 'user_reg':(0.5, 0.9), 'item_reg':(0.1, 0.6)}
 
     optimizer = BayesianOptimization(
-        f=t.step_hybrid_hybrid,
-        pbounds=pbounds_hybrid10,
+        f=t.step_hybrid_6_bis,
+        pbounds=pbounds_hybrid6_bis,
         verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
-        random_state=1,
     )
 
     optimizer.maximize(
-        init_points=10,
+        init_points=30,
         n_iter=1000,
     )
