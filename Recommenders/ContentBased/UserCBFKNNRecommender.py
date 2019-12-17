@@ -5,7 +5,7 @@ from Base.BaseFunction import BaseFunction
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 import scipy.sparse as sps
 import numpy as np
-
+import bisect
 RECOMMENDER_NAME = "UserCBFKNNRecommender"
 SIMILARITY_PATH = "/SimilarityProduct/UserCB_similarity.npz"
 
@@ -56,5 +56,26 @@ class UserCBFKNNRecommender():
             expected_scores = self.filter_seen(user_id, expected_scores)
         ranking = expected_scores.argsort()[::-1]
 
+        # rec = self.merge_rec(self.TopPop.recommend(user_id), ranking[:at])
+
         return ranking[:at]
 
+    #METHODS added trying to implement smart merge of recommendation lists
+    def my_index(self, l, item):
+        for i in range(len(l)):
+            if (item == l[i]).all():
+                return i
+        return 10
+
+    def merge_rec(self, TopPop_rec, UserCBF_rec,):
+        res = []
+        for item in UserCBF_rec:
+            user_cb_pos = self.my_index(UserCBF_rec, item)
+            top_pop_pos = self.my_index(TopPop_rec, item)
+
+            avg = int(user_cb_pos) + int(top_pop_pos)
+            bisect.insort(res, (avg, item))
+
+        unzipped = zip(*res)
+        res_2 = list(unzipped)[1]
+        return res_2
