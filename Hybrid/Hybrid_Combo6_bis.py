@@ -37,17 +37,16 @@ class Hybrid_Combo6_bis(BaseHybridRecommender):
     '''
 
     Hybrid6_bis MAP : 0.04933  |  2.844    |  0.08422  |  0.0414   |  0.6129   |  2.644
+     9.217    |  0.5445   |  0.1198   |  1.535    |  8.642    |  0.4123   |
     '''
 
-    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[2.844 ,0.08422,0.0414,0.6129 , 2.644, 5],
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[9.217 ,0.5445,0.1198,1.535 , 8.642 , 0.4123],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=item_cf_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],
                    alpha_rp3beta=rp3beta_param["alpha"], beta_rp3beta=rp3beta_param["beta"], topk_rp3beta=rp3beta_param["topK"],
                    tuning=False):
 
-        self.TopPop.fit(URM)
-        self.UserCBF.fit(URM, UCM_all)
         self.get_cold_users(URM)
         self.URM = URM
         self.weights = np.array(weights)
@@ -74,7 +73,7 @@ class Hybrid_Combo6_bis(BaseHybridRecommender):
         self.itemContentBased_ratings = self.itemContentBased.get_expected_ratings(user_id)
         self.elasticNet_ratings = self.elasticNet.get_expected_ratings(user_id)
         self.RP3Beta_ratings = self.RP3Beta.get_expected_ratings(user_id)
-        self.slim_ratings = self.RP3Beta.get_expected_ratings(user_id)
+        self.slim_ratings = self.slim_random.get_expected_ratings(user_id)
 
     def sum_ratings(self):
         self.hybrid_ratings = self.itemCF_ratings * self.weights[0]
