@@ -56,26 +56,37 @@ class UserCBFKNNRecommender():
             expected_scores = self.filter_seen(user_id, expected_scores)
         ranking = expected_scores.argsort()[::-1]
 
-        # rec = self.merge_rec(self.TopPop.recommend(user_id), ranking[:at])
+        return self.merge_rec(self.TopPop.recommend(user_id), ranking[:at])
 
-        return ranking[:at]
+        #return ranking[:at]
 
     #METHODS added trying to implement smart merge of recommendation lists
     def my_index(self, l, item):
         for i in range(len(l)):
             if (item == l[i]).all():
                 return i
-        return 10
+        return np.inf
+
+    def getList(self, dict):
+        list = []
+        for key in dict.keys():
+            list.append(key)
+
+        return list
 
     def merge_rec(self, TopPop_rec, UserCBF_rec,):
-        res = []
-        for item in UserCBF_rec:
-            user_cb_pos = self.my_index(UserCBF_rec, item)
-            top_pop_pos = self.my_index(TopPop_rec, item)
+        dict = {}
+        elem_set = list(set(TopPop_rec) | set(UserCBF_rec))
+        medium_dict = {}
 
-            avg = int(user_cb_pos) + int(top_pop_pos)
-            bisect.insort(res, (avg, item))
+        for elem in elem_set:
+            index_top_pop = self.my_index(TopPop_rec, elem)
+            index_user_cbf = self.my_index(UserCBF_rec, elem)
+            dict.update({elem: [index_top_pop, index_user_cbf]})
 
-        unzipped = zip(*res)
-        res_2 = list(unzipped)[1]
-        return res_2
+        for elem in dict.keys():
+            medium_dict.update({elem: np.median(dict[elem])})
+
+        sorted_medium_dict = {k: v for k, v in sorted(medium_dict.items(), key=lambda item: item[1])}
+
+        return self.getList(sorted_medium_dict)[:10]
