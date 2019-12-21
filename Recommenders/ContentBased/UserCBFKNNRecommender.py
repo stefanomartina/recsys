@@ -14,12 +14,15 @@ class UserCBFKNNRecommender():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, UCM_all, knn=1300, shrink=4.172, similarity="tversky", normalize=True, transpose=True, feature_weighting = None, tuning=False, similarity_path=SIMILARITY_PATH):
+    def fit(self, URM, UCM_all, knn=1300, shrink=4.172, similarity="tversky", normalize=True, transpose=True, feature_weighting = None, tuning=False, similarity_path=SIMILARITY_PATH, w1=0, w2=0):
 
         self.URM = URM
         self.UCM_all = UCM_all
         self.TopPop = TopPopRecommender()
         self.TopPop.fit(URM)
+        self.w1 = w1
+        self.w2 = w2
+
         if feature_weighting is not None:
             self.UCM_merged = self.helper.feature_weight(self.UCM_all, feature_weighting)
 
@@ -48,20 +51,22 @@ class UserCBFKNNRecommender():
     def recommend(self, user_id, at=10, exclude_seen=True):
 
         expected_scores = self.get_expected_ratings(user_id)
+        expected_scores_toppop = self.TopPop.get_item_score()
 
-        if expected_scores.sum(axis=0) == 0:
-            return self.TopPop.recommend(user_id)
+        scores = expected_scores * self.w1
+        scores += expected_scores_toppop * self.w2
 
         if exclude_seen:
-            expected_scores = self.filter_seen(user_id, expected_scores)
-        ranking = expected_scores.argsort()[::-1]
+            scores = self.filter_seen(user_id, scores)
+        ranking = scores.argsort()[::-1]
 
-        return self.merge_rec(self.TopPop.recommend(user_id), ranking[:at])
+        return ranking[:at]
+        '''return self.merge_rec(self.TopPop.recommend(user_id), ranking[:at])'''
 
         #return ranking[:at]
 
     #METHODS added trying to implement smart merge of recommendation lists
-    def my_index(self, l, item):
+    '''def my_index(self, l, item):
         for i in range(len(l)):
             if (item == l[i]).all():
                 return i
@@ -89,4 +94,4 @@ class UserCBFKNNRecommender():
 
         sorted_medium_dict = {k: v for k, v in sorted(medium_dict.items(), key=lambda item: item[1])}
 
-        return self.getList(sorted_medium_dict)[:10]
+        return self.getList(sorted_medium_dict)[:10]'''

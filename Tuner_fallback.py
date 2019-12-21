@@ -31,14 +31,11 @@ class BayesianSearch():
     #                                   STEP TO MAXIMAXE                                  #
     #######################################################################################
 
-    def step(self, knn, shrink, similarity_index, normalize_index):
+    def step(self, w1, w2):
         start_time = time.time()
         UCM_all = self.helper.UCM_all
-        ICM_all = self.helper.ICM_all
 
-        similarity = ["cosine", "adjusted", "asymmetric", "pearson", "jaccard", "dice", "tversky", "tanimoto"]
-        normalize = [True, False]
-        self.recommender.fit(self.helper.URM_train, UCM_all=UCM_all, knn=knn, shrink=shrink, similarity=similarity[int(similarity_index)], normalize=normalize[int(normalize_index)])
+        self.recommender.fit(self.helper.URM_train, UCM_all=UCM_all, tuning=True, w1=w1, w2=w2)
 
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
@@ -54,7 +51,7 @@ if __name__ == "__main__":
     recommender = UserCBFKNNRecommender()
     t = BayesianSearch(recommender, "UserCBF")
 
-    pbounds = {'knn': (300, 1500), 'shrink': (0, 50), 'similarity_index': (0, 7.1), 'normalize_index': (0, 1.1)}
+    pbounds = {'w1': (0, 3), 'w2': (0, 3)}
 
 
     optimizer = BayesianOptimization(
