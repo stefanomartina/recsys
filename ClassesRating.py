@@ -1,10 +1,10 @@
 from Base.BaseFunction import BaseFunction
 import numpy as np
 
-from Hybrid.Hybrid_Combo6 import Hybrid_Combo6
-from Hybrid.Hybrid_Combo6_bis import Hybrid_Combo6_bis
-from Hybrid.Hybrid_Combo7 import Hybrid_Combo7
-from Hybrid.Hybrid_Combo8 import Hybrid_Combo8
+from Hybrid.Hybrid_Combo4 import Hybrid_Combo6
+from Hybrid.Hybrid_Combo5 import Hybrid_Combo6_bis
+from Hybrid.Hybrid_Combo6 import Hybrid_Combo7
+from Hybrid.Hybrid_Combo6 import Hybrid_Combo8
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender

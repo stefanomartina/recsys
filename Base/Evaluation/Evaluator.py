@@ -40,8 +40,6 @@ class EvaluatorMetrics(Enum):
     DIVERSITY_GINI = "DIVERSITY_GINI"
     SHANNON_ENTROPY = "SHANNON_ENTROPY"
 
-
-
 def create_empty_metrics_dict(n_items, n_users, URM_train, ignore_items, ignore_users, cutoff, diversity_similarity_object):
 
     empty_dict = {}
@@ -88,10 +86,6 @@ def create_empty_metrics_dict(n_items, n_users, URM_train, ignore_items, ignore_
 
     return  empty_dict
 
-
-
-
-
 def get_result_string(results_run, n_decimals=7):
 
     output_str = ""
@@ -109,8 +103,6 @@ def get_result_string(results_run, n_decimals=7):
 
     return output_str
 
-
-
 def _remove_item_interactions(URM, item_list):
 
     URM = sps.csc_matrix(URM.copy())
@@ -126,7 +118,6 @@ def _remove_item_interactions(URM, item_list):
     URM = sps.csr_matrix(URM)
 
     return URM
-
 
 class Evaluator(object):
     """Abstract Evaluator"""
@@ -196,12 +187,10 @@ class Evaluator(object):
 
         self.usersToEvaluate = list(self.usersToEvaluate)
 
-
     def _print(self, string):
         
         if self.verbose:
             print("{}: {}".format(self.EVALUATOR_NAME, string))
-
 
     def evaluateRecommender(self, recommender_object):
         """
@@ -212,25 +201,17 @@ class Evaluator(object):
 
         raise NotImplementedError("The method evaluateRecommender not implemented for this evaluator class")
 
-
-
     def get_user_relevant_items(self, user_id):
 
         assert self.URM_test.getformat() == "csr", "Evaluator_Base_Class: URM_test is not CSR, this will cause errors in getting relevant items"
 
         return self.URM_test.indices[self.URM_test.indptr[user_id]:self.URM_test.indptr[user_id+1]]
 
-
     def get_user_test_ratings(self, user_id):
 
         assert self.URM_test.getformat() == "csr", "Evaluator_Base_Class: URM_test is not CSR, this will cause errors in relevant items ratings"
 
         return self.URM_test.data[self.URM_test.indptr[user_id]:self.URM_test.indptr[user_id+1]]
-
-
-
-
-
 
 class EvaluatorHoldout(Evaluator):
     """EvaluatorHoldout"""
@@ -430,8 +411,6 @@ class EvaluatorHoldout(Evaluator):
             recommender_object.reset_items_to_ignore()
 
         return (results_dict, results_run_string)
-
-
 
 class EvaluatorNegativeItemSample(Evaluator):
     """EvaluatorNegativeItemSample"""

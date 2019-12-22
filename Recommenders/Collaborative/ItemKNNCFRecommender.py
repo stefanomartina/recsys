@@ -16,12 +16,11 @@ class ItemKNNCFRecommender():
 
     def fit(self, URM, knn=10, shrink=30, similarity="jaccard", normalize=True, transpose=False, tuning=False, similarity_path=SIMILARITY_PATH):
 
-        print("Fitting Item Collaborative Filtering Recommender...")
         self.URM = URM
 
         # Compute similarity
         if tuning:
-            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.URM, similarity_path, knn, shrink,
+            self.W_sparse = self.helper.get_cosine_similarity_stored(self.URM, RECOMMENDER_NAME, similarity_path, knn, shrink,
                                                                          similarity, normalize, transpose=transpose,
                                                                          tuning=tuning)
         else:

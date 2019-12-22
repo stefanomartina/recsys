@@ -367,13 +367,15 @@ class BaseFunction:
     def return_path(self):
         return os.getcwd()
 
-    def export_similarity_matrix(self, filename, matrix):
+    def export_similarity_matrix(self, filename, matrix, name=None):
+            if name is not None:
+                print("Fitting {0:s}...".format(name))
             sps.save_npz(filename, matrix)
 
     def import_similarity_matrix(self, filename):
             return sps.load_npz(filename)
 
-    def get_cosine_similarity_hybrid(self, matrix, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=False, tuning=False):
+    def get_cosine_similarity_stored(self, matrix, name, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=False, tuning=False):
 
         if transpose:
             matrix = matrix.T
@@ -384,6 +386,7 @@ class BaseFunction:
 
         else:
             if not os.path.exists(self.return_path() + SIMILARITY_PATH):
+                print("Fitting {0:s}...".format(name))
                 similarity_object = Compute_Similarity_Cython(matrix, shrink=shrink, topK=knn, normalize=normalize, similarity=similarity)
                 W_sparse = similarity_object.compute_similarity()
                 self.export_similarity_matrix(self.return_path() + SIMILARITY_PATH, W_sparse)
@@ -408,7 +411,7 @@ class BaseFunction:
         else:
             if not os.path.exists(self.return_path() + SIMILARITY_PATH):
                 W_sparse = similarityMatrixTopK(S_incremental, k=topK)
-                self.exporting_similarity_matrix(self.return_path() + SIMILARITY_PATH, W_sparse)
+                self.export_similarity_matrix(self.return_path() + SIMILARITY_PATH, W_sparse)
             W_sparse = sps.load_npz(self.return_path() + SIMILARITY_PATH)
 
         return W_sparse

@@ -15,7 +15,7 @@ SIMILARITY_PATH = "/SimilarityProduct/SlimElastic_similarity.npz"
 class SLIMElasticNetRecommender():
 
     def fit(self, URM, verbose = True, l1_ratio=0.1, alpha = 1.0, positive_only=True, topK = 100, tuning=False, similarity_path=SIMILARITY_PATH):
-        print("Fitting SlimElasticNet Recommender...")
+
         self.URM = URM
         self.l1_ratio = l1_ratio
         self.positive_only = positive_only
@@ -121,7 +121,7 @@ class SLIMElasticNetRecommender():
 
 
                 self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])),shape=(n_items, n_items), dtype=np.float32)
-                self.helper.export_similarity_matrix(os.getcwd() + similarity_path, self.W_sparse)
+                self.helper.export_similarity_matrix(os.getcwd() + similarity_path, self.W_sparse, name=RECOMMENDER_NAME)
             self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + similarity_path)
 
         else:

@@ -24,8 +24,7 @@ class ItemCBFKNNRecommender():
 
         # Compute similarity
         if tuning:
-            print("Fitting Item Content Based Recommender...")
-            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.ICM_all, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
+            self.W_sparse = self.helper.get_cosine_similarity_stored(self.ICM_all, RECOMMENDER_NAME, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         else:
             self.W_sparse = self.helper.get_cosine_similarity(self.ICM_all, knn, shrink, similarity, normalize, transpose=transpose)
 

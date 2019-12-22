@@ -1,6 +1,5 @@
 from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommender
 from Hybrid.BaseHybridRecommender import BaseHybridRecommender
-from Hybrid.Hybrid_Combo6 import Hybrid_Combo6
 from Hybrid.Hybrid_Combo6_bis import Hybrid_Combo6_bis
 import numpy as np
 

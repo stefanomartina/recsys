@@ -42,7 +42,7 @@ class Hybrid_Combo3(BaseHybridRecommender):
         self.weights = np.array(weights)
         self.ICM_all = ICM_all
         self.UCM_all = UCM_all
-        self.rec_for_colder.fit(self.URM, self.UCM_all)
+        self.rec_for_colder.fit(self.URM, self.UCM_all, tuning=tuning)
 
         # Sub-Fitting
         self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning)

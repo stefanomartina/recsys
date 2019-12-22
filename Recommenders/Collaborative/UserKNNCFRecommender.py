@@ -12,12 +12,12 @@ class UserKNNCFRecommender(object):
         self.helper = BaseFunction()
 
     def fit(self, URM, knn=600, shrink=0, similarity="cosine", normalize=True, transpose=True, tuning=False, similarity_path=SIMILARITY_PATH):
-        print("Fitting User Collaborative Filerting Recommender...")
+
         self.URM = URM
 
         # Compute similarity
         if tuning:
-            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.URM, similarity_path, knn, shrink,
+            self.W_sparse = self.helper.get_cosine_similarity_stored(self.URM, RECOMMENDER_NAME, similarity_path, knn, shrink,
                                                                          similarity, normalize, transpose=transpose,
                                                                          tuning=tuning)
         else:

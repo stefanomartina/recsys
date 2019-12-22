@@ -181,7 +181,7 @@ class RP3BetaRecommender(object):
         if tuning:
             if not os.path.exists(os.getcwd() + similarity_path):
                 self.run_fit()
-                self.helper.export_similarity_matrix(os.getcwd() + similarity_path, self.W_sparse)
+                self.helper.export_similarity_matrix(os.getcwd() + similarity_path, self.W_sparse, name=RECOMMENDER_NAME)
             self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + similarity_path)
 
         else:

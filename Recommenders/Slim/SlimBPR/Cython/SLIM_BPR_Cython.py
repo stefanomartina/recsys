@@ -57,7 +57,6 @@ class SLIM_BPR_Cython(object):
     #######################################################################################
 
     def fit(self, URM_train, tuning = False):
-        print("Fitting Slim...")
         self.__init__()
         self.URM = URM_train
         self.tuning = tuning
@@ -129,7 +128,7 @@ class SLIM_BPR_Cython(object):
             if self.tuning:
                 if not os.path.exists(os.getcwd() + SIMILARITY_PATH):
                     self.W_sparse = self.S_incremental
-                    self.helper.export_similarity_matrix(os.getcwd() + SIMILARITY_PATH, self.W_sparse)
+                    self.helper.export_similarity_matrix(os.getcwd() + SIMILARITY_PATH, self.W_sparse, name=RECOMMENDER_NAME)
 
                 self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + SIMILARITY_PATH)
             else:
@@ -139,7 +138,7 @@ class SLIM_BPR_Cython(object):
             if self.tuning:
                 if not os.path.exists(os.getcwd() + SIMILARITY_PATH):
                     self.W_sparse = similarityMatrixTopK(self.S_incremental, k=self.topK)
-                    self.helper.export_similarity_matrix(os.getcwd() + SIMILARITY_PATH, self.W_sparse)
+                    self.helper.export_similarity_matrix(os.getcwd() + SIMILARITY_PATH, self.W_sparse, name=RECOMMENDER_NAME)
                 self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + SIMILARITY_PATH)
             else:
                 self.W_sparse = similarityMatrixTopK(self.S_incremental, k=self.topK)

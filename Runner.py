@@ -1,7 +1,7 @@
 from tqdm import tqdm
 
+from Hybrid.Hybrid_Combo3 import Hybrid_Combo3
 from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
-from Recommenders.Combination import ItemCF_ItemCB
 from Recommenders.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython, MatrixFactorization_AsySVD_Cython, MatrixFactorization_FunkSVD_Cython
 from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
 from Recommenders.Slim.SlimElasticNet import SLIMElasticNetRecommender
@@ -10,7 +10,7 @@ from Recommenders.Collaborative import UserKNNCFRecommender, ItemKNNCFRecommende
 from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRecommender
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
-from Hybrid import Hybrid_Combo1, Hybrid_Combo5, Hybrid_Combo2, Hybrid_Combo6, Hybrid_Combo6_bis
+from Hybrid import Hybrid_Combo2, Hybrid_Combo4, Hybrid_Hybrid_Combo
 from Utils import evaluation
 
 
@@ -53,7 +53,7 @@ class Runner:
     #                                     RUN FITTNG                                      #
     #######################################################################################
 
-    def fit_recommender(self, requires_icm = False, requires_ucm = False):
+    def fit_recommender(self, requires_icm=False, requires_ucm=False, load_similarity=True):
         print("Fitting model...")
         ICM_all = self.functionality.ICM_all
         UCM_all = self.functionality.UCM_all
@@ -71,13 +71,13 @@ class Runner:
         else:
             self.functionality.split_80_20(0.8)
             if requires_icm and requires_ucm:
-                self.recommender.fit(self.functionality.URM_train, ICM_all, UCM_all)
+                self.recommender.fit(self.functionality.URM_train, ICM_all, UCM_all, tuning=True)
             elif requires_icm:
-                self.recommender.fit(self.functionality.URM_train, ICM_all)
+                self.recommender.fit(self.functionality.URM_train, ICM_all, tuning=True)
             elif requires_ucm:
-                self.recommender.fit(self.functionality.URM_train, UCM_all)
+                self.recommender.fit(self.functionality.URM_train, UCM_all, tuning=True)
             else:
-                self.recommender.fit(self.functionality.URM_train)
+                self.recommender.fit(self.functionality.URM_train, tuning=True)
         print("Model fitted")
 
     #######################################################################################
@@ -127,7 +127,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('recommender', choices=['random', 'top-pop',
                                                 'ItemCBF', 'UserCBF', 'UserCF', 'ItemCF',
-                                                'ItemCF_TopPop_Combo', 'ItemCF_ItemCB_Combo',
                                                 'Slim', 'SlimElasticNet',
                                                 'SlimBPRCython_Hybrid',
                                                 'PureSVD',
@@ -167,11 +166,6 @@ if __name__ == '__main__':
         print("ItemCF selected")
         recommender = ItemKNNCFRecommender.ItemKNNCFRecommender()
 
-    if args.recommender == "ItemCF_ItemCB_Combo":
-        print("ItemCF_ItemCB_Combo selected")
-        recommender = ItemCF_ItemCB.ItemCF_ItemCB()
-        requires_icm = True
-
     if args.recommender == 'Slim':
         print("Slim selected")
         recommender = SLIM_BPR_Cython.SLIM_BPR_Cython()
@@ -186,9 +180,9 @@ if __name__ == '__main__':
 
     if args.recommender == "Hybrid":
         print("Hybrid")
-        recommender = Hybrid_Combo6_bis.Hybrid_Combo6_bis("Combo6_bis", UserCBFKNNRecommender.UserCBFKNNRecommender())
-        requires_icm = True
+        recommender = Hybrid_Combo2.Hybrid_Combo2("Combo2", UserCBFKNNRecommender.UserCBFKNNRecommender())
         requires_ucm = True
+        requires_icm = True
 
     if args.recommender == 'MF_BPR_Cython':
         print("MF_BPR_Cython selected")
@@ -209,6 +203,7 @@ if __name__ == '__main__':
     if args.recommender == 'RP3Beta':
         print("RP3Beta selected")
         recommender = RP3BetaRecommender()
+        requires_ucm = True
 
-    print(args)
+    #print(args)
     Runner(recommender, args.recommender, evaluate=args.eval).run(requires_ucm, requires_icm)

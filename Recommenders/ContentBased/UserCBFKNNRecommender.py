@@ -1,6 +1,5 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
 
-from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
 from Base.BaseFunction import BaseFunction
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 import scipy.sparse as sps
@@ -14,22 +13,19 @@ class UserCBFKNNRecommender():
     def __init__(self):
         self.helper = BaseFunction()
 
-    def fit(self, URM, UCM_all, knn=1300, shrink=4.172, similarity="tversky", normalize=True, transpose=True, feature_weighting = None, tuning=False, similarity_path=SIMILARITY_PATH, w1=0, w2=0):
+    def fit(self, URM, UCM_all, knn=1300, shrink=4.172, similarity="tversky", normalize=True, transpose=True, feature_weighting = None, tuning=False, similarity_path=SIMILARITY_PATH):
 
         self.URM = URM
         self.UCM_all = UCM_all
         self.TopPop = TopPopRecommender()
         self.TopPop.fit(URM)
-        self.w1 = w1
-        self.w2 = w2
 
         if feature_weighting is not None:
             self.UCM_merged = self.helper.feature_weight(self.UCM_all, feature_weighting)
 
         # Compute similarity
         if tuning:
-            print("Fitting User Content Based Recommender Recommender...")
-            self.W_sparse = self.helper.get_cosine_similarity_hybrid(self.UCM_all, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
+            self.W_sparse = self.helper.get_cosine_similarity_stored(self.UCM_all, RECOMMENDER_NAME, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         else:
             self.W_sparse = self.helper.get_cosine_similarity(self.UCM_all, knn, shrink, similarity, normalize,
                                                                   transpose=transpose)
@@ -51,14 +47,10 @@ class UserCBFKNNRecommender():
     def recommend(self, user_id, at=10, exclude_seen=True):
 
         expected_scores = self.get_expected_ratings(user_id)
-        expected_scores_toppop = self.TopPop.get_item_score()
-
-        scores = expected_scores * self.w1
-        scores += expected_scores_toppop * self.w2
 
         if exclude_seen:
-            scores = self.filter_seen(user_id, scores)
-        ranking = scores.argsort()[::-1]
+            expected_scores = self.filter_seen(user_id, expected_scores)
+        ranking = expected_scores.argsort()[::-1]
 
         return ranking[:at]
         '''return self.merge_rec(self.TopPop.recommend(user_id), ranking[:at])'''
