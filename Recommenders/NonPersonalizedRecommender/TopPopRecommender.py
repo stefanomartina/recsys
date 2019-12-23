@@ -3,7 +3,7 @@ import numpy as np
 class TopPopRecommender():
     RECOMMENDER_NAME = "TopPopRecommender"
 
-    def fit(self, URM_train):
+    def fit(self, URM_train, tuning=False):
         print("Fitting Top Pop Recommender...")
 
         self.URM_train = URM_train

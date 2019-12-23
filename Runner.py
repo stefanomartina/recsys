@@ -10,7 +10,7 @@ from Recommenders.Collaborative import UserKNNCFRecommender, ItemKNNCFRecommende
 from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRecommender
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
-from Hybrid import Hybrid_Combo2, Hybrid_Combo4, Hybrid_Hybrid_Combo
+from Hybrid import Hybrid_Combo2, Hybrid_Combo4, Hybrid_Hybrid_Combo, Hybrid_Combo6_bis, Hybrid_Combo7_bis
 from Utils import evaluation
 
 
@@ -180,7 +180,7 @@ if __name__ == '__main__':
 
     if args.recommender == "Hybrid":
         print("Hybrid")
-        recommender = Hybrid_Combo2.Hybrid_Combo2("Combo2", UserCBFKNNRecommender.UserCBFKNNRecommender())
+        recommender = Hybrid_Combo6_bis.Hybrid_Combo6_bis("Combo6_bis", UserCBFKNNRecommender.UserCBFKNNRecommender())
         requires_ucm = True
         requires_icm = True
 

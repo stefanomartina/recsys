@@ -238,7 +238,7 @@ class BaseFunction:
         self.ICM_asset = (sps.coo_matrix((ones, (self.itemlist_icm_asset, self.assetlist_icm)), shape=icm_asset_shape))
 
         self.ICM_all = sps.hstack((self.ICM_asset, self.ICM_price))
-        self.ICM_all = sps.hstack(( self.ICM_all, self.ICM_subclass))
+        self.ICM_all = sps.hstack((self.ICM_all, self.ICM_subclass))
         self.ICM_all = self.ICM_all.tocsr()
 
     def get_UCM(self):

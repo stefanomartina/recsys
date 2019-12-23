@@ -3,18 +3,12 @@ import os, shutil
 from bayes_opt import BayesianOptimization
 import time
 
+from Hybrid.Hybrid_Combo7_bis import Hybrid_Combo7_bis
 from Hybrid.Hybrid_Hybrid_Combo import Hybrid_Combo10
 from Hybrid.Hybrid_Combo4 import Hybrid_Combo4
-from Hybrid.Hybrid_Combo6 import Hybrid_Combo7
-from Hybrid.Hybrid_Combo6 import Hybrid_Combo8
-from Hybrid.Hybrid_Combo1 import Hybrid_Combo1
-from Hybrid.Hybrid_Combo7 import Hybrid_Combo9
-from Hybrid.Hybrid_Combo_Collaborative import Hybrid_Combo_Collaborative
 from Utils import evaluation
 from Base.BaseFunction import BaseFunction
 from Hybrid.Hybrid_Combo2 import Hybrid_Combo2
-from Hybrid.Hybrid_Combo4 import Hybrid_Combo6
-from Hybrid.Hybrid_Combo5 import Hybrid_Combo6_bis
 from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
@@ -161,7 +155,7 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
 
-    recommender = Hybrid_Combo_Collaborative("Combo_Collaborative", UserCBFKNNRecommender())
+    recommender = Hybrid_Combo7_bis("Combo7_bis", UserCBFKNNRecommender())
     t = BayesianSearch(recommender, "Combo6")
 
     pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
@@ -191,12 +185,14 @@ if __name__ == "__main__":
 
     # 2.65, 0.1702, 0.002764, 0.7887
     pbounds_hybrid6_bis = {'weight1': (0, 10), 'weight2': (0, 10), 'weight3': (0, 10), 'weight4': (0, 10), 'weight5': (0,10), 'weight6': (0,10)}
+    pbounds_hybrid7_bis = {'weight1': (0, 10), 'weight2': (0, 10), 'weight3': (0, 10), 'weight4': (0, 10),
+                           'weight5': (0, 10), 'weight6': (0, 10)}
     pbound_random_svd = {'n_components':(100, 3000), 'n_iter':(1, 100)}
     pbound_funk_svd = {'epoch': (450,600), 'num_factors':(20,40), 'learning_rate':(0.001, 0.005), 'user_reg':(0.5, 0.9), 'item_reg':(0.1, 0.6)}
 
     optimizer = BayesianOptimization(
-        f=t.step_hybrid_two,
-        pbounds=pbounds_hybrid_collaborative,
+        f=t.step_hybrid_6_bis,
+        pbounds=pbounds_hybrid7_bis,
         verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
     )
 
