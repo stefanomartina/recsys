@@ -24,12 +24,12 @@ class UserCBFKNNRecommender():
         self.TopPop = TopPopRecommender()
         self.TopPop.fit(URM)
 
+        """ 
         # Compute the extention of the UCM, adding URM and the total number of interactions of the users with the items
         user_activity = (np.asarray((self.URM).sum(axis=1)).squeeze()).astype(int)
         user_activity = list(user_activity[user_activity > 0])
         users = list(self.helper.userlist_urm)
         presence_activity = list(np.ones(len(users)))
-
         user_activity_adapted = users.copy()
         users_iterator = iter(users)
 
@@ -52,17 +52,11 @@ class UserCBFKNNRecommender():
             else:
                 condition = False
 
-
-
-
-
-
-
         activity_matrix = (sps.coo_matrix((presence_activity, (users, user_activity_adapted))))
+        self.UCM_all = sps.hstack((self.UCM_all, activity_matrix))
+        """
 
         self.UCM_all = sps.hstack((self.UCM_all.tocoo(), self.URM.tocoo()))
-        self.UCM_all = sps.hstack((self.UCM_all, activity_matrix))
-
         self.UCM_all = self.UCM_all.tocsr()
 
         if feature_weighting is not None:

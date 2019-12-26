@@ -2,7 +2,7 @@ import scipy.sparse as sps
 import numpy as np
 import time
 
-from Utils.Compute_Similarity_Python import check_matrix
+from Base.Recommender_utils import check_matrix
 
 
 def similarityMatrixTopK(item_weights, forceSparseOutput = True, k=100, verbose = False, inplace=True):

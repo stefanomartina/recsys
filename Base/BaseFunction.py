@@ -1,17 +1,14 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
 
 from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
+from tqdm import tqdm
 from Utils.similarityMatrixTopK import similarityMatrixTopK
-
-""" 
-This class collects the main support function for the recommender algorithms that are developed in this repository, 
-based on the dataset provided.
-"""
-
 import scipy.sparse as sps
 import numpy as np
-from sklearn import preprocessing
+from sklearn import preprocessing, datasets
+from sklearn.model_selection import train_test_split
 import os
+import pandas as pd
 
 
 class BaseFunction:
@@ -28,6 +25,7 @@ class BaseFunction:
         self.URM_all = None
         self.URM_train = None
         self.URM_test = None
+        self.URM_val = None
 
         # ICM_subclass -----------------
         self.ICM = None
@@ -147,13 +145,13 @@ class BaseFunction:
     #                           SPLITTING AND CREATION OF MATRIX                          #
     #######################################################################################
 
-    def split_dataset_loo(self):
-        print('Using LeaveOneOut')
-        urm = self.URM_all.tocsr()
+    def split_dataset_loo(self, URM_train):
+        print('Using LeaveOneOut for cross-validation')
+        urm = URM_train.tocsr()
         users_len = len(urm.indptr) - 1
         items_len = max(urm.indices) + 1
         urm_train = urm.copy()
-        urm_test = np.zeros((users_len, items_len))
+        urm_val = np.zeros((users_len, items_len))
         for user_id in range(users_len):
             start_pos = urm_train.indptr[user_id]
             end_pos = urm_train.indptr[user_id + 1]
@@ -161,16 +159,16 @@ class BaseFunction:
             if user_profile.size > 0:
                 item_id = np.random.choice(user_profile, 1)
                 urm_train[user_id, item_id] = 0
-                urm_test[user_id, item_id] = 1
+                urm_val[user_id, item_id] = 1
 
-        urm_test = (sps.coo_matrix(urm_test, dtype=int, shape=urm.shape)).tocsr()
+        urm_val = (sps.coo_matrix(urm_val, dtype=int, shape=urm.shape)).tocsr()
         urm_train = (sps.coo_matrix(urm_train, dtype=int, shape=urm.shape)).tocsr()
 
-        urm_test.eliminate_zeros()
+        urm_val.eliminate_zeros()
         urm_train.eliminate_zeros()
 
         self.URM_train = urm_train
-        self.URM_test = urm_test
+        self.URM_val = urm_val
 
     def split_80_20(self, percentage=0.8):
         np.random.seed(123)
@@ -197,6 +195,13 @@ class BaseFunction:
 
         self.URM_train = urm_train
         self.URM_test = urm_test
+
+    def cross_validation(self):
+
+        # create test and train set from dataset formatted
+        self.split_80_20(0.8)
+
+
 
     def get_URM(self):
         self.get_list(self.get_tuples(self.get_file(self.switch_source(6))), "URM")
@@ -359,6 +364,30 @@ class BaseFunction:
             matrix = self.check_matrix(matrix, 'csr')
 
         return matrix
+
+    def get_sorted_items_in_user_profile(self, user_id):
+        index_list = np.where(self.users_list == user_id)
+        return self.items_list[index_list]
+
+    def tail_boost(self, URM, step=1, lastN=8):
+        self.users_list = np.asarray(list(self.URM_all.indptr))
+        self.items_list = np.asarray(list(self.URM_all.indices))
+        target_users = list(self.userlist_unique)
+
+        # For each user in URM
+        for row_index in tqdm(range(URM.shape[0])):
+            if row_index in target_users:
+                sorted_items = self.get_sorted_items_in_user_profile(row_index)
+                items = URM[row_index].indices
+                lenItems = len(items)
+
+                for i in range(lenItems):
+                    # THE COMMA IS IMPORTANT
+                    index_of_track, = np.where(sorted_items == items[i])
+                    if lenItems - index_of_track <= lastN:
+                        additive_score = ((lastN+1) - (lenItems - index_of_track)) * step
+                        URM.data[URM.indptr[row_index] + i] += additive_score
+        return URM
 
     #######################################################################################
     #                               SIMILARITY UTILS                                      #

@@ -15,6 +15,7 @@ from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopReco
 from Recommenders.ContentBased.ItemCBFKNNRecommender import ItemCBFKNNRecommender
 from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommender
 from Recommenders.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_FunkSVD_Cython
+from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
 
 
 class BayesianSearch():
@@ -98,6 +99,15 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
+    def step_ALS(self, weight1=0, weight2=0, weight3=0):
+        start_time = time.time()
+        self.recommender = AlternatingLeastSquare(n_factors=int(weight1), regularization=weight2, iterations=int(weight3))
+        self.recommender.fit(self.helper.URM_train)
+        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        elapsed_time = time.time() - start_time
+        print("----------------" + str(elapsed_time) + "----------------")
+        return cumulative
+
     def step_Item_CB(self, weight1=0, weight2=0):
         start_time = time.time()
         ICM_all = self.helper.ICM_all
@@ -155,8 +165,8 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
 
-    recommender = Hybrid_Combo7_bis("Combo7_bis", UserCBFKNNRecommender())
-    t = BayesianSearch(recommender, "Combo6")
+    recommender = AlternatingLeastSquare()
+    t = BayesianSearch(recommender, "ALS")
 
     pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
     pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
@@ -183,6 +193,8 @@ if __name__ == "__main__":
 
     pbounds_hybrid_collaborative = {'weight1': (0.9, 2.5), 'weight2': (2.5, 3)}
 
+    pbounds_ALS = {'weight1': (200, 400), 'weight2': (0.05, 0.30), 'weight3': (10, 50)}
+
     # 2.65, 0.1702, 0.002764, 0.7887
     pbounds_hybrid6_bis = {'weight1': (0, 10), 'weight2': (0, 10), 'weight3': (0, 10), 'weight4': (0, 10), 'weight5': (0,10), 'weight6': (0,10)}
     pbounds_hybrid7_bis = {'weight1': (0, 10), 'weight2': (0, 10), 'weight3': (0, 10), 'weight4': (0, 10),
@@ -191,8 +203,8 @@ if __name__ == "__main__":
     pbound_funk_svd = {'epoch': (450,600), 'num_factors':(20,40), 'learning_rate':(0.001, 0.005), 'user_reg':(0.5, 0.9), 'item_reg':(0.1, 0.6)}
 
     optimizer = BayesianOptimization(
-        f=t.step_hybrid_6_bis,
-        pbounds=pbounds_hybrid7_bis,
+        f=t.step_ALS,
+        pbounds=pbounds_ALS,
         verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
     )
 

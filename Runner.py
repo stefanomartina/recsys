@@ -10,6 +10,7 @@ from Recommenders.Collaborative import UserKNNCFRecommender, ItemKNNCFRecommende
 from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRecommender
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
+from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
 from Hybrid import Hybrid_Combo2, Hybrid_Combo4, Hybrid_Hybrid_Combo, Hybrid_Combo6_bis, Hybrid_Combo7_bis
 from Utils import evaluation
 
@@ -77,7 +78,7 @@ class Runner:
             elif requires_ucm:
                 self.recommender.fit(self.functionality.URM_train, UCM_all, tuning=True)
             else:
-                self.recommender.fit(self.functionality.URM_train, tuning=True)
+                self.recommender.fit(self.functionality.URM_train)
         print("Model fitted")
 
     #######################################################################################
@@ -130,7 +131,7 @@ if __name__ == '__main__':
                                                 'Slim', 'SlimElasticNet',
                                                 'SlimBPRCython_Hybrid',
                                                 'PureSVD',
-                                                'MF_BPR_Cython', 'Funk_SVD', 'Asy_SVD',
+                                                'MF_BPR_Cython', 'Funk_SVD', 'Asy_SVD', 'ALS',
                                                 'P3Alpha', 'RP3Beta',
                                                 'Hybrid'])
 
@@ -191,6 +192,10 @@ if __name__ == '__main__':
     if args.recommender == 'Funk_SVD':
         print("Funk_SVD selected")
         recommender = MatrixFactorization_FunkSVD_Cython()
+
+    if args.recommender == 'ALS':
+        print("ALS selected")
+        recommender = AlternatingLeastSquare()
 
     if args.recommender == 'Asy_SVD':
         print("Asy_SVD selected")

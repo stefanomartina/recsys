@@ -14,8 +14,8 @@ RECOMMENDER_NAME = "AbstractMatrixRecommender"
 
 class BaseMatrixFactorization():
 
-    def __init__(self, verbose=False, algorithm_name=None, recompile_cython=False, epochs=600, batch_size=1000,
-            num_factors=30, positive_threshold_BPR=None, learning_rate=0.002, use_bias=True, sgd_mode='adagrad',
+    def __init__(self, verbose=False, algorithm_name=None, recompile_cython=False, epochs=1000, batch_size=1,
+            num_factors=100, positive_threshold_BPR=None, learning_rate=0.002, use_bias=True, sgd_mode='adagrad',
             negative_interactions_quota=0.0, init_mean=0.0, init_std_dev=0.1,
             user_reg=0.71, item_reg=0.2, bias_reg=0.5, positive_reg=0.0, negative_reg=0.0, random_seed=None,
             **earlystopping_kwargs):
@@ -126,10 +126,10 @@ class BaseMatrixFactorization():
             elapsed_time = time.time() - start_time
             new_time_value, new_time_unit = seconds_to_biggest_unit(elapsed_time)
 
-            """
+
             print("{}: Epoch {} of {}. Elapsed time {:.2f} {}".format(
                 algorithm_name, epochs_current+1, epochs_max, new_time_value, new_time_unit))
-            """
+
 
             epochs_current += 1
 
