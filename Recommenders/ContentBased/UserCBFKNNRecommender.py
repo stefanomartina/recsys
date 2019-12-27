@@ -2,13 +2,11 @@
 import scipy
 
 from Base.BaseFunction import BaseFunction
-from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 import scipy.sparse as sps
 import numpy as np
-import bisect
 
 RECOMMENDER_NAME = "UserCBFKNNRecommender"
-SIMILARITY_PATH = "/SimilarityProduct/UserCBF_similarity.npz"
+SIMILARITY_PATH = "/SimilarityProduct/UserCB_similarity.npz"
 
 class UserCBFKNNRecommender():
 
@@ -52,17 +50,14 @@ class UserCBFKNNRecommender():
         self.UCM_all = sps.hstack((self.UCM_all, activity_matrix))
         """
 
-        self.UCM_all = sps.hstack((self.UCM_all.tocoo(), self.URM.tocoo()))
-        self.UCM_all = self.UCM_all.tocsr()
-
         if feature_weighting is not None:
             self.UCM_all = self.helper.feature_weight(self.UCM_all, feature_weighting)
 
         # Compute similarity
         if tuning:
-            self.W_sparse = self.helper.get_cosine_similarity_stored(self.UCM_all, RECOMMENDER_NAME, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
+            self.W_sparse = self.helper.get_cosine_similarity_stored(sps.hstack((self.URM, self.UCM_all)), RECOMMENDER_NAME, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         else:
-            self.W_sparse = self.helper.get_cosine_similarity(self.UCM_all, knn, shrink, similarity, normalize,
+            self.W_sparse = self.helper.get_cosine_similarity(sps.hstack((self.UCM_all, self.URM)), knn, shrink, similarity, normalize,
                                                                   transpose=transpose)
         self.similarityProduct = self.W_sparse.dot(self.URM)
 
