@@ -6,7 +6,7 @@ from Recommenders.Slim.SlimElasticNet.SLIMElasticNetRecommender import SLIMElast
 from Recommenders.MatrixFactorization.PureSVD.PureSVDRecommender import PureSVDRecommender
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
-from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
+from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
 from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommender
 
 import numpy as np
@@ -22,7 +22,6 @@ class BaseHybridRecommender(object):
     #                                  INIT ALGORITHM                                     #
     #######################################################################################
 
-
     def __init__(self, combination, rec_for_colder):
 
         self.hybrid_ratings = None
@@ -31,6 +30,7 @@ class BaseHybridRecommender(object):
         self.list_ICM = None
         self.combination = combination
         self.merge_index = 2
+        self.treshold = None
 
         # Recommender for the cold user
         self.rec_for_colder = rec_for_colder
@@ -62,6 +62,9 @@ class BaseHybridRecommender(object):
         # RP3Beta Recommender
         self.RP3Beta = RP3BetaRecommender()
 
+        # ALS Recommender
+        self.ALS = AlternatingLeastSquare()
+
         # Ratings from each available algorithm
         self.userContentBased_ratings = None
         self.itemContentBased_ratings = None
@@ -73,13 +76,13 @@ class BaseHybridRecommender(object):
         self.pureSVD_ratings = None
         self.P3Alpha_ratings = None
         self.RP3Beta_ratings = None
-
+        self.ALS_ratings = None
 
     #######################################################################################
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, weights, weights1, weights2, ICM_all, UCM_all):
+    def fit(self, URM, weights, ICM_all, UCM_all):
         pass
 
     #######################################################################################
@@ -101,11 +104,12 @@ class BaseHybridRecommender(object):
         self.sum_ratings()
         summed_score = self.hybrid_ratings.sum(axis=0)
 
-        if summed_score == 0:
+
+        if summed_score <= self.treshold:
             return self.rec_for_colder.recommend(user_id)
 
-        else:
 
+        else:
             recommended_items = np.flip(np.argsort(self.hybrid_ratings), 0)
             # REMOVING SEEN
             unseen_items_mask = np.in1d(recommended_items, self.URM[user_id].indices,

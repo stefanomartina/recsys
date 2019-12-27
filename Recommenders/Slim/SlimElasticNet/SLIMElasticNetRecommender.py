@@ -124,6 +124,7 @@ class SLIMElasticNetRecommender():
                 self.helper.export_similarity_matrix(os.getcwd() + similarity_path, self.W_sparse,
                                                      name=RECOMMENDER_NAME)
             self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + similarity_path)
+            self.similarityProduct = self.URM.dot(self.W_sparse)
 
         else:
             self.run_fit(similarity_path)
