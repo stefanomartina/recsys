@@ -104,19 +104,13 @@ class BaseHybridRecommender(object):
         self.sum_ratings()
         summed_score = self.hybrid_ratings.sum(axis=0)
 
-
-        if summed_score <= self.treshold:
-            return self.rec_for_colder.recommend(user_id)
-
-
-        else:
-            recommended_items = np.flip(np.argsort(self.hybrid_ratings), 0)
-            # REMOVING SEEN
-            unseen_items_mask = np.in1d(recommended_items, self.URM[user_id].indices,
+        recommended_items = np.flip(np.argsort(self.hybrid_ratings), 0)
+        # REMOVING SEEN
+        unseen_items_mask = np.in1d(recommended_items, self.URM[user_id].indices,
                                         assume_unique=True, invert=True)
-            recommended_items = recommended_items[unseen_items_mask]
+        recommended_items = recommended_items[unseen_items_mask]
 
-            return recommended_items[0:at]
+        return recommended_items[0:at]
 
     def get_cold_users(self, URM):
         cold_users_mask = np.ediff1d(URM.tocsr().indptr) == 0
