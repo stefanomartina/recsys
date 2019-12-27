@@ -3,7 +3,7 @@ import implicit
 
 class AlternatingLeastSquare:
 
-    def __init__(self, n_factors=300, regularization=0.15, iterations=30):
+    def __init__(self, n_factors=400, regularization=0.1104, iterations=50):
         self.n_factors = n_factors
         self.regularization = regularization
         self.iterations = iterations
@@ -28,8 +28,8 @@ class AlternatingLeastSquare:
         self.item_factors = model.item_factors
 
 
-    def get_expected_ratings(self, playlist_id):
-        scores = np.dot(self.user_factors[playlist_id], self.item_factors.T)
+    def get_expected_ratings(self, user_id):
+        scores = np.dot(self.user_factors[user_id], self.item_factors.T)
         return np.squeeze(scores)
 
     def recommend(self, user_id, at=10):

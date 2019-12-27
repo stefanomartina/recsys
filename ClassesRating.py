@@ -53,7 +53,7 @@ class ClassesRating:
         MAP_ALS_per_group = []
         MAP_Hybrid2_per_group = []
         MAP_Hybrid6_per_group = []
-        MAP_Hybrid6_bis_per_group = []
+        MAP_H6_bis_per_group = []
         MAP_Hybrid7_per_group = []
         MAP_Hybrid8_per_group = []
         MAP_HybridCB_per_group = []
@@ -73,17 +73,19 @@ class ClassesRating:
         self.P3Alpha = P3AlphaRecommender()
         self.RP3Beta = RP3BetaRecommender()
         self.ALS = AlternatingLeastSquare()
+        self.H6_bis = Hybrid_Combo6_bis("Combo6_bis", UserCBFKNNRecommender())
 
-        self.ItemCBF.fit(self.URM_train, self.ICM_all)
-        self.UserCBF.fit(self.URM_train, self.UCM_all)
-        self.ItemCF.fit(self.URM_train)
-        self.UserCF.fit(self.URM_train)
-        self.Slim.fit(self.URM_train)
-        self.Elastic.fit(self.URM_train)
+        self.ItemCBF.fit(self.URM_train, self.ICM_all, tuning=True, similarity_path="/SimilarityProduct/ItemCBF_similarity.npz")
+        self.UserCBF.fit(self.URM_train, self.UCM_all, tuning=True, similarity_path="/SimilarityProduct/UserCBF_similarity.npz")
+        self.ItemCF.fit(self.URM_train, tuning=True, similarity_path="/SimilarityProduct/ItemCF_similarity.npz")
+        self.UserCF.fit(self.URM_train, tuning=True, similarity_path="/SimilarityProduct/UserCF_similarity.npz")
+        self.Slim.fit(self.URM_train, tuning=True, similarity_path="/SimilarityProduct/Slim_similarity.npz")
+        self.Elastic.fit(self.URM_train, tuning=True, similarity_path="/SimilarityProduct/Elastic_similarity.npz")
         self.PureSVD.fit(self.URM_train)
-        self.P3Alpha.fit(self.URM_train)
-        self.RP3Beta.fit(self.URM_train)
+        self.P3Alpha.fit(self.URM_train, tuning=True, similarity_path="/SimilarityProduct/P3Aplha_similarity.npz")
+        self.RP3Beta.fit(self.URM_train, tuning=True, similarity_path="/SimilarityProduct/RP3Beta_similarity.npz")
         self.ALS.fit(self.URM_train)
+        self.H6_bis.fit(self.URM_train, self.ICM_all, self.UCM_all, tuning=True)
 
         for group_id in range(0, 20):
             start_pos = group_id * self.blocksize
@@ -133,6 +135,9 @@ class ClassesRating:
             results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.ALS, at=10)
             MAP_ALS_per_group.append(results)
 
+            results = evaluate_algorithm_classes(self.URM_test, users_in_group, self.H6_bis, at=10)
+            MAP_H6_bis_per_group.append(results)
+
 
         pyplot.plot(MAP_UserCBF_per_group, label="UserCBF")
         pyplot.plot(MAP_ItemCBF_per_group, label="ItemCBF")
@@ -143,8 +148,8 @@ class ClassesRating:
         pyplot.plot(MAP_P3Alpha_per_group, label="P3Alpha")
         pyplot.plot(MAP_RP3Beta_per_group, label="RP3Beta")
         pyplot.plot(MAP_PureSVD_per_group, label="PureSVD")
-        pyplot.plot(MAP_UserCBF_per_group, label="UserCBF")
         pyplot.plot(MAP_ALS_per_group, label="ALS")
+        pyplot.plot(MAP_H6_bis_per_group, label="H6_bis")
 
         pyplot.xlabel('User Group')
         pyplot.ylabel('MAP')

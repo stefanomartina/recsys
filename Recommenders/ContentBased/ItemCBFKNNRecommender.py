@@ -19,6 +19,9 @@ class ItemCBFKNNRecommender():
         self.URM = URM
         self.ICM_all = ICM_all
 
+        self.ICM_all = sps.hstack((self.ICM_all.tocoo(), self.URM.T.tocoo()))
+        self.ICM_all = self.ICM_all.tocsr()
+
         if feature_weighting is not None:
             self.ICM_all = self.helper.feature_weight(self.ICM_all, feature_weighting)
 

@@ -1,15 +1,11 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
 
+import pandas as pd
 from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
-from tqdm import tqdm
-from Utils.similarityMatrixTopK import similarityMatrixTopK
 import scipy.sparse as sps
 import numpy as np
 from sklearn import preprocessing, datasets
-from sklearn.model_selection import train_test_split
 import os
-import pandas as pd
-
 
 class BaseFunction:
 
@@ -60,6 +56,9 @@ class BaseFunction:
 
         # UCM_all ----------------------
         self.UCM_all = None
+
+        # Tail-Boost -------------------
+        self.dictionary = { 0 : [] }
 
     #######################################################################################
     #                         READING AND FORMATTING THE DATASET                          #
@@ -195,13 +194,6 @@ class BaseFunction:
 
         self.URM_train = urm_train
         self.URM_test = urm_test
-
-    def cross_validation(self):
-
-        # create test and train set from dataset formatted
-        self.split_80_20(0.8)
-
-
 
     def get_URM(self):
         self.get_list(self.get_tuples(self.get_file(self.switch_source(6))), "URM")
@@ -365,29 +357,12 @@ class BaseFunction:
 
         return matrix
 
-    def get_sorted_items_in_user_profile(self, user_id):
-        index_list = np.where(self.users_list == user_id)
-        return self.items_list[index_list]
-
-    def tail_boost(self, URM, step=1, lastN=8):
-        self.users_list = np.asarray(list(self.URM_all.indptr))
-        self.items_list = np.asarray(list(self.URM_all.indices))
-        target_users = list(self.userlist_unique)
-
-        # For each user in URM
-        for row_index in tqdm(range(URM.shape[0])):
-            if row_index in target_users:
-                sorted_items = self.get_sorted_items_in_user_profile(row_index)
-                items = URM[row_index].indices
-                lenItems = len(items)
-
-                for i in range(lenItems):
-                    # THE COMMA IS IMPORTANT
-                    index_of_track, = np.where(sorted_items == items[i])
-                    if lenItems - index_of_track <= lastN:
-                        additive_score = ((lastN+1) - (lenItems - index_of_track)) * step
-                        URM.data[URM.indptr[row_index] + i] += additive_score
-        return URM
+    def score_dictionary(self, summed_score, user_id):
+        if summed_score in self.dictionary.keys(): self.dictionary[summed_score].append(user_id)
+        else:
+            list = []
+            list.append(user_id)
+            self.dictionary[summed_score] = list
 
     #######################################################################################
     #                               SIMILARITY UTILS                                      #
@@ -401,8 +376,14 @@ class BaseFunction:
                 print("Fitting {0:s}...".format(name))
             sps.save_npz(filename, matrix)
 
+    def export_nparr(self, filename, nparray):
+        pd.DataFrame(nparray).to_csv(self.return_path() + filename, header=None, index=None)
+
     def import_similarity_matrix(self, filename):
             return sps.load_npz(filename)
+
+    def import_nparr(self, filename):
+        return pd.read_csv(self.return_path() + filename)
 
     def get_cosine_similarity_stored(self, matrix, name, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=False, tuning=False):
 
@@ -432,17 +413,6 @@ class BaseFunction:
         W_sparse = similarity_object.compute_similarity()
         return W_sparse
 
-    def get_matrixTopK_similarity(self, S_incremental, topK, SIMILARITY_PATH, tuning=False):
 
-        if not tuning:
-            W_sparse = similarityMatrixTopK(S_incremental, k=topK)
-
-        else:
-            if not os.path.exists(self.return_path() + SIMILARITY_PATH):
-                W_sparse = similarityMatrixTopK(S_incremental, k=topK)
-                self.export_similarity_matrix(self.return_path() + SIMILARITY_PATH, W_sparse)
-            W_sparse = sps.load_npz(self.return_path() + SIMILARITY_PATH)
-
-        return W_sparse
 
 

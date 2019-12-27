@@ -56,7 +56,7 @@ class SLIM_BPR_Cython(object):
     #                                     RUN FITTNG                                      #
     #######################################################################################
 
-    def fit(self, URM_train, tuning = False):
+    def fit(self, URM_train, tuning = False, similarity_path=SIMILARITY_PATH):
         self.__init__()
         self.URM = URM_train
         self.tuning = tuning
@@ -100,7 +100,7 @@ class SLIM_BPR_Cython(object):
             self._update_best_model()
             currentEpoch += 1
 
-        self.get_S_incremental_and_set_W()
+        self.get_S_incremental_and_set_W(similarity_path)
         self.cythonEpoch._dealloc()
         sys.stdout.flush()
 
@@ -119,27 +119,27 @@ class SLIM_BPR_Cython(object):
     def _run_epoch(self):
         self.cythonEpoch.epochIteration_Cython()
 
-    def get_S_incremental_and_set_W(self):
+    def get_S_incremental_and_set_W(self, similarity_path):
 
         self.S_incremental = self.cythonEpoch.get_S()
 
         if self.train_with_sparse_weights:
 
             if self.tuning:
-                if not os.path.exists(os.getcwd() + SIMILARITY_PATH):
+                if not os.path.exists(os.getcwd() + similarity_path):
                     self.W_sparse = self.S_incremental
-                    self.helper.export_similarity_matrix(os.getcwd() + SIMILARITY_PATH, self.W_sparse, name=RECOMMENDER_NAME)
+                    self.helper.export_similarity_matrix(os.getcwd() + similarity_path, self.W_sparse, name=RECOMMENDER_NAME)
 
-                self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + SIMILARITY_PATH)
+                self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + similarity_path)
             else:
                 self.W_sparse = self.S_incremental
 
         else:
             if self.tuning:
-                if not os.path.exists(os.getcwd() + SIMILARITY_PATH):
+                if not os.path.exists(os.getcwd() + similarity_path):
                     self.W_sparse = similarityMatrixTopK(self.S_incremental, k=self.topK)
-                    self.helper.export_similarity_matrix(os.getcwd() + SIMILARITY_PATH, self.W_sparse, name=RECOMMENDER_NAME)
-                self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + SIMILARITY_PATH)
+                    self.helper.export_similarity_matrix(os.getcwd() + similarity_path, self.W_sparse, name=RECOMMENDER_NAME)
+                self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + similarity_path)
             else:
                 self.W_sparse = similarityMatrixTopK(self.S_incremental, k=self.topK)
 
@@ -153,7 +153,7 @@ class SLIM_BPR_Cython(object):
 
         run_compile_subprocess(file_subfolder, file_to_compile_list)
 
-        print("{}: Compiled module {} in subfolder: {}".format(self.RECOMMENDER_NAME, file_to_compile_list,
+        print("{}: Compiled module {} in subfolder: {}".format(RECOMMENDER_NAME, file_to_compile_list,
                                                                file_subfolder))
 
         # Command to run compilation script

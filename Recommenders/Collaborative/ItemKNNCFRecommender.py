@@ -1,10 +1,7 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
 
-from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
 from Base.BaseFunction import BaseFunction
 import numpy as np
-import scipy.sparse as sps
-import os
 
 RECOMMENDER_NAME = "ItemKNNCFRecommender"
 SIMILARITY_PATH = "/SimilarityProduct/ItemCF_similarity.npz"
@@ -44,6 +41,7 @@ class ItemKNNCFRecommender():
     def recommend(self, user_id, at=10, exclude_seen=True):
 
         expected_scores = self.get_expected_ratings(user_id)
+        summed_score = expected_scores.sum(axis=0)
 
         if exclude_seen:
             expected_scores = self.filter_seen(user_id, expected_scores)

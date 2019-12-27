@@ -8,21 +8,17 @@ import numpy as np
 import bisect
 
 RECOMMENDER_NAME = "UserCBFKNNRecommender"
-SIMILARITY_PATH = "/SimilarityProduct/UserCB_similarity.npz"
+SIMILARITY_PATH = "/SimilarityProduct/UserCBF_similarity.npz"
 
 class UserCBFKNNRecommender():
 
     def __init__(self):
         self.helper = BaseFunction()
-        self.helper.get_URM()
-        self.helper.get_UCM()
 
     def fit(self, URM, UCM_all, knn=2000, shrink=4.172, similarity="tversky", normalize=True, transpose=True, feature_weighting=None, tuning=False, similarity_path=SIMILARITY_PATH):
 
         self.URM = URM
         self.UCM_all = UCM_all
-        self.TopPop = TopPopRecommender()
-        self.TopPop.fit(URM)
 
         """ 
         # Compute the extention of the UCM, adding URM and the total number of interactions of the users with the items

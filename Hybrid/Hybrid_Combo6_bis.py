@@ -60,12 +60,12 @@ class Hybrid_Combo6_bis(BaseHybridRecommender):
         self.rec_for_colder.fit(self.URM, self.UCM_all)
 
         # Sub-Fitting
-        self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity6.npz")
-        self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning, similarity_path="/SimilarityProduct/UserCF_similarity6.npz")
-        self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning, similarity_path="/SimilarityProduct/ItemCB_similarity6.npz")
-        self.elasticNet.fit(URM.copy(), tuning=tuning)
-        self.RP3Beta.fit(URM.copy())
-        self.slim_random.fit(URM.copy())
+        self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity.npz")
+        self.userCF.fit(URM.copy(), knn_usercf, shrink_usercf, tuning=tuning, similarity_path="/SimilarityProduct/UserCF_similarity.npz")
+        self.itemContentBased.fit(URM.copy(), ICM_all, knn_itemcb, shrink_itemcb, tuning=tuning, similarity_path="/SimilarityProduct/ItemCB_similarity.npz")
+        self.elasticNet.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/Elastic_similarity.npz")
+        self.RP3Beta.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/RP3Beta_similarity.npz")
+        self.slim_random.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/Slim_similarity.npz")
 
 
     #######################################################################################
