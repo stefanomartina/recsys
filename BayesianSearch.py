@@ -3,7 +3,6 @@ import os, shutil
 from bayes_opt import BayesianOptimization
 import time
 
-from Hybrid.Hybrid_Combo7_bis import Hybrid_Combo7_bis
 from Hybrid.Hybrid_Hybrid_Combo import Hybrid_Combo10
 from Hybrid.Hybrid_Combo4 import Hybrid_Combo4
 from Utils import evaluation
@@ -16,6 +15,7 @@ from Recommenders.ContentBased.ItemCBFKNNRecommender import ItemCBFKNNRecommende
 from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommender
 from Recommenders.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_FunkSVD_Cython
 from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
+from Hybrid.Hybrid_user_wise import Hybrid_User_Wise
 
 
 class BayesianSearch():
@@ -159,24 +159,32 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
+    def step_TEST(self, t1, t2, t3, t4, t5):
+        start_time = time.time()
+        UCM_all = self.helper.UCM_all
+        ICM_all = self.helper.ICM_all
+        self.recommender = Hybrid_User_Wise("Hybrid User Wise", UserCBFKNNRecommender())
+        self.recommender.fit(self.helper.URM_train, ICM_all=ICM_all, UCM_all=UCM_all, thre1=t1, thre2=t2, thre3=t3, thre4=t4, thre5=t5, tuning=True)
+        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        elapsed_time = time.time() - start_time
+        print("----------------" + str(elapsed_time) + "----------------")
+        return cumulative
+
 
 if __name__ == "__main__":
 
     folder = os.getcwd() + "/SimilarityProduct"
 
 
-    recommender = AlternatingLeastSquare()
-    t = BayesianSearch(recommender, "ALS")
+    recommender = Hybrid_User_Wise("HybridUW", UserCBFKNNRecommender())
+    t = BayesianSearch(recommender, "HybridUW")
 
     pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
     pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
     pbounds_userCB = {'weight1': (1100,1300), 'weight2': (0, 50)}
-
     pbounds_P3Alpha = {'weight1': (500, 1000), 'weight2': (0.5, 1.5)}
     pbounds_p3beta = {'alpha': (0, 3), 'beta': (0, 3), 'min_rating': (0, 3), 'topK': (10, 300)}
-
     pbounds_hybrid1 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3)}
-
     pbounds_hybrid2 = {'weight1': (0, 1), 'weight2': (0, 1), 'weight3': (0, 1), 'weight4': (0, 1)}
     pbounds_hybrid3 = {'weight1': (0.7, 1.3), 'weight2': (0.001, 0.007), 'weight3': (0.5, 3)}
     pbounds_hybrid4 = {'weight1': (1.4, 2.7), 'weight2': (1.5, 3), 'weight3': (0.0005, 0.009)}
@@ -184,15 +192,11 @@ if __name__ == "__main__":
     pbounds_hybrid6 = {'weight1': (0.8, 0.95), 'weight2': (0.3, 0.45), 'weight3': (0.05, 0.065), 'weight4': (0,3)}
     pbounds_hybrid7 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
     pbounds_hybrid8 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
-
     pbounds_hybrid9_expl = {'weight1': (1.94, 1.97), 'weight2': (0.007, 0.009), 'weight3': (2.5, 3), 'weight4': (0.016, 0.019)}
     pbounds_hybrid9 = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3)}
-
     pbounds_hybrid10 = {'weight1': (0, 3), 'weight2': (0, 3)}
     pbounds_hybrid10_expl = {'weight1': (0.065, 0.080), 'weight2': (2.7, 2.9)}
-
     pbounds_hybrid_collaborative = {'weight1': (0.9, 2.5), 'weight2': (2.5, 3)}
-
     pbounds_ALS = {'weight1': (200, 400), 'weight2': (0.05, 0.30), 'weight3': (10, 50)}
 
     # 2.65, 0.1702, 0.002764, 0.7887
@@ -202,9 +206,11 @@ if __name__ == "__main__":
     pbound_random_svd = {'n_components':(100, 3000), 'n_iter':(1, 100)}
     pbound_funk_svd = {'epoch': (450,600), 'num_factors':(20,40), 'learning_rate':(0.001, 0.005), 'user_reg':(0.5, 0.9), 'item_reg':(0.1, 0.6)}
 
+    pbound_TEST = {'t1': (0, 1.5), 't2': (0.5, 1.5), 't3': (2, 2.5),'t4': (2.5, 3.5), 't5': (4, 6)}
+
     optimizer = BayesianOptimization(
-        f=t.step_ALS,
-        pbounds=pbounds_ALS,
+        f=t.step_TEST,
+        pbounds=pbound_TEST,
         verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
     )
 

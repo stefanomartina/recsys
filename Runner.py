@@ -11,7 +11,7 @@ from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRec
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
 from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
-from Hybrid import Hybrid_Combo2, Hybrid_Combo4, Hybrid_Hybrid_Combo, Hybrid_Combo6_bis, Hybrid_Combo7_bis
+from Hybrid import Hybrid_Combo2, Hybrid_Combo4, Hybrid_Hybrid_Combo, Hybrid_Combo6_bis, Hybrid_user_wise
 from Utils import evaluation
 
 
@@ -133,7 +133,7 @@ if __name__ == '__main__':
                                                 'PureSVD',
                                                 'MF_BPR_Cython', 'Funk_SVD', 'Asy_SVD', 'ALS',
                                                 'P3Alpha', 'RP3Beta',
-                                                'Hybrid'])
+                                                'Hybrid', 'HybridUW'])
 
     parser.add_argument('--eval', action="store_true")
     args = parser.parse_args()
@@ -209,6 +209,11 @@ if __name__ == '__main__':
         print("RP3Beta selected")
         recommender = RP3BetaRecommender()
         requires_ucm = True
+    if args.recommender == 'HybridUW':
+        print("HybridUW Selected")
+        requires_icm = True
+        requires_ucm = True
+        recommender = Hybrid_user_wise.Hybrid_User_Wise("Hybrid_user_wise", UserCBFKNNRecommender.UserCBFKNNRecommender())
 
     #print(args)
     Runner(recommender, args.recommender, evaluate=args.eval).run(requires_ucm, requires_icm)

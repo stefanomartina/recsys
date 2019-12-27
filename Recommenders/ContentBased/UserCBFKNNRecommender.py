@@ -55,7 +55,7 @@ class UserCBFKNNRecommender():
 
         # Compute similarity
         if tuning:
-            self.W_sparse = self.helper.get_cosine_similarity_stored(sps.hstack((self.URM, self.UCM_all)), RECOMMENDER_NAME, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
+            self.W_sparse = self.helper.get_cosine_similarity_stored(sps.hstack((self.UCM_all, self.URM)), RECOMMENDER_NAME, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         else:
             self.W_sparse = self.helper.get_cosine_similarity(sps.hstack((self.UCM_all, self.URM)), knn, shrink, similarity, normalize,
                                                                   transpose=transpose)
