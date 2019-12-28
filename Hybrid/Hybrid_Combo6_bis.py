@@ -45,7 +45,10 @@ class Hybrid_Combo6_bis(BaseHybridRecommender):
                       9.217    |  0.5445   |  0.1198   |  1.535    |  8.642    |  0.4123   |
     '''
 
-    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[9.217 ,0.5445,0.1198,1.535 , 8.642 , 0.4123],
+    '''
+    DOPO MOFICA PARAMETRO |  167      |  0.04976  |  2.924    |  0.01667  |  0.5279   |  1.997    |  2.962    |  0.02629  |
+    '''
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[2.924 ,0.01667,0.5279,1.997 , 2.962 , 0.02629],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=item_cf_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],

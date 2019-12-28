@@ -84,24 +84,7 @@ class UserCBFKNNRecommender():
         ranking = expected_scores.argsort()[::-1]
 
         rec_userCBF = ranking[:at]
-        rec_TopPop = self.TopPopRec.recommend(user_id)
+        if expected_scores.sum() == 0:
+            return self.TopPopRec.recommend(user_id)
 
-        final_res = [""]*10
-
-        final_res[0] = rec_userCBF[0]
-        final_res[1] = rec_TopPop[0]
-        final_res[2] = rec_userCBF[1]
-        final_res[3] = rec_TopPop[1]
-        final_res[4] = rec_userCBF[2]
-        final_res[5] = rec_TopPop[2]
-        final_res[6] = rec_userCBF[3]
-        final_res[7] = rec_TopPop[3]
-        final_res[8] = rec_userCBF[4]
-        final_res[9] = rec_TopPop[4]
-
-        return final_res
-
-        '''return self.merge_rec(self.TopPop.recommend(user_id), ranking[:at])'''
-
-        #return ranking[:at]
-
+        return rec_userCBF

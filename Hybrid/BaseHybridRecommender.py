@@ -6,7 +6,7 @@ from Recommenders.Slim.SlimElasticNet.SLIMElasticNetRecommender import SLIMElast
 from Recommenders.MatrixFactorization.PureSVD.PureSVDRecommender import PureSVDRecommender
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
-from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
+# from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
 from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommender
 
 import numpy as np
@@ -63,7 +63,7 @@ class BaseHybridRecommender(object):
         self.RP3Beta = RP3BetaRecommender()
 
         # ALS Recommender
-        self.ALS = AlternatingLeastSquare()
+        # self.ALS = AlternatingLeastSquare()
 
         # Ratings from each available algorithm
         self.userContentBased_ratings = None
@@ -103,6 +103,9 @@ class BaseHybridRecommender(object):
         self.extract_ratings(user_id)
         self.sum_ratings()
         summed_score = self.hybrid_ratings.sum(axis=0)
+
+        if summed_score == 0:
+            return self.rec_for_colder.recommend(user_id)
 
         recommended_items = np.flip(np.argsort(self.hybrid_ratings), 0)
         # REMOVING SEEN
