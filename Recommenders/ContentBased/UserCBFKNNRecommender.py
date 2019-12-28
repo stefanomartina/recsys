@@ -2,6 +2,7 @@
 import scipy
 
 from Base.BaseFunction import BaseFunction
+from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 import scipy.sparse as sps
 import numpy as np
 
@@ -17,7 +18,8 @@ class UserCBFKNNRecommender():
 
         self.URM = URM
         self.UCM_all = UCM_all
-
+        self.TopPopRec = TopPopRecommender()
+        self.TopPopRec.fit(self.URM)
         """ 
         # Compute the extention of the UCM, adding URM and the total number of interactions of the users with the items
         user_activity = (np.asarray((self.URM).sum(axis=1)).squeeze()).astype(int)
@@ -75,45 +77,31 @@ class UserCBFKNNRecommender():
         return expected_scores
 
     def recommend(self, user_id, at=10, exclude_seen=True):
-
         expected_scores = self.get_expected_ratings(user_id)
 
         if exclude_seen:
             expected_scores = self.filter_seen(user_id, expected_scores)
         ranking = expected_scores.argsort()[::-1]
 
-        return ranking[:at]
+        rec_userCBF = ranking[:at]
+        rec_TopPop = self.TopPopRec.recommend(user_id)
+
+        final_res = [""]*10
+
+        final_res[0] = rec_userCBF[0]
+        final_res[1] = rec_TopPop[0]
+        final_res[2] = rec_userCBF[1]
+        final_res[3] = rec_TopPop[1]
+        final_res[4] = rec_userCBF[2]
+        final_res[5] = rec_TopPop[2]
+        final_res[6] = rec_userCBF[3]
+        final_res[7] = rec_TopPop[3]
+        final_res[8] = rec_userCBF[4]
+        final_res[9] = rec_TopPop[4]
+
+        return final_res
+
         '''return self.merge_rec(self.TopPop.recommend(user_id), ranking[:at])'''
 
         #return ranking[:at]
 
-    #METHODS added trying to implement smart merge of recommendation lists
-    '''def my_index(self, l, item):
-        for i in range(len(l)):
-            if (item == l[i]).all():
-                return i
-        return np.inf
-
-    def getList(self, dict):
-        list = []
-        for key in dict.keys():
-            list.append(key)
-
-        return list
-
-    def merge_rec(self, TopPop_rec, UserCBF_rec,):
-        dict = {}
-        elem_set = list(set(TopPop_rec) | set(UserCBF_rec))
-        medium_dict = {}
-
-        for elem in elem_set:
-            index_top_pop = self.my_index(TopPop_rec, elem)
-            index_user_cbf = self.my_index(UserCBF_rec, elem)
-            dict.update({elem: [index_top_pop, index_user_cbf]})
-
-        for elem in dict.keys():
-            medium_dict.update({elem: np.median(dict[elem])})
-
-        sorted_medium_dict = {k: v for k, v in sorted(medium_dict.items(), key=lambda item: item[1])}
-
-        return self.getList(sorted_medium_dict)[:10]'''
