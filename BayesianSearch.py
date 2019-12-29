@@ -79,6 +79,17 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
+    def step_hybrid_seven(self, weight1=0, weight2=0, weight3=0, weight4=0, weight5=0, weight6=0, weight7=0):
+        start_time = time.time()
+        UCM_all = self.helper.UCM_all
+        ICM_all = self.helper.ICM_all
+        self.recommender.fit(self.helper.URM_train, ICM_all=ICM_all, UCM_all=UCM_all,
+                             weights=[weight1, weight2, weight3, weight4, weight5, weight6, weight7], tuning=True)
+        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
+        elapsed_time = time.time() - start_time
+        print("----------------" + str(elapsed_time) + "----------------")
+        return cumulative
+
     def step_hybrid_hybrid(self, weight1=0, weight2=0):
         start_time = time.time()
         UCM_all = self.helper.UCM_all
@@ -209,9 +220,12 @@ if __name__ == "__main__":
 
     pbound_TEST = {'t1': (0, 1.5), 't2': (0.5, 1.5), 't3': (2, 2.5),'t4': (2.5, 3.5), 't5': (4, 6)}
 
+    pbounds_hybrid_Achille = {'weight1': (0, 5), 'weight2': (0, 5), 'weight3': (0, 5), 'weight4': (0, 5),
+                           'weight5': (0, 5), 'weight6': (0, 5), 'weight7': (0, 5)}
+
     optimizer = BayesianOptimization(
-        f=t.step_hybrid_6_bis,
-        pbounds=pbounds_hybrid6_bis,
+        f=t.step_hybrid_seven,
+        pbounds=pbounds_hybrid_Achille,
         verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
     )
 
