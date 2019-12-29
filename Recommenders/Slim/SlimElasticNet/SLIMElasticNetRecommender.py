@@ -14,12 +14,12 @@ SIMILARITY_PATH = "/SimilarityProduct/SlimElastic_similarity.npz"
 
 class SLIMElasticNetRecommender():
 
-    def run_fit(self, similarity_path=SIMILARITY_PATH):
+    def run_fit(self):
         # Display ConvergenceWarning only once and not for every item it occurs
         warnings.simplefilter("once", category=ConvergenceWarning)
 
         # initialize the ElasticNet model
-        self.model = ElasticNet(alpha=1e-4,
+        self.model = ElasticNet(alpha=self.alpha,
                                 l1_ratio=self.l1_ratio,
                                 positive=self.positive_only,
                                 fit_intercept=False,
@@ -116,6 +116,8 @@ class SLIMElasticNetRecommender():
         self.l1_ratio = l1_ratio
         self.positive_only = positive_only
         self.topK = topK
+        #1e-4
+        self.alpha = alpha
         self.helper = BaseFunction()
 
         if tuning:
