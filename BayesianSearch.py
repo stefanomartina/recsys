@@ -214,13 +214,13 @@ if __name__ == "__main__":
     pbounds_hybrid6_bis = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3), 'weight5': (0,3), 'weight6': (0,3)}
     pbound_TEST = {'t1': (0, 1.5), 't2': (0.5, 1.5), 't3': (2, 2.5),'t4': (2.5, 3.5), 't5': (4, 6)}
 
-    pbounds_hybrid_Achille = {'weight1': (0, 1), 'weight2': (0, 5), 'weight3': (0, 5), 'weight4': (0, 5), 'weight5': (0, 5), 'weight6': (0, 5), 'weight7': (0, 5)}
+    pbounds_hybrid_Achille = {'weight1': (4, 6), 'weight2': (0.07, 0.2), 'weight3': (0, 3), 'weight4': (4.5, 7), 'weight5': (4.5, 7), 'weight6': (0, 2), 'weight7': (0.6, 7)}
 
 
 
     optimizer = BayesianOptimization(
-        f=t.step_elastic,
-        pbounds=pbounds_elastic,
+        f=t.step_hybrid_seven,
+        pbounds=pbounds_hybrid_Achille,
         verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
     )
 
