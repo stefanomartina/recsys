@@ -3,6 +3,7 @@ import os, shutil
 from bayes_opt import BayesianOptimization
 import time
 
+from Hybrid.Hybrid_Achille import Hybrid_Achille
 from Hybrid.Hybrid_Hybrid_Combo import Hybrid_Combo10
 from Hybrid.Hybrid_Combo4 import Hybrid_Combo4
 from Recommenders.Slim.SlimElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
@@ -197,8 +198,8 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
 
-    recommender = SLIMElasticNetRecommender()
-    t = BayesianSearch(recommender, "Elastic")
+    recommender = Hybrid_Achille("Achille", UserCBFKNNRecommender())
+    t = BayesianSearch(recommender, "Achille")
 
     pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
     pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}

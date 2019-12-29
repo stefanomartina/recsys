@@ -30,7 +30,7 @@ slim_param = {
 }
 
 
-class Hybrid_Combo6_bis(BaseHybridRecommender):
+class Hybrid_Achille(BaseHybridRecommender):
 
     #######################################################################################
     #                                 FITTING ALGORITHM                                   #
