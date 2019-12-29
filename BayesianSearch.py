@@ -208,7 +208,7 @@ if __name__ == "__main__":
     pbounds_ALS = {'weight1': (200, 400), 'weight2': (0.05, 0.30), 'weight3': (10, 50)}
     pbound_random_svd = {'n_components': (100, 3000), 'n_iter': (1, 100)}
     pbound_funk_svd = {'epoch': (450, 600), 'num_factors': (20, 40), 'learning_rate': (0.001, 0.005), 'user_reg': (0.5, 0.9), 'item_reg': (0.1, 0.6)}
-    pbounds_elastic = {'weight1': (0, 5), 'weight2': (0, 2), 'weight3': (50, 300)}
+    pbounds_elastic = {'weight1': (0, 5), 'weight2': (0, 0.1), 'weight3': (50, 300)}
 
     # 2.65, 0.1702, 0.002764, 0.7887
     pbounds_hybrid6_bis = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3), 'weight5': (0,3), 'weight6': (0,3)}
