@@ -219,7 +219,7 @@ if __name__ == "__main__":
 
 
     optimizer = BayesianOptimization(
-        f=t.step_elastic(),
+        f=t.step_elastic,
         pbounds=pbounds_elastic,
         verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
     )
