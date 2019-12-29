@@ -223,9 +223,13 @@ if __name__ == "__main__":
         f=t.step_hybrid_seven,
         pbounds=pbounds_hybrid_Achille,
         verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
+
+
     )
 
     optimizer.maximize(
         init_points=30,
         n_iter=1000,
+        acq='ucb',
+        kappa = 0.1
     )
