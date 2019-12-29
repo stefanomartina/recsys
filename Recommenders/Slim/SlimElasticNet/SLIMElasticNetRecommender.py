@@ -122,14 +122,14 @@ class SLIMElasticNetRecommender():
 
         if tuning:
             if not os.path.exists(os.getcwd() + similarity_path):
-                self.run_fit(similarity_path)
+                self.run_fit()
                 self.helper.export_similarity_matrix(os.getcwd() + similarity_path, self.W_sparse,
                                                      name=RECOMMENDER_NAME)
             self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + similarity_path)
             self.similarityProduct = self.URM.dot(self.W_sparse)
 
         else:
-            self.run_fit(similarity_path)
+            self.run_fit()
             self.similarityProduct = self.URM.dot(self.W_sparse)
 
     def get_expected_ratings(self, user_id):
