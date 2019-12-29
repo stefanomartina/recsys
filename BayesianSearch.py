@@ -197,8 +197,8 @@ if __name__ == "__main__":
     folder = os.getcwd() + "/SimilarityProduct"
 
 
-    recommender = Hybrid_Combo6_bis("6_BIS", UserCBFKNNRecommender())
-    t = BayesianSearch(recommender, "HybridUW")
+    recommender = SLIMElasticNetRecommender()
+    t = BayesianSearch(recommender, "Elastic")
 
     pbounds_slim = {'weight1': (250, 550), 'weight2': (100, 400)}
     pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
