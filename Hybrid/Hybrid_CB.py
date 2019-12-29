@@ -15,8 +15,8 @@ class Hybrid_CB(BaseHybridRecommender):
         self.UCM_all = UCM_all
 
         # Sub-Fitting
-        self.itemContentBased.fit(self.URM.copy(), self.ICM_all, tuning=tuning, similarity_path="/SimilarityProduct/ItemCBF_similarity_HCB.npz")
-        self.userContentBased.fit(self.URM.copy(), self.UCM_all, tuning=tuning, similarity_path="/SimilarityProduct/UserCBF_similarity_HCB.npz")
+        self.itemContentBased.fit(self.URM.copy(), self.ICM_all, tuning=tuning, similarity_path="/SimilarityProduct/ItemCB_similarity.npz")
+        self.userContentBased.fit(self.URM.copy(), self.UCM_all, tuning=tuning, similarity_path="/SimilarityProduct/UserCB_similarity.npz")
 
 
     #######################################################################################

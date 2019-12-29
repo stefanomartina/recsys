@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """ Created on 07/09/17     @author: Maurizio Ferrari Dacrema """
+
 import os
 import sys
 import numpy as np
 from Base.Recommender_utils import similarityMatrixTopK, check_matrix
 from Base.BaseFunction import BaseFunction
-
 
 RECOMMENDER_NAME = "SLIMRecommender"
 SIMILARITY_PATH = "/SimilarityProduct/Slim_similarity.npz"
@@ -129,7 +129,6 @@ class SLIM_BPR_Cython(object):
                 if not os.path.exists(os.getcwd() + similarity_path):
                     self.W_sparse = self.S_incremental
                     self.helper.export_similarity_matrix(os.getcwd() + similarity_path, self.W_sparse, name=RECOMMENDER_NAME)
-
                 self.W_sparse = self.helper.import_similarity_matrix(os.getcwd() + similarity_path)
             else:
                 self.W_sparse = self.S_incremental

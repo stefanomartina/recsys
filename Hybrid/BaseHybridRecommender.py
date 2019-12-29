@@ -1,3 +1,5 @@
+""" @author: Simone Lanzillotta, Stefano Martina """
+
 from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from Recommenders.ContentBased import UserCBFKNNRecommender, ItemCBFKNNRecommender
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
@@ -6,9 +8,8 @@ from Recommenders.Slim.SlimElasticNet.SLIMElasticNetRecommender import SLIMElast
 from Recommenders.MatrixFactorization.PureSVD.PureSVDRecommender import PureSVDRecommender
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
-# from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
+from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
 from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommender
-
 import numpy as np
 
 slim_param = {
@@ -63,7 +64,7 @@ class BaseHybridRecommender(object):
         self.RP3Beta = RP3BetaRecommender()
 
         # ALS Recommender
-        # self.ALS = AlternatingLeastSquare()
+        self.ALS = AlternatingLeastSquare()
 
         # Ratings from each available algorithm
         self.userContentBased_ratings = None

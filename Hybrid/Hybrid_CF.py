@@ -1,3 +1,5 @@
+""" @author: Simone Lanzillotta, Stefano Martina """
+
 from Hybrid.BaseHybridRecommender import BaseHybridRecommender
 import numpy as np
 
@@ -18,11 +20,11 @@ class Hybrid_CF(BaseHybridRecommender):
 
 
         # Sub-Fitting
-        self.itemCF.fit(self.URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity_HybridCF.npz")
-        self.userCF.fit(self.URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/UserCF_similarity_HybridCF.npz")
+        self.itemCF.fit(self.URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity.npz")
+        self.userCF.fit(self.URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/UserCF_similarity.npz")
         self.ALS.fit(self.URM.copy())
-        self.RP3Beta.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/RP3_similarity_HybridCF.npz")
-        self.elasticNet.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/Elastic_similarity_HybridCF.npz")
+        self.RP3Beta.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/RP3Beta_similarity.npz")
+        self.elasticNet.fit(URM.copy(), tuning=tuning, similarity_path="/SimilarityProduct/Elastic_similarity.npz")
 
 
     #######################################################################################

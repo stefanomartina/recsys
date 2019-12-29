@@ -377,13 +377,14 @@ class BaseFunction:
             sps.save_npz(filename, matrix)
 
     def export_nparr(self, filename, nparray):
-        pd.DataFrame(nparray).to_csv(self.return_path() + filename, header=None, index=None)
+        np.savez_compressed(self.return_path() + filename, nparray)
 
     def import_similarity_matrix(self, filename):
             return sps.load_npz(filename)
 
     def import_nparr(self, filename):
-        return pd.read_csv(self.return_path() + filename)
+        dict_data = np.load(self.return_path() + filename)
+        return dict_data['arr_0']
 
     def get_cosine_similarity_stored(self, matrix, name, SIMILARITY_PATH, knn, shrink, similarity, normalize, transpose=False, tuning=False):
 

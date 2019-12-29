@@ -1,6 +1,6 @@
-from tqdm import tqdm
+""" @author: Simone Lanzillotta, Stefano Martina """
 
-from Hybrid.Hybrid_Combo3 import Hybrid_Combo3
+from tqdm import tqdm
 from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
 from Recommenders.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython, MatrixFactorization_AsySVD_Cython, MatrixFactorization_FunkSVD_Cython
 from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
@@ -13,8 +13,6 @@ from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
 from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
 from Hybrid import Hybrid_Combo2, Hybrid_Combo4, Hybrid_Hybrid_Combo, Hybrid_Combo6_bis, Hybrid_user_wise
 from Utils import evaluation
-
-
 import time
 import csv
 import argparse
@@ -78,7 +76,7 @@ class Runner:
             elif requires_ucm:
                 self.recommender.fit(self.functionality.URM_train, UCM_all, tuning=True)
             else:
-                self.recommender.fit(self.functionality.URM_train)
+                self.recommender.fit(self.functionality.URM_train, tuning=True)
         print("Model fitted")
 
     #######################################################################################
@@ -209,6 +207,7 @@ if __name__ == '__main__':
         print("RP3Beta selected")
         recommender = RP3BetaRecommender()
         requires_ucm = True
+
     if args.recommender == 'HybridUW':
         print("HybridUW Selected")
         requires_icm = True
