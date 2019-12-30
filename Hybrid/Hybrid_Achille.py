@@ -40,7 +40,7 @@ class Hybrid_Achille(BaseHybridRecommender):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[5.817,0.09765,1.746,6.726,4.573,0.5081,1.042],
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[5.495,0.08478,0.6595,6.516,5.236,0.09334,0.9754],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=item_cf_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],
@@ -52,7 +52,7 @@ class Hybrid_Achille(BaseHybridRecommender):
         self.weights = np.array(weights)
         self.ICM_all = ICM_all
         self.UCM_all = UCM_all
-        self.rec_for_colder.fit(self.URM, self.UCM_all, tuning=True)
+        self.rec_for_colder.fit(self.URM, self.UCM_all)
 
         # Sub-Fitting
         self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity.npz")
