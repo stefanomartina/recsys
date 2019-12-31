@@ -110,7 +110,7 @@ class SLIMElasticNetRecommender():
         self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])), shape=(n_items, n_items), dtype=np.float32)
 
 
-    def fit(self, URM, verbose=True, l1_ratio=1.0, alpha = 0.00001, positive_only=True, topK = 100, tuning=False, similarity_path=SIMILARITY_PATH):
+    def fit(self, URM, verbose=True, l1_ratio=1.0, alpha = 0.0001, positive_only=True, topK = 100, tuning=False, similarity_path=SIMILARITY_PATH):
 
         self.URM = URM
         self.l1_ratio = l1_ratio

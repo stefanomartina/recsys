@@ -33,14 +33,14 @@ slim_param = {
 class Hybrid_Achille(BaseHybridRecommender):
 
     # MAP: 0.050377 (locale) -> MAP: 0.03630 (Pubblica) --- 5.495,0.08478,0.6595,6.516,5.236,0.09334,0.9754
-    # MAP: 0.050514 (locale) -> MAP: 0.03486 (Pubblica) --- 5.916,0.1523,1.625,5.742,6.634,0.2336,1.072
+    # MAP: 0.050514 (locale) -> MAP: 0.03436 (Pubblica) --- 5.916,0.1523,1.625,5.742,6.634,0.2336,1.072
     # MAP: 0.050465 (locale) -> MAP: 0.03394 (Pubblica) --- 5.817,0.09765,1.746,6.726,4.573,0.5081,1.042
 
     #######################################################################################
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[5.495,0.08478,0.6595,6.516,5.236,0.09334,0.9754],
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[5.916,0.1523,1.625,5.742,6.634,0.2336,1.072],
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=item_cf_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],

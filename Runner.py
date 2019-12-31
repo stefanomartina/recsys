@@ -11,7 +11,7 @@ from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRec
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
 from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
-from Hybrid import Hybrid_Combo2, Hybrid_Combo4, Hybrid_Hybrid_Combo, Hybrid_Combo6_bis, Hybrid_user_wise
+from Hybrid import Hybrid_Combo4, Hybrid_Hybrid_Combo, Hybrid_Combo6_bis, Hybrid_user_wise, Hybrid_Achille
 from Utils import evaluation
 import time
 import csv
@@ -179,7 +179,7 @@ if __name__ == '__main__':
 
     if args.recommender == "Hybrid":
         print("Hybrid")
-        recommender = Hybrid_Combo6_bis.Hybrid_Combo6_bis("Combo6_bis", UserCBFKNNRecommender.UserCBFKNNRecommender())
+        recommender = Hybrid_Achille.Hybrid_Achille("Hybrid_Achille", UserCBFKNNRecommender.UserCBFKNNRecommender())
         requires_ucm = True
         requires_icm = True
 

@@ -4,7 +4,6 @@ import numpy as np
 from Hybrid.Hybrid_CB import Hybrid_CB
 from Hybrid.Hybrid_Combo4 import Hybrid_Combo4
 from Hybrid.Hybrid_Combo6_bis import Hybrid_Combo6_bis
-from Hybrid.Hybrid_Combo8 import Hybrid_Combo8
 from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
@@ -16,7 +15,6 @@ from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
 from Recommenders.Slim.SlimElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
 from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
-from Hybrid.Hybrid_Combo2 import Hybrid_Combo2
 from Utils.evaluation import evaluate_algorithm_classes
 import matplotlib.pyplot as pyplot
 
