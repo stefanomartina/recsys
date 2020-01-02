@@ -19,7 +19,7 @@ class SLIMElasticNetRecommender():
         warnings.simplefilter("once", category=ConvergenceWarning)
 
         # initialize the ElasticNet model
-        self.model = ElasticNet(alpha=self.alpha,
+        self.model = ElasticNet(alpha=1e-4,
                                 l1_ratio=self.l1_ratio,
                                 positive=self.positive_only,
                                 fit_intercept=False,
@@ -110,14 +110,13 @@ class SLIMElasticNetRecommender():
         self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])), shape=(n_items, n_items), dtype=np.float32)
 
 
-    def fit(self, URM, verbose=True, l1_ratio=1.0, alpha = 0.0001, positive_only=True, topK = 100, tuning=False, similarity_path=SIMILARITY_PATH):
+    def fit(self, URM, verbose=True, l1_ratio=1.0, alpha = 1.0, positive_only=True, topK = 100, tuning=False, similarity_path=SIMILARITY_PATH):
 
         self.URM = URM
         self.l1_ratio = l1_ratio
         self.positive_only = positive_only
         self.topK = topK
         #1e-4
-        self.alpha = alpha
         self.helper = BaseFunction()
 
         if tuning:

@@ -372,15 +372,15 @@ class BaseFunction:
         return os.getcwd()
 
     def export_similarity_matrix(self, filename, matrix, name=None):
-            if name is not None:
-                print("Fitting {0:s}...".format(name))
-            sps.save_npz(filename, matrix)
+        if name is not None:
+            print("Fitting {0:s}...".format(name))
+        sps.save_npz(filename, matrix)
 
     def export_nparr(self, filename, nparray):
         np.savez_compressed(self.return_path() + filename, nparray)
 
     def import_similarity_matrix(self, filename):
-            return sps.load_npz(filename)
+        return sps.load_npz(filename)
 
     def import_nparr(self, filename):
         dict_data = np.load(self.return_path() + filename)

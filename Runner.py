@@ -1,6 +1,8 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
 
 from tqdm import tqdm
+
+from Hybrid.Hybrid_CB import Hybrid_CB
 from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
 from Recommenders.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython, MatrixFactorization_AsySVD_Cython, MatrixFactorization_FunkSVD_Cython
 from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython

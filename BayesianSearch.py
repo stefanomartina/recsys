@@ -240,7 +240,7 @@ if __name__ == "__main__":
 
     folder = os.getcwd() + "/SimilarityProduct"
 
-    recommender = None
+    recommender = Hybrid_Achille("H_Achille", UserCBFKNNRecommender())
     t = BayesianSearch(recommender, "Achille")
 
     pbounds_slim = {'weight3': (0, 0.1), 'weight4': (0, 0.1), 'weight5': (0, 0.1)}
@@ -258,7 +258,9 @@ if __name__ == "__main__":
     pbound_TEST = {'t1': (0, 1.5), 't2': (0.5, 1.5), 't3': (2, 2.5),'t4': (2.5, 3.5), 't5': (4, 6)}
 
     # Hybrid Achille
-    pbounds_hybrid_Achille = {'weight1': (4, 6), 'weight2': (0.07, 0.2), 'weight3': (0, 3), 'weight4': (4.5, 7), 'weight5': (4.5, 7), 'weight6': (0, 2), 'weight7': (0.6, 7)}
+    pbounds_hybrid_Achille_expl = {'weight1': (4, 6), 'weight2': (0.07, 0.2), 'weight3': (0, 3), 'weight4': (4.5, 7), 'weight5': (4.5, 7), 'weight6': (0, 2), 'weight7': (0.6, 7)}
+    pbounds_hybrid_Achille = {'weight1': (0, 10), 'weight2': (0, 10), 'weight3': (0, 10), 'weight4': (0, 10),
+                                   'weight5': (0, 10), 'weight6': (0, 10), 'weight7': (0, 10)}
 
     # Tuning completo
     pbounds_all = {'H0_ICF_sh': (0, 50), 'H0_ICF_tK': (5, 800),
@@ -273,8 +275,8 @@ if __name__ == "__main__":
 
 
     optimizer = BayesianOptimization(
-        f=t.step_all,
-        pbounds=pbounds_all,
+        f=t.step_hybrid_seven,
+        pbounds=pbounds_hybrid_Achille,
         verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
 
 

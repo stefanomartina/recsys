@@ -17,12 +17,15 @@ class ItemCBFKNNRecommender():
         self.URM = URM
         self.ICM_all = ICM_all
 
+        self.ICM_all = sps.hstack((self.ICM_all.tocoo(), self.URM.T.tocoo()))
+        self.ICM_all = self.ICM_all.tocsr()
+
         if feature_weighting is not None:
             self.ICM_all = self.helper.feature_weight(self.ICM_all, feature_weighting)
 
         # Compute similarity
         if tuning:
-            self.W_sparse = self.helper.get_cosine_similarity_stored(sps.hstack((self.ICM_all, self.URM.T)), RECOMMENDER_NAME, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
+            self.W_sparse = self.helper.get_cosine_similarity_stored(self.ICM_all, RECOMMENDER_NAME, similarity_path, knn, shrink, similarity, normalize, transpose=transpose, tuning=tuning)
         else:
             self.W_sparse = self.helper.get_cosine_similarity(self.ICM_all, knn, shrink, similarity, normalize, transpose=transpose)
 
