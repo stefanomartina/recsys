@@ -46,7 +46,6 @@ class BaseMatrixFactorization():
         self.negative_reg = negative_reg
         self.random_seed = random_seed
 
-
     def get_early_stopping_final_epochs_dict(self):
         return {"epochs": self.epochs_best}
 
@@ -259,19 +258,11 @@ class BaseMatrixFactorization():
             self.ITEM_bias = self.ITEM_bias_best
             self.GLOBAL_bias = self.GLOBAL_bias_best
 
-
-        self.item_scores = np.dot(self.USER_factors, self.ITEM_factors.T)
-
-        # No need to select only the specific negative items or warm users because the -inf score will not change
-        if self.use_bias:
-            self.item_scores += self.ITEM_bias + self.GLOBAL_bias
-            self.item_scores = (self.item_scores.T + self.USER_bias).T
-
         sys.stdout.flush()
 
 
     def get_expected_ratings(self, user_id):
-        expected_scores = (self.item_scores[user_id]).ravel()
+        expected_scores = np.dot(self.USER_factors[user_id], self.ITEM_factors.T)
         return expected_scores
 
     def filter_seen(self, user_id, scores):
@@ -309,7 +300,7 @@ class MatrixFactorization_BPR_Cython(BaseMatrixFactorization):
 class MatrixFactorization_FunkSVD_Cython(BaseMatrixFactorization):
     RECOMMENDER_NAME = "MatrixFactorization_FunkSVD_Cython_Recommender"
 
-    def __init__(self, epoch=600, num_factors=30, learning_rate=0.002, user_reg=0.71, item_reg=0.2):
+    def __init__(self, epoch=300, num_factors=30, learning_rate=0.002, user_reg=0.71, item_reg=0.2):
         super(MatrixFactorization_FunkSVD_Cython, self).__init__(algorithm_name="FUNK_SVD", epochs=epoch,
                                                                  num_factors=num_factors, learning_rate=learning_rate,
                                                                  user_reg=user_reg, item_reg=item_reg)

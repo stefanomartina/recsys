@@ -13,8 +13,8 @@ from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommende
 import numpy as np
 
 slim_param = {
-    "epochs": 200,
-    "topK": 10,
+    "epochs": 647.7,
+    "topK": 494.7,
 }
 
 class BaseHybridRecommender(object):

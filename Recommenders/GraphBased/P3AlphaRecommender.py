@@ -1,12 +1,11 @@
 import os
-
+import time
+import sys
+import scipy.sparse as sps
 import numpy as np
 from sklearn.preprocessing import normalize
 from Base.Recommender_utils import check_matrix, similarityMatrixTopK
 from Base.BaseFunction import BaseFunction
-import time
-import sys
-import scipy.sparse as sps
 
 RECOMMENDER_NAME = "P3alphaRecommender"
 SIMILARITY_PATH = "/SimilarityProduct/PureSVD_similarity.npz"

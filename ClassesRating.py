@@ -1,10 +1,15 @@
-from Base.BaseFunction import BaseFunction
-import numpy as np
+"""
+This class allows us to give a graphical representation (via Pytorch) of the effectiveness of the individual
+recommendation algorithms on different user classes.
 
-from Hybrid.Hybrid_CB import Hybrid_CB
-from Hybrid.Hybrid_Combo4 import Hybrid_Combo4
-from Hybrid.Hybrid_Combo6_bis import Hybrid_Combo6_bis
-from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
+"""
+
+import numpy as np
+import matplotlib.pyplot as pyplot
+
+
+from Base.BaseFunction import BaseFunction
+from Hybrid.Hybrid_Combo6 import Hybrid_Combo6_bis
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Recommenders.ContentBased.ItemCBFKNNRecommender import ItemCBFKNNRecommender
@@ -16,7 +21,6 @@ from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
 from Recommenders.Slim.SlimElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
 from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
 from Utils.evaluation import evaluate_algorithm_classes
-import matplotlib.pyplot as pyplot
 
 
 class ClassesRating:
@@ -156,43 +160,5 @@ class ClassesRating:
         pyplot.legend(loc='lower right')
         pyplot.show()
 
-
-class LongTail:
-    def __init__(self):
-        self.helper = BaseFunction()
-        self.URM = None
-        self.URM_train = None
-        self.URM_test = None
-        self.helper.get_URM()
-        self.helper.split_80_20()
-        self.URM_train, self.URM_test = self.helper.URM_train, self.helper.URM_test
-
-        cont = 0
-
-        itemPopularity = (self.URM_train > 0).sum(axis=0)
-        self.itemPopularity = list(np.array(itemPopularity).squeeze())
-        self.itemPopularity.sort(reverse=True)
-
-        for i in range(0, len(self.itemPopularity)):
-            if self.itemPopularity[i] < 5:
-                cont += 1
-        print(cont)
-
-
-        # 14959 hanno meno di 20 ratings
-        # 12675 hanno meno di 10 ratings
-        # 9829 hanno meno di 5 ratings
-
-
-        """
-        pyplot.plot(self.itemPopularity, color='red')
-        pyplot.ylabel('Pupularity')
-        pyplot.xlabel('Items')
-        pyplot.legend()
-        pyplot.show()
-        """
-
-
-
-if __name__ == '__main__':
-    stats = ClassesRating()
+if __name__ == "__main__":
+    cl = ClassesRating()

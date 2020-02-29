@@ -4,28 +4,33 @@ from Hybrid.BaseHybridRecommender import BaseHybridRecommender
 import numpy as np
 
 item_cf_param = {
-    "knn": 63.62,
-    "shrink": 24.14,
+    "knn": 10,
+    "shrink": 30,
 }
 
 user_cf_param = {
-    "knn": 145.7,
-    "shrink": 39.75,
+    "knn": 600,
+    "shrink": 0,
 }
 
 item_cb_param = {
-    "knn": 5.986,
-    "shrink": 11.86,
+    "knn": 5,
+    "shrink": 0,
 }
 
 rp3beta_param = {
-    "alpha":0.7601,
-    "beta":0.2004,
-    "topK":225.7,
+    "alpha":0.3515,
+    "beta":0.1003,
+    "topK":90,
+}
+
+slim_param = {
+    "epochs": 200,
+    "topK": 10,
 }
 
 
-class Hybrid_Achille(BaseHybridRecommender):
+class Hybrid_Achille_Tuning_FallBack(BaseHybridRecommender):
 
     # MAP: 0.050377 (locale) -> MAP: 0.03630 (Pubblica) --- 5.495,0.08478,0.6595,6.516,5.236,0.09334,0.9754
     # MAP: 0.050381 (locale) -> MAP: 0.03144 (Pubblica) --- 5.401,0.1945,2.481,5.728,4.798,0.04486,2.186
@@ -40,7 +45,7 @@ class Hybrid_Achille(BaseHybridRecommender):
     #                                 FITTING ALGORITHM                                   #
     #######################################################################################
 
-    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[5.46,0.9731,2.106,3.722,0.2398,2.32,1.651],
+    def fit(self, URM, ICM_all=None, UCM_all=None, weights=[4.662,0.188,1.523,7.0,6.91,1.075,1.361], weights_fallback=None,
                    knn_itemcf=item_cf_param["knn"], shrink_itemcf=item_cf_param["shrink"],
                    knn_usercf=user_cf_param["knn"], shrink_usercf=item_cf_param["shrink"],
                    knn_itemcb=item_cb_param["knn"], shrink_itemcb=item_cb_param["shrink"],
@@ -50,9 +55,10 @@ class Hybrid_Achille(BaseHybridRecommender):
         self.get_cold_users(URM)
         self.URM = URM
         self.weights = np.array(weights)
+        self.weights_fallback = np.array(weights_fallback)
         self.ICM_all = ICM_all
         self.UCM_all = UCM_all
-        self.rec_for_colder.fit(self.URM, self.UCM_all)
+        self.rec_for_colder.fit(self.URM, self.UCM_all, knn=self.weights_fallback[0], shrink=self.weights_fallback[1])
 
         # Sub-Fitting
         self.itemCF.fit(URM.copy(), knn_itemcf, shrink_itemcf, tuning=tuning, similarity_path="/SimilarityProduct/ItemCF_similarity.npz")

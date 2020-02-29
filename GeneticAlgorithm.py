@@ -2,7 +2,6 @@ import random
 import numpy as np
 import time
 
-from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from Base.BaseFunction import BaseFunction
 from Utils import evaluation
 

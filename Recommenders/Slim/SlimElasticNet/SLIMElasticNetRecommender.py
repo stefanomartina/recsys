@@ -1,18 +1,20 @@
 import os
-
+import sys
+import time
+import warnings
 import numpy as np
 import scipy.sparse as sps
-from Base.Recommender_utils import check_matrix
-from sklearn.linear_model import ElasticNet
 from sklearn.exceptions import ConvergenceWarning
-from Utils.seconds_to_biggest_unit import seconds_to_biggest_unit
-import time, sys, warnings
+from sklearn.linear_model import ElasticNet
 from Base.BaseFunction import BaseFunction
+from Base.Recommender_utils import check_matrix
+from Recommenders.BaseRecommender import BaseRecommender
+from Utils.seconds_to_biggest_unit import seconds_to_biggest_unit
 
 RECOMMENDER_NAME = "SLIMElasticNetRecommender"
 SIMILARITY_PATH = "/SimilarityProduct/SlimElastic_similarity.npz"
 
-class SLIMElasticNetRecommender():
+class SLIMElasticNetRecommender(BaseRecommender):
 
     def run_fit(self):
         # Display ConvergenceWarning only once and not for every item it occurs
@@ -109,8 +111,7 @@ class SLIMElasticNetRecommender():
 
         self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])), shape=(n_items, n_items), dtype=np.float32)
 
-
-    def fit(self, URM, verbose=True, l1_ratio=1.0, alpha = 1.0, positive_only=True, topK = 100, tuning=False, similarity_path=SIMILARITY_PATH):
+    def fit(self, URM, verbose=True, l1_ratio=1.0, alpha = 1.0, positive_only=True, topK = 494, tuning=False, similarity_path=SIMILARITY_PATH):
 
         self.URM = URM
         self.l1_ratio = l1_ratio
@@ -130,24 +131,3 @@ class SLIMElasticNetRecommender():
         else:
             self.run_fit()
             self.similarityProduct = self.URM.dot(self.W_sparse)
-
-    def get_expected_ratings(self, user_id):
-        expected_scores = (self.similarityProduct[user_id]).toarray().ravel()
-        return expected_scores
-
-    def filter_seen(self, user_id, scores):
-        start_pos = self.URM.indptr[user_id]
-        end_pos = self.URM.indptr[user_id + 1]
-
-        user_profile = self.URM.indices[start_pos:end_pos]
-        scores[user_profile] = -np.inf
-        return scores
-
-    def recommend(self, user_id, at=10, exclude_seen=True):
-
-        expected_scores = self.get_expected_ratings(user_id)
-
-        if exclude_seen:
-            expected_scores = self.filter_seen(user_id, expected_scores)
-        ranking = expected_scores.argsort()[::-1]
-        return ranking[:at]

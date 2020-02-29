@@ -13,7 +13,7 @@ SVD_LIBRARY = ["svd", "svds", "randomized_svd", "Trunked_svd"]
 
 class PureSVDRecommender(object):
 
-    def fit(self, URM_train, verbose=True, library="random_svd",  n_components =200, n_iter=5, num_factors=2000):
+    def fit(self, URM_train, verbose=True, library="random_svd",  n_components =200, n_iter=5, num_factors=2000, tuning=False):
         self.URM = URM_train
         self.vebose = verbose
 

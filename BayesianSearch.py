@@ -1,30 +1,35 @@
-import os, shutil
+"""
+This class is an implementation of Bayesian research regarding the parameters considered 'tunable' of the
+individual algorithms.
+"""
 
-from bayes_opt import BayesianOptimization
 import time
+import argparse
+from bayes_opt import BayesianOptimization
 
 from Hybrid.Hybrid_Achille import Hybrid_Achille
-from Hybrid.Hybrid_Hybrid_Combo import Hybrid_Combo10
+from Hybrid.Hybrid_Combo3 import Hybrid_Combo3
 from Hybrid.Hybrid_Combo4 import Hybrid_Combo4
 from Recommenders.Slim.SlimElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
 from Utils import evaluation
 from Base.BaseFunction import BaseFunction
-from Hybrid.Hybrid_Achille_Tuning import Hybrid_Achille_Tuning
+from Hybrid.Hybrid_Achille_Tuning_All import Hybrid_Achille_Tuning
+from Hybrid.Hybrid_Combo6 import Hybrid_Combo6
+from Hybrid.Hybrid_Achille_Tuning_FallBack import Hybrid_Achille_Tuning_FallBack
 from Recommenders.Slim.SlimBPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
-from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
-from Recommenders.NonPersonalizedRecommender.TopPopRecommender import TopPopRecommender
 from Recommenders.ContentBased.ItemCBFKNNRecommender import ItemCBFKNNRecommender
 from Recommenders.ContentBased.UserCBFKNNRecommender import UserCBFKNNRecommender
 from Recommenders.Collaborative.ItemKNNCFRecommender import ItemKNNCFRecommender
 from Recommenders.Collaborative.UserKNNCFRecommender import UserKNNCFRecommender
 from Recommenders.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_FunkSVD_Cython
 from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
+from Recommenders.MatrixFactorization.PureSVD.PureSVDRecommender import PureSVDRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
-from Hybrid.Hybrid_user_wise import Hybrid_User_Wise
-from Hybrid.Hybrid_Combo6_bis import Hybrid_Combo6_bis
+from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
+from Hybrid.Hybrid_UW import Hybrid_User_Wise
 
 
-class BayesianSearch():
+class BayesianSearch:
 
     #######################################################################################
     #                             INIT CLASS BAYESIAN SEARCH                              #
@@ -39,20 +44,25 @@ class BayesianSearch():
         self.helper.get_target_users()
         self.helper.get_UCM()
         self.helper.get_ICM()
+        self.optimazer = None
+
+    def instanziate_optimazer(self, bayesian_method_call, pbounds):
+        optimizer = BayesianOptimization(
+            f=bayesian_method_call,
+            pbounds=pbounds,
+            verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
+        )
+
+        optimizer.maximize(
+            init_points=30,
+            n_iter=1000,
+            acq='ucb',
+            kappa=0.1
+        )
 
     #######################################################################################
     #                                   STEP TO MAXIMAXE                                  #
     #######################################################################################
-
-    def step_hybrid_two(self, weight1=0, weight2=0):
-        start_time = time.time()
-        UCM_all = self.helper.UCM_all
-        ICM_all = self.helper.ICM_all
-        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights =[weight1, weight2],tuning=True)
-        cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
-        elapsed_time = time.time() - start_time
-        print("----------------" + str(elapsed_time) + "----------------")
-        return cumulative
 
     def step_hybrid_three(self, weight1=0, weight2=0, weight3=0):
         start_time = time.time()
@@ -74,7 +84,7 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
-    def step_hybrid_6_bis(self, weight1=0, weight2=0, weight3=0, weight4=0, weight5=0, weight6=0):
+    def step_hybrid_six(self, weight1=0, weight2=0, weight3=0, weight4=0, weight5=0, weight6=0):
         start_time = time.time()
         UCM_all = self.helper.UCM_all
         ICM_all = self.helper.ICM_all
@@ -95,21 +105,20 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
-    def step_hybrid_hybrid(self, weight1=0, weight2=0):
+    def step_fallBack_Hybrid(self, weight1=0, weight2=0):
         start_time = time.time()
         UCM_all = self.helper.UCM_all
         ICM_all = self.helper.ICM_all
-        self.recommender.fit(self.helper.URM_train,  ICM_all=ICM_all, UCM_all=UCM_all, weights=[weight1, weight2],
-                                                                                       weights1=[2.28,0.07372,0.002197,0.6802],
-                                                                                       weights2=[2.846, 0.0935, 0.075505, 0.6001, 2.819], tuning=True)
+        self.recommender.fit(self.helper.URM_train, ICM_all=ICM_all, UCM_all=UCM_all,
+                             weights_fallback=[int(weight1), int(weight2)], tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
-    def step_slim(self, weight3=0, weight4=0, weight5=0):
+    def step_slim(self, weight1=0, weight2=0, weight3=0):
         start_time = time.time()
-        self.recommender = SLIM_BPR_Cython(lambda_i=weight3, lambda_j=weight4, learning_rate=weight5)
+        self.recommender = SLIM_BPR_Cython(lambda_i=weight1, lambda_j=weight2, learning_rate=weight3)
         self.recommender.fit(self.helper.URM_train)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
@@ -159,7 +168,7 @@ class BayesianSearch():
         print("----------------" + str(elapsed_time) + "----------------")
         return cumulative
 
-    def step_p3beta(self, alpha=0, beta=0, min_rating=0, topK=0):
+    def step_RP3Beta(self, alpha=0, beta=0, min_rating=0, topK=0):
         start_time = time.time()
         self.recommender.fit(self.helper.URM_train, alpha=alpha, beta=beta, min_rating=min_rating, topK=int(topK))
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
@@ -189,7 +198,8 @@ class BayesianSearch():
         UCM_all = self.helper.UCM_all
         ICM_all = self.helper.ICM_all
         self.recommender = Hybrid_User_Wise("Hybrid User Wise", UserCBFKNNRecommender())
-        self.recommender.fit(self.helper.URM_train, ICM_all=ICM_all, UCM_all=UCM_all, thre1=t1, thre2=t2, thre3=t3, thre4=t4, thre5=t5, tuning=True)
+        self.recommender.fit(self.helper.URM_train, ICM_all=ICM_all, UCM_all=UCM_all, thre1=t1, thre2=t2, thre3=t3,
+                             thre4=t4, thre5=t5, tuning=True)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
         elapsed_time = time.time() - start_time
         print("----------------" + str(elapsed_time) + "----------------")
@@ -227,7 +237,7 @@ class BayesianSearch():
         Slim.fit(self.helper.URM_train)
         ALS.fit(self.helper.URM_train)
 
-        self.recommender = Hybrid_Achille_Tuning("Hybrid_Achille_Tuning", UserCB)
+        self.recommender = Hybrid_Achille_Tuning("Hybrid_Achille_Tuning_All", UserCB)
         self.recommender.fit(self.helper.URM_train, ICM_all=ICM_all, UCM_all=UCM_all, weights=[weight1, weight2, weight3, weight4, weight5, weight6, weight7],
                              ItemCF=ItemCF, UserCF=UserCF, ItemCB=ItemCB, ElasticNet=ElasticNet, RP3=RP3Beta, Slim=Slim, ALS=ALS)
         cumulative = evaluation.evaluate_algorithm(self.helper.URM_test, self.recommender, at=10)
@@ -237,54 +247,137 @@ class BayesianSearch():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('research_type', choices=['C3', 'C4', 'C6', 'UW', 'Achille', 'Achille_TF', 'Achille_TA',
+                                                  'Search_Slim', 'Search_Elastic', 'Search_ItemCB', 'Search_UserCB',
+                                                  'Search_P3Alpha', 'Search_RP3Beta', 'Search_ALS', 'Search_PureSVD',
+                                                  'Search_FunkSVD'])
+    args = parser.parse_args()
+    recommender = None
+    name_search = None
 
-    folder = os.getcwd() + "/SimilarityProduct"
+    if args.research_type == 'C3':
+        recommender = Hybrid_Combo3("Hybrid_Combo3", UserCBFKNNRecommender())
+        name_search = "Hybrid_Combo3"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'weight1': (0, 0.1), 'weight2': (0, 0.1), 'weight3': (0, 0.1), 'weight4': (0, 0.1)}
+        t.instanziate_optimazer(t.step_hybrid_four, pbounds)
 
-    recommender = Hybrid_Achille("H_Achille", UserCBFKNNRecommender())
-    t = BayesianSearch(recommender, "Achille")
+    if args.research_type == 'C4':
+        recommender = Hybrid_Combo4("Hybrid_Combo4", UserCBFKNNRecommender())
+        name_search = "Hybrid_Combo4"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'weight1': (0, 0.1), 'weight2': (0, 0.1), 'weight3': (0, 0.1)}
+        t.instanziate_optimazer(t.step_hybrid_three, pbounds)
 
-    pbounds_slim = {'weight3': (0, 0.1), 'weight4': (0, 0.1), 'weight5': (0, 0.1)}
-    pbounds_itemCB = {'weight1': (0, 200), 'weight2': (0, 200)}
-    pbounds_userCB = {'weight1': (1100,1300), 'weight2': (0, 50)}
-    pbounds_P3Alpha = {'weight1': (500, 1000), 'weight2': (0.5, 1.5)}
-    pbounds_p3beta = {'alpha': (0, 3), 'beta': (0, 3), 'min_rating': (0, 3), 'topK': (10, 300)}
-    pbounds_ALS = {'weight1': (200, 400), 'weight2': (0.05, 0.30), 'weight3': (10, 50)}
-    pbound_random_svd = {'n_components': (100, 3000), 'n_iter': (1, 100)}
-    pbound_funk_svd = {'epoch': (450, 600), 'num_factors': (20, 40), 'learning_rate': (0.001, 0.005), 'user_reg': (0.5, 0.9), 'item_reg': (0.1, 0.6)}
-    pbounds_elastic = {'weight1': (0, 1), 'weight2': (0, 0.1), 'weight3': (50, 300)}
+    if args.research_type == 'C6':
+        recommender = Hybrid_Combo6("Hybrid_Combo6", UserCBFKNNRecommender())
+        name_search = "Hybrid_Combo6"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3), 'weight5': (0, 3),
+                   'weight6': (0, 3)}
+        t.instanziate_optimazer(t.step_hybrid_six, pbounds)
 
-    # 2.65, 0.1702, 0.002764, 0.7887
-    pbounds_hybrid6_bis = {'weight1': (0, 3), 'weight2': (0, 3), 'weight3': (0, 3), 'weight4': (0, 3), 'weight5': (0,3), 'weight6': (0,3)}
-    pbound_TEST = {'t1': (0, 1.5), 't2': (0.5, 1.5), 't3': (2, 2.5),'t4': (2.5, 3.5), 't5': (4, 6)}
+    if args.research_type == 'UW':
+        recommender = None
+        name_search = "Hybrid_UW"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'t1': (0, 1.5), 't2': (0.5, 1.5), 't3': (2, 2.5),'t4': (2.5, 3.5), 't5': (4, 6)}
+        t.instanziate_optimazer(t.step_hybrid_six, pbounds)
 
-    # Hybrid Achille
-    pbounds_hybrid_Achille_expl = {'weight1': (4, 6), 'weight2': (0.07, 0.2), 'weight3': (0, 3), 'weight4': (4.5, 7), 'weight5': (4.5, 7), 'weight6': (0, 2), 'weight7': (0.6, 7)}
-    pbounds_hybrid_Achille = {'weight1': (0, 10), 'weight2': (0, 10), 'weight3': (0, 10), 'weight4': (0, 10),
-                                   'weight5': (0, 10), 'weight6': (0, 10), 'weight7': (0, 10)}
+    if args.research_type == 'Achille':
+        recommender = Hybrid_Achille("Hybrid_Achille", UserCBFKNNRecommender())
+        name_search = "Hybrid_Achille"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'weight1': (0, 10), 'weight2': (0, 10), 'weight3': (0, 10), 'weight4': (0, 10), 'weight5': (0, 10),
+                   'weight6': (0, 10), 'weight7': (0, 10)}
+        t.instanziate_optimazer(t.step_hybrid_seven, pbounds)
 
-    # Tuning completo
-    pbounds_all = {'H0_ICF_sh': (0, 50), 'H0_ICF_tK': (5, 800),
+    if args.research_type == 'Achille_TF':
+        recommender = Hybrid_Achille("Hybrid_Achille_Tuning_FallBack", UserCBFKNNRecommender())
+        name_search = "Hybrid_Achille_Tuning_FallBack"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'weight1': (0, 10), 'weight2': (0, 10)}
+        t.instanziate_optimazer(t.step_fallBack_Hybrid, pbounds)
+
+    if args.research_type == 'Achille_TA':
+        recommender = Hybrid_Achille("Hybrid_Achille_Tuning_All", None)
+        name_search = "Hybrid_Achille_Tuning_All"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'H0_ICF_sh': (0, 50), 'H0_ICF_tK': (5, 800),
                    'H1_UCF_sh': (0, 50), 'H1_UCF_tK': (5, 800),
                    'H2_ICB_sh': (0, 200), 'H2_ICB_tK': (5, 800),
                    'H3_UCB_sh': (0, 50), 'H3_UCB_tK': (5, 1500),
                    'H4_El_tK': (5, 800),
                    'H5_RP3_a': (0, 3), 'H5_RP3_b': (0, 3), 'H5_RP3_tK': (5, 500),
-                   'H6_SL_bs': (1, 10), 'H6_SL_ep': (400, 600), 'H6_SL_l_i': (0, 0.1), 'H6_SL_l_j': (0, 0.1), 'H6_SL_l_r': (0, 0.1), 'H6_SL_tK': (5,800),
+                   'H6_SL_bs': (1, 10), 'H6_SL_ep': (400, 600), 'H6_SL_l_i': (0, 0.1), 'H6_SL_l_j': (0, 0.1),
+                   'H6_SL_l_r': (0, 0.1), 'H6_SL_tK': (5, 800),
                    'H7_ALS_i': (20, 100), 'H7_ALS_nf': (200, 600), 'H7_ALS_re': (0, 3),
-                   'weight1': (0, 5), 'weight2': (0, 5), 'weight3': (0, 5), 'weight4': (0, 5), 'weight5': (0, 5), 'weight6': (0, 5), 'weight7': (0, 5)}
+                   'weight1': (0, 5), 'weight2': (0, 5), 'weight3': (0, 5), 'weight4': (0, 5), 'weight5': (0, 5),
+                   'weight6': (0, 5), 'weight7': (0, 5)}
 
+        t.instanziate_optimazer(t.step_all, pbounds)
 
-    optimizer = BayesianOptimization(
-        f=t.step_hybrid_seven,
-        pbounds=pbounds_hybrid_Achille,
-        verbose=2,  # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
+    if args.research_type == 'Search_Slim':
+        recommender = None
+        name_search = "Slim_Recommender"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'weight1': (0, 0.1), 'weight2': (0, 0.1), 'weight3': (0, 0.1)}
+        t.instanziate_optimazer(t.step_slim, pbounds)
 
+    if args.research_type == 'Search_Elastic':
+        recommender = SLIMElasticNetRecommender()
+        name_search = "Slim_Elastic_Recommender"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'weight1': (0, 1), 'weight2': (0, 0.1), 'weight3': (50, 300)}
+        t.instanziate_optimazer(t.step_elastic, pbounds)
 
-    )
+    if args.research_type == 'Search_ItemCB':
+        recommender = ItemCBFKNNRecommender()
+        name_search = "Item_CB_Recommender"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'weight1': (10, 20), 'weight2': (20, 60)}
+        t.instanziate_optimazer(t.step_Item_CB, pbounds)
 
-    optimizer.maximize(
-        init_points=30,
-        n_iter=1000,
-        #acq='ucb',
-        #kappa = 0.1
-    )
+    if args.research_type == 'Search_UserCB':
+        recommender = UserCBFKNNRecommender()
+        name_search = "User_CB_Recommender"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'weight1': (1600, 1900), 'weight2': (50, 80)}
+        t.instanziate_optimazer(t.step_User_CB, pbounds)
+
+    if args.research_type == 'Search_P3Alpha':
+        recommender = P3AlphaRecommender()
+        name_search = "P3Alpha_Recommender"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'weight1': (500, 1000), 'weight2': (0.5, 1.5)}
+        t.instanziate_optimazer(t.step_P3Alpha, pbounds)
+
+    if args.research_type == 'Search_RP3Beta':
+        recommender = RP3BetaRecommender()
+        name_search = "RP3Beta_Recommender"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'alpha': (0, 3), 'beta': (0, 3), 'min_rating': (0, 3), 'topK': (10, 300)}
+        t.instanziate_optimazer(t.step_RP3Beta, pbounds)
+
+    if args.research_type == 'Search_ALS':
+        recommender = None
+        name_search = "ALS_Recommender"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'weight1': (200, 400), 'weight2': (0.05, 0.30), 'weight3': (10, 50)}
+        t.instanziate_optimazer(t.step_ALS, pbounds)
+
+    if args.research_type == 'Search_PureSVD':
+        recommender = PureSVDRecommender()
+        name_search = "PureSVD_Recommender"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'n_components': (100, 3000), 'n_iter': (1, 100)}
+        t.instanziate_optimazer(t.step_PureSVD_randomSVD, pbounds)
+
+    if args.research_type == 'Search_FunkSVD':
+        recommender = None
+        name_search = "FunkSVD_Recommender"
+        t = BayesianSearch(recommender, name_search)
+        pbounds = {'epoch': (450, 600), 'num_factors': (20, 40), 'learning_rate': (0.001, 0.005),
+                   'user_reg': (0.5, 0.9), 'item_reg': (0.1, 0.6)}
+        t.instanziate_optimazer(t.step_FunkSVD, pbounds)

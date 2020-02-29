@@ -1,8 +1,10 @@
 """ @author: Simone Lanzillotta, Stefano Martina """
 
-from tqdm import tqdm
+import time
+import csv
+import argparse
 
-from Hybrid.Hybrid_CB import Hybrid_CB
+from tqdm import tqdm
 from Recommenders.ContentBased import ItemCBFKNNRecommender, UserCBFKNNRecommender
 from Recommenders.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython, MatrixFactorization_AsySVD_Cython, MatrixFactorization_FunkSVD_Cython
 from Recommenders.Slim.SlimBPR.Cython import SLIM_BPR_Cython
@@ -13,11 +15,8 @@ from Recommenders.NonPersonalizedRecommender import RandomRecommender, TopPopRec
 from Recommenders.GraphBased.P3AlphaRecommender import P3AlphaRecommender
 from Recommenders.GraphBased.RP3BetaRecommender import RP3BetaRecommender
 from Recommenders.MatrixFactorization.ALS.ALSRecommender import AlternatingLeastSquare
-from Hybrid import Hybrid_Combo4, Hybrid_Hybrid_Combo, Hybrid_Combo6_bis, Hybrid_user_wise, Hybrid_Achille
+from Hybrid import Hybrid_Combo6, Hybrid_UW, Hybrid_Achille
 from Utils import evaluation
-import time
-import csv
-import argparse
 from Base.BaseFunction import BaseFunction
 
 FIELDS = ["user_id", "item_list"]
@@ -214,7 +213,7 @@ if __name__ == '__main__':
         print("HybridUW Selected")
         requires_icm = True
         requires_ucm = True
-        recommender = Hybrid_user_wise.Hybrid_User_Wise("Hybrid_user_wise", UserCBFKNNRecommender.UserCBFKNNRecommender())
+        recommender = Hybrid_UW.Hybrid_User_Wise("Hybrid_user_wise", UserCBFKNNRecommender.UserCBFKNNRecommender())
 
     #print(args)
     Runner(recommender, args.recommender, evaluate=args.eval).run(requires_ucm, requires_icm)
